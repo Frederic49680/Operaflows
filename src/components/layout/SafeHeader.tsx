@@ -14,7 +14,18 @@ import {
  */
 export default async function SafeHeader() {
   try {
-    const supabase = await createServerClient();
+    // Vérifier que les variables d'environnement sont définies
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      return null;
+    }
+
+    let supabase;
+    try {
+      supabase = await createServerClient();
+    } catch (error) {
+      // Si la création du client échoue, ne pas afficher le header
+      return null;
+    }
 
     // Vérifier la session
     const {
@@ -27,16 +38,23 @@ export default async function SafeHeader() {
     }
 
     // Récupérer les informations utilisateur (gérer les erreurs gracieusement)
-    const { data: userData } = await supabase
-      .from("tbl_users")
-      .select(`
-        *,
-        collaborateurs(nom, prenom)
-      `)
-      .eq("id", user.id)
-      .maybeSingle();
-    
-    // Ignorer les erreurs silencieusement (utilisateur peut ne pas être dans tbl_users)
+    let userData = null;
+    try {
+      const { data, error } = await supabase
+        .from("tbl_users")
+        .select(`
+          *,
+          collaborateurs(nom, prenom)
+        `)
+        .eq("id", user.id)
+        .maybeSingle();
+      
+      if (!error) {
+        userData = data;
+      }
+    } catch {
+      // Ignorer l'erreur silencieusement (utilisateur peut ne pas être dans tbl_users)
+    }
 
     // Récupérer les rôles de l'utilisateur
     type UserRole = {
@@ -45,11 +63,14 @@ export default async function SafeHeader() {
     
     let userRoles: UserRole[] = [];
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("user_roles")
         .select("roles(name, description)")
         .eq("user_id", user.id);
-      userRoles = data || [];
+      
+      if (!error && data) {
+        userRoles = data;
+      }
     } catch {
       // Ignorer l'erreur, userRoles reste []
     }
@@ -161,7 +182,10 @@ export default async function SafeHeader() {
     );
   } catch (error) {
     // En cas d'erreur, ne pas afficher le header plutôt que de crasher
-    console.error("Erreur dans SafeHeader:", error);
+    // Logger uniquement en développement pour éviter les erreurs en production
+    if (process.env.NODE_ENV === "development") {
+      console.error("Erreur dans SafeHeader:", error);
+    }
     return null;
   }
 }
