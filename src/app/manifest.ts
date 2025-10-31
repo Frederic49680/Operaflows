@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+import { MetadataRoute } from "next";
 
-export async function GET() {
-  const manifest = {
+export default function manifest(): MetadataRoute.Manifest {
+  return {
     name: "OperaFlow",
     short_name: "OperaFlow",
     description: "Application de suivi, planification et pilotage d'activités de terrain",
@@ -17,13 +17,5 @@ export async function GET() {
       },
     ],
   };
-
-  return NextResponse.json(manifest, {
-    status: 200,
-    headers: {
-      "Content-Type": "application/manifest+json",
-      "Cache-Control": "public, max-age=3600",
-    },
-  });
 }
 
