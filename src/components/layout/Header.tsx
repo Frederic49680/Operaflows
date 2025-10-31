@@ -51,11 +51,16 @@ export default async function Header() {
   });
   const hasRHAccess = await isRHOrAdmin(user.id);
 
-  // Nom d'affichage
-  const collaborateurs = userData?.collaborateurs;
-  const displayName = collaborateurs && typeof collaborateurs === 'object' && !Array.isArray(collaborateurs) && 'prenom' in collaborateurs && 'nom' in collaborateurs
-    ? `${collaborateurs.prenom} ${collaborateurs.nom}`
-    : userData?.email || user.email || "Utilisateur";
+  // Nom d'affichage (gérer les cas où collaborateurs peut être null ou un tableau)
+  let displayName = userData?.email || user.email || "Utilisateur";
+  if (userData?.collaborateurs) {
+    const collab = Array.isArray(userData.collaborateurs) 
+      ? userData.collaborateurs[0] 
+      : userData.collaborateurs;
+    if (collab && typeof collab === 'object' && 'prenom' in collab && 'nom' in collab) {
+      displayName = `${collab.prenom} ${collab.nom}`;
+    }
+  }
 
   // Construction du menu selon les rôles
   const menuItems = [

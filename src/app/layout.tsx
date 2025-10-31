@@ -3,16 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 
-// Gérer les erreurs dans Header pour éviter les crashes
-function SafeHeader() {
-  try {
-    return <Header />;
-  } catch (error) {
-    console.error("Erreur Header:", error);
-    return null;
-  }
-}
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -47,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={inter.className}>
-        <SafeHeader />
+        <Header />
         {children}
       </body>
     </html>
