@@ -5,9 +5,13 @@
 -- 1. Fix ambiguïté dans la fonction is_rh_or_admin
 -- ============================================================================
 -- Le problème : le paramètre user_id entre en conflit avec ur.user_id dans la requête
--- Solution : Renommer le paramètre ou qualifier explicitement la colonne
+-- Solution : Supprimer l'ancienne fonction puis la recréer avec le nouveau nom de paramètre
 
-CREATE OR REPLACE FUNCTION public.is_rh_or_admin(p_user_id UUID)
+-- Supprimer l'ancienne fonction (nécessaire pour changer le nom du paramètre)
+DROP FUNCTION IF EXISTS public.is_rh_or_admin(UUID);
+
+-- Recréer la fonction avec le nouveau nom de paramètre p_user_id
+CREATE FUNCTION public.is_rh_or_admin(p_user_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
   RETURN EXISTS (
