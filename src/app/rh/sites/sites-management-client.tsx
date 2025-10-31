@@ -40,37 +40,28 @@ export default function SitesManagementClient({
         if (updateError) throw updateError;
         setSuccess("Site modifié avec succès");
       } else {
-        // Création
-        const { data, error: insertError } = await supabase
+        // Création - On récupère d'abord juste le site (sans responsables car il n'y en a pas encore)
+        const { data: insertedSite, error: insertError } = await supabase
           .from("tbl_sites")
           .insert(siteData)
-          .select(`
-            *,
-            responsables:tbl_site_responsables!tbl_site_responsables_site_id_fkey(
-              *,
-              collaborateur:collaborateurs!tbl_site_responsables_collaborateur_id_fkey(
-                id, nom, prenom, email
-              )
-            )
-          `)
+          .select("*")
           .single();
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error("❌ Erreur insertion site:", insertError);
+          console.error("Code:", insertError.code);
+          console.error("Message:", insertError.message);
+          console.error("Details:", insertError.details);
+          console.error("Hint:", insertError.hint);
+          throw insertError;
+        }
 
-        // Ajouter le nouveau site à la liste locale
+        console.log("✅ Site créé avec succès:", insertedSite);
+
+        // Formater le nouveau site pour l'ajouter à la liste locale
         const newSite: SiteAvecResponsables = {
-          ...data,
-          responsables_actifs: (data.responsables || [])
-            .filter((r: { is_active: boolean; date_fin: string | null }) => 
-              r.is_active && (!r.date_fin || new Date(r.date_fin) >= new Date())
-            )
-            .map((r: { collaborateur_id: string; role_fonctionnel: string; date_debut: string; date_fin: string | null; collaborateur: { nom: string; prenom: string } | null }) => ({
-              collaborateur_id: r.collaborateur_id,
-              role_fonctionnel: r.role_fonctionnel,
-              date_debut: r.date_debut,
-              date_fin: r.date_fin,
-              collaborateur: r.collaborateur,
-            })),
+          ...insertedSite,
+          responsables_actifs: [], // Pas de responsables lors de la création
         };
 
         setSites([...sites, newSite].sort((a, b) => a.site_code.localeCompare(b.site_code)));
