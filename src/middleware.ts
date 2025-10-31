@@ -67,6 +67,6 @@ export const config = {
      * - manifest.json et manifest.webmanifest (gérés par Next.js)
      * - fichiers publics (public folder)
      */
-    "/((?!_next/static|_next/image|favicon.ico|manifest\\.(json|webmanifest)|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest\\.(?:json|webmanifest)|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
