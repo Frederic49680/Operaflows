@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "OperaFlow - Planification et pilotage d'activités",
   description: "Application de suivi, planification et pilotage d'activités de terrain",
   manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
   themeColor: "#0EA5E9",
 };
 

@@ -25,11 +25,8 @@ Application web et mobile de suivi, planification et pilotage d'activités de te
 # Installer les dépendances
 npm install
 
-# Copier le fichier d'environnement
-cp .env.example .env.local
-
-# Configurer les variables d'environnement dans .env.local
-# (voir section Configuration ci-dessous)
+# Le fichier .env.local devrait déjà être configuré
+# Sinon, créez-le en copiant .env.example et ajoutez vos clés Supabase
 
 # Lancer le serveur de développement
 npm run dev
@@ -41,24 +38,14 @@ L'application sera accessible sur [http://localhost:3000](http://localhost:3000)
 
 ### Variables d'environnement
 
-Créez un fichier `.env.local` à la racine du projet avec les variables suivantes :
-
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=votre_url_supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY=votre_cle_anon
-SUPABASE_SERVICE_ROLE_KEY=votre_cle_service_role
-
-# Application
-NEXTAUTH_SECRET=votre_secret_nextauth
-APP_BASE_URL=http://localhost:3000
-
-# SendGrid (optionnel)
-SENDGRID_API_KEY=votre_cle_sendgrid
-
-# Supabase Storage
-SUPABASE_STORAGE_BUCKET=documents
-```
+Le fichier `.env.local` contient :
+- `NEXT_PUBLIC_SUPABASE_URL` - URL de votre projet Supabase
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Clé publique anonyme Supabase
+- `SUPABASE_SERVICE_ROLE_KEY` - Clé service role Supabase (secrète)
+- `NEXTAUTH_SECRET` - Secret pour NextAuth
+- `APP_BASE_URL` - URL de base de l'application
+- `SENDGRID_API_KEY` - Clé API SendGrid (optionnel)
+- `SUPABASE_STORAGE_BUCKET` - Nom du bucket Storage Supabase
 
 ### Configuration Supabase
 
@@ -68,12 +55,15 @@ SUPABASE_STORAGE_BUCKET=documents
    - Authentication
    - Storage
    - Row Level Security (RLS)
+4. Exécutez les scripts SQL de `SUPABASE_SETUP.md` pour créer le schéma
 
 ### Configuration Vercel
 
 1. Connectez votre dépôt GitHub à Vercel
 2. Configurez les variables d'environnement dans les paramètres du projet Vercel
 3. Le déploiement se fera automatiquement à chaque push sur la branche `main`
+
+📖 **Voir `DEPLOYMENT.md` pour le guide complet de déploiement**
 
 ## 📁 Structure du projet
 
@@ -87,6 +77,7 @@ operflow/
 │   ├── hooks/               # Hooks React personnalisés
 │   └── utils/               # Fonctions utilitaires
 ├── public/                  # Fichiers statiques
+├── scripts/                 # Scripts utilitaires
 ├── .cursor/                 # Règles Cursor
 └── ...
 ```
@@ -117,6 +108,14 @@ Charte graphique OperaFlow :
 
 ## 🚢 Déploiement
 
+### Local (Développement)
+
+```bash
+npm run dev      # Serveur de développement sur http://localhost:3000
+npm run build    # Build de production
+npm run start    # Lancer en mode production
+```
+
 ### Vercel (Production)
 
 Le déploiement est automatique via GitHub :
@@ -125,20 +124,53 @@ Le déploiement est automatique via GitHub :
 - **Preview**: autres branches
 - **Environnement**: variables configurées dans Vercel
 
-### Supabase
+📖 **Voir `DEPLOYMENT.md` pour les détails complets**
 
-- Base de données PostgreSQL managée
-- Sauvegardes automatiques quotidiennes
-- Stockage pour documents et signatures
-- Edge Functions pour automatisations
+### Vérification
 
-## 📝 Licence
+Utilisez le script PowerShell pour vérifier votre déploiement :
 
-Propriétaire - Tous droits réservés
+```powershell
+.\scripts\check-deployment.ps1
+```
 
-## 🔗 Liens utiles
+Ou consultez `VERIFICATION_DEPLOYMENT.md` pour un guide détaillé.
+
+## ✅ Statut actuel
+
+- ✅ Structure Next.js 15 configurée
+- ✅ Supabase configuré (clés dans `.env.local`)
+- ✅ Build de production fonctionnel
+- ✅ Documentation complète
+- ⏳ Déploiement Vercel à configurer
+- ⏳ Schéma Supabase à créer
+
+## 📝 Documentation
+
+- `DEPLOYMENT.md` - Guide complet de déploiement (Git, Supabase, Vercel)
+- `SUPABASE_SETUP.md` - Configuration Supabase avec schéma SQL
+- `VERIFICATION_DEPLOYMENT.md` - Guide de vérification des déploiements
+- `QUICKSTART.md` - Guide de démarrage rapide
+- `ENV_SETUP.md` - Configuration des variables d'environnement
+- `SETUP_COMPLETE.md` - Récapitulatif de la configuration
+
+## 🛠️ Commandes utiles
+
+```bash
+npm run dev          # Développement
+npm run build        # Build production
+npm run start        # Production locale
+npm run lint         # Linter
+npm run type-check   # Vérification TypeScript
+```
+
+## 📚 Ressources
 
 - [Documentation Next.js](https://nextjs.org/docs)
 - [Documentation Supabase](https://supabase.com/docs)
 - [Documentation Vercel](https://vercel.com/docs)
+- [Documentation SendGrid](https://docs.sendgrid.com)
 
+## 📝 Licence
+
+Propriétaire - Tous droits réservés
