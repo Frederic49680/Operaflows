@@ -1,0 +1,228 @@
+MODULE 2 — RH COLLABORATEURS
+v1.4 — Gestion complète : collaborateurs, conformité, dosimétrie, absences, intégrations externes et visa numérique
+🎯 Objectif général
+
+Centraliser l’ensemble des informations RH pour garantir :
+
+la disponibilité réelle des collaborateurs,
+
+la conformité réglementaire (visites, habilitations, dosimétrie),
+
+le suivi administratif (absences, contrats),
+
+et la connectivité avec les systèmes internes et externes (SIRH, Outlook, module Signature).
+
+👥 Utilisateurs concernés
+Rôle	Droits principaux	Objectif
+Administratif RH / Formation / Dosimétrie	Gestion complète du personnel, des absences et des conformités	Maîtrise réglementaire
+Responsable d’Activité	Lecture / validation des absences et habilitations sur son périmètre	Supervision opérationnelle
+Planificateur	Lecture des disponibilités / conformité / absences	Planification fiable
+Chargé d’Affaires	Consultation RH associées à ses affaires	Suivi des ressources
+Chef de Chantier	Déclaration d’absence terrain	Réactivité terrain
+Collaborateur	Lecture restreinte (absences, formations, conformité)	Transparence individuelle
+⚙️ 1️⃣ Structure des données Collaborateur
+Champ	Description
+Nom / Prénom	Identité complète
+Site	Affectation principale
+Type de contrat	CDI / CDD / Intérim / Apprenti
+Responsable	Responsable d’activité lié
+Actif	Statut d’emploi
+Date entrée / sortie	Historique contrat
+Fonction métier	Fonction principale
+Compétence principale / secondaire	Lien table compétences
+Téléphone / Email	Coordonnées
+Commentaire	Note libre
+🗂️ 2️⃣ Organisation par onglets
+🧾 Onglet 1 — Informations générales
+
+Identité, contrat, site, responsable, statut, historique.
+
+🧠 Onglet 2 — Compétences & Habilitations
+
+Liste des compétences validées / expirées.
+
+Suivi des habilitations : électrique, travail en hauteur, ATEX…
+
+Dates d’expiration + alertes automatiques à 30 jours.
+
+Blocage auto si habilitation expirée (Planification).
+
+Lien vers Plan de Formation (module dédié).
+
+☢️ Onglet 3 — Suivi Dosimétrique et RTR
+Objectif
+
+Tracer les expositions radiologiques conformément à la réglementation.
+
+Champ	Description
+N° dosimètre	Identifiant personnel
+Période validité	Début / fin
+Dose trimestrielle / annuelle	Relevés cumulés
+Limite réglementaire (mSv)	Seuil de référence
+Fournisseur	Ex. Mirion, Landauer
+Rapport RTR	Document joint
+Fonctionnalités
+
+Import automatique CSV/API laboratoire.
+
+Alertes dépassement seuil.
+
+Génération rapports PDF (collab + site).
+
+Archivage conforme RGPD (5 ans).
+
+🩺 Onglet 4 — Visites médicales et habilitations sécurité
+
+Gestion des visites périodiques, type, date, centre, statut.
+
+Alertes à 30 jours avant échéance.
+
+Blocage automatique sur planif si expirée.
+
+Suivi habilitations sécurité : aptitude, travail hauteur, espaces confinés, etc.
+
+Lien vers le module Signature / Visa pour validation numérique du compte-rendu médical (aptitude, reprise).
+
+🏖️ Onglet 5 — Absences et Indisponibilités
+🎯 Objectif
+
+Empêcher toute affectation sur périodes non disponibles, tout en assurant la traçabilité et la conformité RH.
+
+Catégorie	Exemples	Impact planif
+Congés payés	CP, congés annuels	Blocage complet
+RTT / Repos	RTT, repos site	Bloc jour
+Maladie / AT	Arrêt médical, accident	Bloc + alerte
+Absence autorisée	RDV médical, famille	Bloc créneau
+Formation / Habilitation	Formation externe	Bloc planif + lien Plan Formation
+Déplacement externe	Mission autre site	Bloc planif locale
+Données
+Champ	Description
+CollaborateurID	Lien fiche RH
+Type / Motif	Catégorie absence
+Date début / fin	Période concernée
+Justificatif	Fichier attaché
+Statut	En attente / Validée / Refusée
+Créée / Validée par	Rôle + date
+Impact planif	Oui / Non
+Commentaire	Champ libre
+Workflow
+
+1️⃣ Déclaration → par collaborateur, chef de chantier ou RH.
+2️⃣ Validation → Responsable activité ou RH administratif.
+3️⃣ Synchronisation → Blocage automatique dans Gantt.
+4️⃣ Archivage → Stockage + lien vers Visa numérique pour justificatif.
+
+Intégration planif
+
+Superposition visuelle Gantt (bande grisée).
+
+Alerte “Ressource indisponible” en cas d’affectation.
+
+Recalcul charges hebdo / dérives.
+
+🔗 6️⃣ Intégrations et interconnexions
+🔄 Liaison directe au SIRH corporate
+Objectif
+
+Synchroniser automatiquement les données RH internes (collaborateurs, absences, contrats, habilitations) avec le système central du groupe.
+
+Type de flux	Sens	Description
+Collaborateurs	Import → RH interne	Création auto des nouveaux entrants
+Contrats / Sites	Import → RH interne	Actualisation mensuelle
+Absences validées	Export → SIRH	Transmission des absences officielles
+Formations validées	Export → SIRH	Suivi conformité corporate
+Données dosimétriques	Export → SIRH Sécurité	Reporting réglementaire
+
+🔐 Connecteurs possibles :
+
+API REST sécurisée (clé d’application),
+
+ou import/export planifié CSV via stockage Supabase.
+
+Sécurité
+
+Authentification OAuth2.0
+
+Chiffrement des échanges (HTTPS)
+
+Journalisation (logs) des synchronisations
+
+📅 Synchronisation Outlook / Microsoft 365
+Objectif
+
+Afficher les absences et formations RH directement dans les calendriers Outlook/Teams des collaborateurs et responsables.
+
+Fonctionnalités
+
+Création automatique d’événements Outlook à validation d’absence ou formation.
+
+Catégorisation couleur (Vert = Congé, Bleu = Formation, Rouge = Maladie).
+
+Synchronisation bidirectionnelle (modif Outlook → mise à jour RH si autorisé).
+
+Notification instantanée Outlook/Teams lors de validation absence.
+
+Données synchronisées
+
+Nom collaborateur
+
+Type absence
+
+Dates
+
+Commentaire
+
+Statut
+
+Connecteur
+
+Graph API Microsoft (via compte service Azure AD)
+
+Fréquence de synchro : toutes les 2h ou en webhook.
+
+✍️ Lien vers Module Signature / Visa numérique
+Objectif
+
+Assurer la validation légale des documents RH sensibles :
+
+arrêts maladie,
+
+justificatifs d’absence,
+
+attestations de reprise,
+
+documents d’aptitude médicale,
+
+documents d’exposition (RTR, dosimétrie).
+
+Fonctionnement
+
+Déclenchement automatique du Module Signature lors d’un ajout de justificatif.
+
+Signature numérique du document (RH ou médecin du travail).
+
+Archivage certifié dans Supabase Storage.
+
+Horodatage et suivi d’état (signé / refusé / expiré).
+
+Bénéfices
+
+Traçabilité complète des validations médicales et administratives.
+
+Zéro papier.
+
+Intégration fluide avec les affaires et le suivi sécurité.
+
+📊 7️⃣ Indicateurs RH consolidés
+Catégorie	Indicateur
+Effectif actif	Nombre de collaborateurs par site / contrat
+Taux d’absentéisme	% jours absents / jours ouvrés
+Taux de conformité	Visites / habilitations / dosimètres à jour
+Alertes échéances	Nombre de documents arrivant à expiration
+Synchronisation SIRH	Taux de réussite / dernière mise à jour
+Documents signés	% justificatifs validés via Visa numérique
+Présence effective	Ratio “dispo / total” alimentant la planif
+
+Visualisation dans le futur Module KPI & Alertes globales.---
+alwaysApply: true
+---

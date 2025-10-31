@@ -1,0 +1,274 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { Search, Plus, AlertTriangle, Calendar, Users } from "lucide-react";
+import type { Collaborateur, AlerteEcheance } from "@/types/rh";
+
+interface RHPageClientProps {
+  collaborateurs: Collaborateur[];
+  alertes: AlerteEcheance[];
+  hasRHAccess: boolean;
+}
+
+export default function RHPageClient({
+  collaborateurs,
+  alertes,
+  hasRHAccess,
+}: RHPageClientProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredCollaborateurs = collaborateurs.filter((collab) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      collab.nom.toLowerCase().includes(searchLower) ||
+      collab.prenom.toLowerCase().includes(searchLower) ||
+      collab.email.toLowerCase().includes(searchLower) ||
+      collab.fonction_metier?.toLowerCase().includes(searchLower) ||
+      collab.site?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const alertesUrgentes = alertes.filter(
+    (a) => a.statut_alerte === "expiree" || a.statut_restants <= 7
+  );
+
+  return (
+    <div className="min-h-screen bg-background p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* En-tête */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-4xl font-bold text-primary mb-2">
+                RH Collaborateurs
+              </h1>
+              <p className="text-lg text-secondary">
+                Gestion des collaborateurs, absences, formations et conformité
+              </p>
+            </div>
+            {hasRHAccess && (
+              <Link href="/rh/new" className="btn-primary flex items-center gap-2">
+                <Plus className="h-5 w-5" />
+                Nouveau collaborateur
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Alertes */}
+        {hasRHAccess && alertesUrgentes.length > 0 && (
+          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="h-5 w-5 text-yellow-600" />
+              <h3 className="font-semibold text-yellow-900">
+                Alertes d'échéances ({alertesUrgentes.length})
+              </h3>
+            </div>
+            <div className="space-y-1">
+              {alertesUrgentes.slice(0, 5).map((alerte) => (
+                <div key={alerte.id} className="text-sm text-yellow-800">
+                  <Link
+                    href={`/rh/${alerte.collaborateur_id}`}
+                    className="hover:underline"
+                  >
+                    {alerte.prenom} {alerte.nom}
+                  </Link>
+                  {" - "}
+                  {alerte.libelle_document}
+                    {alerte.jours_restants !== null && alerte.jours_restants >= 0 && (
+                    <span className="ml-2 font-semibold">
+                      ({alerte.jours_restants} jour{alerte.jours_restants !== 1 ? "s" : ""} restant{alerte.jours_restants !== 1 ? "s" : ""})
+                    </span>
+                  )}
+                  {alerte.jours_restants !== null && alerte.jours_restants < 0 && (
+                    <span className="ml-2 font-semibold text-red-600">
+                      (Expiré il y a {Math.abs(alerte.jours_restants)} jour{Math.abs(alerte.jours_restants) !== 1 ? "s" : ""})
+                    </span>
+                  )}
+                </div>
+              ))}
+              {alertesUrgentes.length > 5 && (
+                <Link
+                  href="/rh/alertes"
+                  className="text-sm text-yellow-700 hover:underline font-medium"
+                >
+                  Voir toutes les alertes ({alertesUrgentes.length})
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Recherche */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Rechercher par nom, prénom, email, fonction ou site..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+            />
+          </div>
+        </div>
+
+        {/* Statistiques */}
+        {hasRHAccess && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="card">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <Users className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Total collaborateurs</p>
+                  <p className="text-2xl font-bold text-primary">
+                    {collaborateurs.length}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="card">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-green-100 rounded-lg">
+                  <Users className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Actifs</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {collaborateurs.filter((c) => c.statut === "actif").length}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="card">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-orange-100 rounded-lg">
+                  <AlertTriangle className="h-6 w-6 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Échéances proches</p>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {alertes.filter((a) => a.statut_alerte === "echeance_proche").length}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="card">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-red-100 rounded-lg">
+                  <Calendar className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Expirées</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {alertes.filter((a) => a.statut_alerte === "expiree").length}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Liste des collaborateurs */}
+        <div className="card">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Collaborateur
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Fonction
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Site
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contrat
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Statut
+                  </th>
+                  {hasRHAccess && (
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Responsable
+                    </th>
+                  )}
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredCollaborateurs.length === 0 ? (
+                  <tr>
+                    <td colSpan={hasRHAccess ? 7 : 6} className="px-6 py-8 text-center text-gray-500">
+                      {searchTerm ? "Aucun résultat trouvé" : "Aucun collaborateur"}
+                    </td>
+                  </tr>
+                ) : (
+                  filteredCollaborateurs.map((collab) => (
+                    <tr key={collab.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {collab.prenom} {collab.nom}
+                          </div>
+                          <div className="text-sm text-gray-500">{collab.email}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {collab.fonction_metier || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {collab.site || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {collab.type_contrat || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            collab.statut === "actif"
+                              ? "bg-green-100 text-green-800"
+                              : collab.statut === "inactif"
+                              ? "bg-gray-100 text-gray-800"
+                              : collab.statut === "suspendu"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {collab.statut}
+                        </span>
+                      </td>
+                      {hasRHAccess && (
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {collab.responsable
+                            ? `${collab.responsable.prenom} ${collab.responsable.nom}`
+                            : "-"}
+                        </td>
+                      )}
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <Link
+                          href={`/rh/${collab.id}`}
+                          className="text-primary hover:text-primary-dark"
+                        >
+                          Voir
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+

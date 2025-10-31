@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
+import { isRHOrAdmin } from "@/lib/auth/rh-check";
+import RHPageClient from "./rh-client";
 
 export default async function RHPage() {
   const supabase = await createServerClient();
@@ -13,51 +15,58 @@ export default async function RHPage() {
     redirect("/login");
   }
 
-  return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">
-            RH Collaborateurs
-          </h1>
-          <p className="text-lg text-secondary">
-            Gestion des collaborateurs et ressources humaines
-          </p>
-        </div>
+  // Vérifier les droits RH/Admin
+  const hasRHAccess = await isRHOrAdmin(user.id);
+  
+  // Tous les utilisateurs authentifiés peuvent accéder pour voir leur propre fiche
+  // Mais seuls RH/Admin voient la liste complète
 
-        <div className="card">
-          <div className="text-center py-12">
-            <div className="mb-4">
-              <svg
-                className="mx-auto h-16 w-16 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-semibold text-secondary mb-2">
-              Module en cours de développement
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Ce module sera disponible prochainement
-            </p>
-            <a
-              href="/dashboard"
-              className="btn-primary inline-block"
-            >
-              Retour au tableau de bord
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
+  // Récupérer les collaborateurs
+  let collaborateurs = [];
+  if (hasRHAccess) {
+    // RH/Admin voient tous les collaborateurs
+    const { data } = await supabase
+      .from("collaborateurs")
+      .select(`
+        *,
+        responsable:collaborateurs!collaborateurs_responsable_id_fkey(id, nom, prenom),
+        user:user_id(id, email)
+      `)
+      .order("nom", { ascending: true });
+    collaborateurs = data || [];
+  } else {
+    // Les autres voient seulement leur propre fiche
+    const { data: collabData } = await supabase
+      .from("collaborateurs")
+      .select(`
+        *,
+        responsable:collaborateurs!collaborateurs_responsable_id_fkey(id, nom, prenom),
+        user:user_id(id, email)
+      `)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    
+    if (collabData) {
+      collaborateurs = [collabData];
+    }
+  }
+
+  // Récupérer les alertes d'échéances si RH/Admin
+  let alertes = [];
+  if (hasRHAccess) {
+    const { data: alertesData } = await supabase
+      .from("v_alertes_echeances")
+      .select("*")
+      .limit(20)
+      .order("jours_restants", { ascending: true });
+    alertes = alertesData || [];
+  }
+
+  return (
+    <RHPageClient
+      collaborateurs={collaborateurs}
+      alertes={alertes}
+      hasRHAccess={hasRHAccess}
+    />
   );
 }
-

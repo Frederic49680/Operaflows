@@ -1,0 +1,213 @@
+// Types pour le Module 2 : RH Collaborateurs
+
+export type TypeContrat = 'CDI' | 'CDD' | 'Interim' | 'Apprenti' | 'Stage' | 'Autre';
+export type StatutCollaborateur = 'actif' | 'inactif' | 'suspendu' | 'archivé';
+export type TypeAbsence = 'conges_payes' | 'rtt' | 'repos_site' | 'maladie' | 'accident_travail' | 'absence_autorisee' | 'formation' | 'habilitation' | 'deplacement_externe' | 'autre';
+export type StatutAbsence = 'en_attente' | 'validee' | 'refusee' | 'annulee';
+export type TypeFormation = 'interne' | 'externe' | 'habilitation' | 'certification' | 'autre';
+export type StatutFormation = 'planifiee' | 'en_cours' | 'terminee' | 'abandonnee' | 'echec';
+export type TypeVisiteMedicale = 'embauche' | 'periodique' | 'reprise' | 'inaptitude' | 'autre';
+export type StatutVisiteMedicale = 'apte' | 'apte_avec_reserves' | 'inapte' | 'en_attente';
+export type StatutHabilitation = 'valide' | 'expire' | 'en_cours_renouvellement' | 'suspendu';
+
+export interface Collaborateur {
+  id: string;
+  user_id: string | null;
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone?: string | null;
+  site?: string | null;
+  responsable_id?: string | null;
+  fonction_metier?: string | null;
+  type_contrat?: TypeContrat | null;
+  date_embauche?: string | null;
+  date_fin_contrat?: string | null;
+  statut: StatutCollaborateur;
+  competence_principale_id?: string | null;
+  competence_secondaire_ids?: string[] | null;
+  commentaire?: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  
+  // Relations
+  responsable?: Collaborateur | null;
+  user?: { id: string; email: string } | null;
+}
+
+export interface Habilitation {
+  id: string;
+  collaborateur_id: string;
+  type: string;
+  libelle: string;
+  date_obtention: string;
+  date_expiration?: string | null;
+  duree_validite_mois?: number | null;
+  organisme?: string | null;
+  numero_certificat?: string | null;
+  statut: StatutHabilitation;
+  document_url?: string | null;
+  document_signe_id?: string | null;
+  commentaire?: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+}
+
+export interface Dosimetrie {
+  id: string;
+  collaborateur_id: string;
+  numero_dosimetre: string;
+  periode_debut: string;
+  periode_fin: string;
+  dose_trimestrielle_mSv: number;
+  dose_annuelle_mSv: number;
+  dose_cumulee_mSv: number;
+  limite_reglementaire_mSv: number;
+  fournisseur?: string | null;
+  laboratoire?: string | null;
+  rapport_rtr_url?: string | null;
+  rapport_rtr_signe_id?: string | null;
+  import_source?: 'manuel' | 'csv' | 'api_laboratoire' | null;
+  import_date?: string | null;
+  import_metadata?: Record<string, unknown> | null;
+  commentaire?: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+}
+
+export interface VisiteMedicale {
+  id: string;
+  collaborateur_id: string;
+  type_visite: TypeVisiteMedicale;
+  date_visite: string;
+  date_prochaine_visite?: string | null;
+  frequence_mois: number;
+  centre_medical?: string | null;
+  medecin?: string | null;
+  statut: StatutVisiteMedicale;
+  avis_medical?: string | null;
+  restrictions?: string | null;
+  certificat_url?: string | null;
+  certificat_signe_id?: string | null;
+  commentaire?: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+}
+
+export interface Absence {
+  id: string;
+  collaborateur_id: string;
+  type: TypeAbsence;
+  motif?: string | null;
+  date_debut: string;
+  date_fin: string;
+  heures_absences?: number | null;
+  duree_jours?: number | null;
+  statut: StatutAbsence;
+  valide_par?: string | null;
+  date_validation?: string | null;
+  motif_refus?: string | null;
+  justificatif_url?: string | null;
+  justificatif_signe_id?: string | null;
+  impact_planif: boolean;
+  synchro_outlook: boolean;
+  outlook_event_id?: string | null;
+  synchro_sirh: boolean;
+  sirh_export_date?: string | null;
+  sirh_export_id?: string | null;
+  commentaire?: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  
+  // Relations
+  collaborateur?: Collaborateur | null;
+  valide_par_user?: { id: string; email: string } | null;
+}
+
+export interface Formation {
+  id: string;
+  collaborateur_id: string;
+  libelle: string;
+  description?: string | null;
+  type_formation?: TypeFormation | null;
+  organisme_formateur?: string | null;
+  formateur?: string | null;
+  date_debut: string;
+  date_fin?: string | null;
+  duree_heures?: number | null;
+  statut: StatutFormation;
+  resultat?: string | null;
+  note?: number | null;
+  attestation_url?: string | null;
+  attestation_signe_id?: string | null;
+  validee_par?: string | null;
+  date_validation?: string | null;
+  impact_planif: boolean;
+  synchro_outlook: boolean;
+  outlook_event_id?: string | null;
+  synchro_sirh: boolean;
+  sirh_export_date?: string | null;
+  sirh_export_id?: string | null;
+  commentaire?: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  
+  // Relations
+  collaborateur?: Collaborateur | null;
+}
+
+export interface Competence {
+  id: string;
+  code?: string | null;
+  libelle: string;
+  description?: string | null;
+  categorie?: string | null;
+  niveau_requis?: string | null;
+  duree_validite_mois?: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CollaborateurCompetence {
+  id: string;
+  collaborateur_id: string;
+  competence_id: string;
+  niveau?: string | null;
+  date_obtention?: string | null;
+  date_expiration?: string | null;
+  statut: 'valide' | 'expire' | 'en_cours_acquisition' | 'suspendu';
+  valide_par?: string | null;
+  date_validation?: string | null;
+  attestation_url?: string | null;
+  created_at: string;
+  updated_at: string;
+  
+  // Relations
+  competence?: Competence | null;
+}
+
+export interface AlerteEcheance {
+  type_alerte: 'habilitation' | 'visite_medicale' | 'competence';
+  id: string;
+  collaborateur_id: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  libelle_document: string;
+  date_expiration: string | null;
+  statut_alerte: 'expiree' | 'echeance_proche' | 'ok' | null;
+  jours_restants: number | null;
+}
+
