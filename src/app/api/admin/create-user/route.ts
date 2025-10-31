@@ -42,6 +42,21 @@ export async function POST(request: Request) {
       );
     }
 
+    // Vérifier que les variables d'environnement nécessaires sont définies
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error("❌ Variables d'environnement manquantes:", {
+        hasSupabaseUrl: !!supabaseUrl,
+        hasServiceKey: !!supabaseServiceKey,
+      });
+      return NextResponse.json(
+        { error: "Configuration serveur incomplète. Veuillez contacter l'administrateur." },
+        { status: 500 }
+      );
+    }
+
     // Support pour site_id (ancien) et site_ids (nouveau - multiple)
     const siteIds = site_ids && Array.isArray(site_ids) && site_ids.length > 0 
       ? site_ids 
@@ -49,8 +64,8 @@ export async function POST(request: Request) {
 
     // Utiliser le service role key pour créer l'utilisateur
     const supabaseAdmin = createClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      supabaseUrl,
+      supabaseServiceKey,
       {
         auth: {
           autoRefreshToken: false,
