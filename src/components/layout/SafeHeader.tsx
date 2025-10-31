@@ -1,13 +1,5 @@
 import { createServerClient } from "@/lib/supabase/server";
 import HeaderClient from "./HeaderClient";
-import {
-  LayoutDashboard,
-  Users,
-  Briefcase,
-  Calendar,
-  BarChart3,
-  Settings,
-} from "lucide-react";
 
 /**
  * Wrapper sécurisé pour Header qui gère les erreurs
@@ -22,7 +14,7 @@ export default async function SafeHeader() {
     let supabase;
     try {
       supabase = await createServerClient();
-    } catch (error) {
+    } catch {
       // Si la création du client échoue, ne pas afficher le header
       return null;
     }

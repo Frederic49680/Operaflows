@@ -160,7 +160,7 @@ export default function HeaderClient({
                         : "text-gray-500 group-hover:text-amber-600 group-hover:rotate-90"
                     )}
                   />
-                  <span className={pathname.startsWith("/admin") && "font-semibold"}>
+                  <span className={pathname.startsWith("/admin") ? "font-semibold" : ""}>
                     Administration
                   </span>
                   <ChevronDown
