@@ -117,7 +117,6 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
       formations={formations.data || []}
       competences={competences.data || []}
       hasRHAccess={hasRHAccess}
-      currentUserId={user.id}
     />
   );
 }

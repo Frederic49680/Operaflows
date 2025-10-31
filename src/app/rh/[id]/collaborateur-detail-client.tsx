@@ -45,7 +45,6 @@ export default function CollaborateurDetailClient({
   formations,
   competences,
   hasRHAccess,
-  currentUserId,
 }: CollaborateurDetailClientProps) {
   const [activeTab, setActiveTab] = useState<Tab>("general");
 
@@ -174,9 +173,7 @@ export default function CollaborateurDetailClient({
             <OngletAbsences
               absences={absences}
               formations={formations}
-              hasRHAccess={hasRHAccess}
               canValidate={hasRHAccess || false} // TODO: vérifier si responsable
-              collaborateurId={collaborateur.id}
             />
           )}
         </div>
@@ -620,12 +617,10 @@ function OngletMedical({
 function OngletAbsences({
   absences,
   formations,
-  hasRHAccess,
   canValidate,
 }: {
   absences: Absence[];
   formations: Formation[];
-  hasRHAccess: boolean;
   canValidate: boolean;
 }) {
   const typeLabels: Record<string, string> = {
