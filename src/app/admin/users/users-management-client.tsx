@@ -133,6 +133,31 @@ export default function UsersManagementClient({
     }
   };
 
+  const handleMarkEmailSent = async (requestId: string) => {
+    setLoading(requestId);
+    setError(null);
+
+    try {
+      const supabase = createClientSupabase();
+      await supabase
+        .from("tbl_user_requests")
+        .update({
+          statut: "acceptee",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", requestId);
+
+      setSuccess("Demande marquée comme validée (email envoyé).");
+      router.refresh();
+      setTimeout(() => setSuccess(null), 5000);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Erreur lors de la validation";
+      setError(errorMessage);
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const handleRejectRequest = async (requestId: string) => {
     const motif = prompt("Motif du refus :");
     if (!motif) return;
@@ -298,9 +323,13 @@ export default function UsersManagementClient({
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             {request.statut === "en_attente_validation_mail" ? (
-                              <span className="text-gray-500 text-sm">
-                                Compte créé - Email en attente
-                              </span>
+                              <button
+                                onClick={() => handleMarkEmailSent(request.id)}
+                                className="text-blue-600 hover:text-blue-900 disabled:opacity-50 font-medium"
+                                disabled={loading === request.id}
+                              >
+                                {loading === request.id ? "⏳" : "✓"} Marquer email envoyé
+                              </button>
                             ) : (
                               <>
                                 <button
