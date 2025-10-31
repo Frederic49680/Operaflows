@@ -121,8 +121,14 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                disabled={loading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed bg-white text-gray-900"
                 placeholder="prenom.nom@snef.fr"
+                style={{ 
+                  pointerEvents: loading ? 'none' : 'auto',
+                  zIndex: 1,
+                  position: 'relative'
+                }}
               />
             </div>
 
@@ -138,8 +144,15 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                onInput={(e) => setPassword((e.target as HTMLInputElement).value)}
+                disabled={loading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed bg-white text-gray-900"
                 placeholder="••••••••"
+                style={{ 
+                  pointerEvents: loading ? 'none' : 'auto',
+                  zIndex: 1,
+                  position: 'relative'
+                }}
               />
             </div>
 
