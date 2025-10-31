@@ -279,9 +279,12 @@ export default function SitesManagementClient({
           onCancel={() => {
             setModalOpen(false);
             setSelectedSite(null);
+            setError(null);
+            setSuccess(null);
           }}
           loading={loading}
           error={error}
+          success={success}
         />
       </Modal>
     </div>
