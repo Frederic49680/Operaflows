@@ -588,7 +588,7 @@ SELECT
     WHEN h.date_expiration <= CURRENT_DATE + INTERVAL '30 days' THEN 'echeance_proche'
     ELSE 'ok'
   END as statut_alerte,
-  EXTRACT(DAY FROM (h.date_expiration - CURRENT_DATE))::INTEGER as jours_restants
+  (h.date_expiration - CURRENT_DATE)::INTEGER as jours_restants
 FROM public.habilitations h
 INNER JOIN public.collaborateurs c ON h.collaborateur_id = c.id
 WHERE h.statut = 'valide' 
@@ -611,7 +611,7 @@ SELECT
     WHEN vm.date_prochaine_visite <= CURRENT_DATE + INTERVAL '30 days' THEN 'echeance_proche'
     ELSE 'ok'
   END as statut_alerte,
-  EXTRACT(DAY FROM (vm.date_prochaine_visite - CURRENT_DATE))::INTEGER as jours_restants
+  (vm.date_prochaine_visite - CURRENT_DATE)::INTEGER as jours_restants
 FROM public.visites_medicales vm
 INNER JOIN public.collaborateurs c ON vm.collaborateur_id = c.id
 WHERE vm.statut IN ('apte', 'apte_avec_reserves')
@@ -634,7 +634,7 @@ SELECT
     WHEN cc.date_expiration <= CURRENT_DATE + INTERVAL '30 days' THEN 'echeance_proche'
     ELSE 'ok'
   END as statut_alerte,
-  EXTRACT(DAY FROM (cc.date_expiration - CURRENT_DATE))::INTEGER as jours_restants
+  (cc.date_expiration - CURRENT_DATE)::INTEGER as jours_restants
 FROM public.collaborateurs_competences cc
 INNER JOIN public.collaborateurs c ON cc.collaborateur_id = c.id
 INNER JOIN public.competences comp ON cc.competence_id = comp.id
