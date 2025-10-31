@@ -64,3 +64,36 @@ select option:checked {
   color: #111827 !important;
 }
 
+/* Styles pour les inputs dans les modals */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+input[type="number"],
+textarea {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+  pointer-events: auto !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: #0066cc !important;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1) !important;
+}
+
+input[type="text"]:disabled,
+input[type="email"]:disabled,
+input[type="tel"]:disabled,
+input[type="date"]:disabled,
+input[type="number"]:disabled,
+textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

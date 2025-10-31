@@ -280,9 +280,10 @@ function SiteForm({
           required
           value={formData.site_code}
           onChange={(e) => setFormData({ ...formData, site_code: e.target.value.toUpperCase() })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
           placeholder="Ex: BEL, DAM, SAV"
           maxLength={10}
+          autoFocus
         />
       </div>
 
@@ -295,7 +296,7 @@ function SiteForm({
           required
           value={formData.site_label}
           onChange={(e) => setFormData({ ...formData, site_label: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
           placeholder="Ex: Bellegarde, Damparis, Savoie"
         />
       </div>
