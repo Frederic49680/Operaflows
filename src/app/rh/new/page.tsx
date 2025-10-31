@@ -59,7 +59,7 @@ export default async function CreateCollaborateurPage() {
     <CreateCollaborateurClient
       responsables={responsables.data || []}
       availableUsers={users.data || []}
-      sites={sites.data || []}
+      sites={sites}
     />
   );
 }
