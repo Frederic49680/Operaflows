@@ -32,13 +32,48 @@ export default function LoginPage() {
 
       if (data.user) {
         // Vérifier le statut de l'utilisateur dans tbl_users
+        // Utiliser maybeSingle() pour gérer le cas où l'utilisateur n'existe pas encore dans tbl_users
         const { data: userData, error: userError } = await supabase
           .from("tbl_users")
           .select("statut, password_expires_at")
           .eq("id", data.user.id)
-          .single();
+          .maybeSingle();
 
-        if (userError || !userData) {
+        // Si l'utilisateur n'existe pas dans tbl_users, créer une entrée par défaut
+        if (!userData && !userError) {
+          // L'utilisateur existe dans auth.users mais pas dans tbl_users
+          // Créer une entrée par défaut (sera géré par l'admin plus tard)
+          try {
+            const { error: insertError } = await supabase
+              .from("tbl_users")
+              .insert({
+                id: data.user.id,
+                email: data.user.email || "",
+                statut: "en_attente",
+              });
+            
+            // Ignorer les erreurs de création (peut déjà exister ou problème de permissions)
+            if (insertError) {
+              console.error("Erreur création entrée tbl_users:", insertError);
+            }
+          } catch (err) {
+            // Ignorer les erreurs silencieusement
+            console.error("Erreur création entrée tbl_users:", err);
+          }
+
+          setError("Votre compte est en attente de configuration par un administrateur.");
+          setLoading(false);
+          return;
+        }
+
+        if (userError) {
+          console.error("Erreur récupération utilisateur:", userError);
+          setError("Erreur lors de la vérification de votre compte. Contactez un administrateur.");
+          setLoading(false);
+          return;
+        }
+
+        if (!userData) {
           setError("Compte utilisateur non trouvé. Contactez un administrateur.");
           setLoading(false);
           return;
