@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
-import { isRHOrAdmin, canValidateAbsences } from "@/lib/auth/rh-check";
+import { isRHOrAdmin } from "@/lib/auth/rh-check";
 
 // GET - Liste des absences
 export async function GET(request: Request) {

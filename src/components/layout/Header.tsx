@@ -8,8 +8,6 @@ import {
   Calendar,
   BarChart3,
   Settings,
-  LogOut,
-  User,
 } from "lucide-react";
 
 export default async function Header() {

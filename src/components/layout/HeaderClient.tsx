@@ -6,10 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClientSupabase } from "@/lib/supabase/client";
 import {
   LayoutDashboard,
-  Users,
-  Briefcase,
-  Calendar,
-  BarChart3,
   Settings,
   LogOut,
   User,

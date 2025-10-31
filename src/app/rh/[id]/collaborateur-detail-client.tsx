@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   User,
-  Briefcase,
   Award,
   Radio,
   Stethoscope,
@@ -623,13 +622,11 @@ function OngletAbsences({
   formations,
   hasRHAccess,
   canValidate,
-  collaborateurId,
 }: {
   absences: Absence[];
   formations: Formation[];
   hasRHAccess: boolean;
   canValidate: boolean;
-  collaborateurId: string;
 }) {
   const typeLabels: Record<string, string> = {
     conges_payes: "Congés payés",

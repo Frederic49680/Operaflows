@@ -382,10 +382,6 @@ export default function RolesManagementClient({ roles, permissions }: Props) {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {roles.map((role) => {
-                  const rolePermissions = permissions.filter((p) => {
-                    const roleName = Array.isArray(p.roles) ? p.roles[0]?.name : p.roles?.name;
-                    return roleName === role.name;
-                  });
 
                   return (
                     <tr key={role.id} className="hover:bg-gray-50">
