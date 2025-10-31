@@ -16,6 +16,7 @@ import {
   Briefcase,
   Calendar,
   BarChart3,
+  MapPin,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import Logo from "./Logo";
@@ -44,6 +45,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Calendar,
   BarChart3,
   Settings,
+  MapPin,
 };
 
 interface HeaderClientProps {

@@ -114,6 +114,12 @@ export default async function SafeHeader() {
         visible: true,
       },
       {
+        label: "Référentiel Sites",
+        href: "/rh/sites",
+        iconName: "MapPin",
+        visible: isRH || isAdmin || false,
+      },
+      {
         label: "Affaires",
         href: "/affaires",
         iconName: "Briefcase",

@@ -191,14 +191,23 @@ export default function CreateCollaborateurClient({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-1">
-                    Site
+                    Site principal *
                   </label>
-                  <input
-                    type="text"
-                    value={formData.site}
-                    onChange={(e) => setFormData({ ...formData, site: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                  />
+                  <select
+                    required
+                    value={formData.site_id}
+                    onChange={(e) => {
+                      setFormData({ ...formData, site_id: e.target.value });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+                  >
+                    <option value="">Sélectionner un site</option>
+                    {sites.map((site) => (
+                      <option key={site.site_id} value={site.site_id}>
+                        {site.site_code} - {site.site_label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-1">
