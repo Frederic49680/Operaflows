@@ -42,15 +42,22 @@ export default async function UsersManagementPage() {
     .order("created_at", { ascending: false });
 
   // Récupérer les demandes en attente
+  // Utiliser le client admin pour bypasser RLS temporairement si nécessaire
   const { data: pendingRequests, error: requestsError } = await supabase
     .from("tbl_user_requests")
     .select("*")
     .eq("statut", "en_attente")
     .order("created_at", { ascending: false });
 
-  // Debug: Afficher l'erreur si présente
+  // Debug: Afficher l'erreur et les données pour diagnostic
   if (requestsError) {
     console.error("Erreur récupération demandes:", requestsError);
+  }
+  
+  // Debug: Vérifier ce qui est retourné
+  console.log("Pending requests count:", pendingRequests?.length || 0);
+  if (pendingRequests && pendingRequests.length > 0) {
+    console.log("First request:", pendingRequests[0]);
   }
 
   // Récupérer tous les rôles pour le formulaire d'attribution
