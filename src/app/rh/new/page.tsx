@@ -22,7 +22,7 @@ export default async function CreateCollaborateurPage() {
   }
 
   // Récupérer les responsables, utilisateurs et sites disponibles pour le formulaire
-  const [responsables, users, sites] = await Promise.all([
+  const [responsables, users, sitesResult] = await Promise.all([
     supabase
       .from("collaborateurs")
       .select("id, nom, prenom")
@@ -40,6 +40,20 @@ export default async function CreateCollaborateurPage() {
       .eq("is_active", true)
       .order("site_code", { ascending: true }),
   ]);
+
+  // Logs de debug pour les sites
+  if (process.env.NODE_ENV === "development") {
+    console.log("🔍 DEBUG Create Collab - Sites récupérés:", sitesResult.data?.length || 0);
+    if (sitesResult.error) {
+      console.error("❌ Erreur récupération sites:", sitesResult.error);
+      console.error("Code:", sitesResult.error.code);
+      console.error("Message:", sitesResult.error.message);
+      console.error("Details:", sitesResult.error.details);
+      console.error("Hint:", sitesResult.error.hint);
+    }
+  }
+
+  const sites = sitesResult.data || [];
 
   return (
     <CreateCollaborateurClient
