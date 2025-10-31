@@ -41,12 +41,12 @@ export default async function UsersManagementPage() {
     `)
     .order("created_at", { ascending: false });
 
-  // Récupérer les demandes en attente
+  // Récupérer les demandes en attente (en_attente et en_attente_validation_mail)
   // Utiliser le client admin pour bypasser RLS temporairement si nécessaire
   const { data: pendingRequests, error: requestsError } = await supabase
     .from("tbl_user_requests")
     .select("*")
-    .eq("statut", "en_attente")
+    .in("statut", ["en_attente", "en_attente_validation_mail"])
     .order("created_at", { ascending: false });
 
   // Gestion des erreurs silencieuse (les erreurs sont déjà gérées par le composant)

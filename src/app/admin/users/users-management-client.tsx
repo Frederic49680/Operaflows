@@ -97,11 +97,12 @@ export default function UsersManagementClient({
         throw new Error(errorData.error || "Erreur lors de la création du compte");
       }
 
-      // Mettre à jour la demande
+      // Mettre à jour la demande avec statut "en_attente_validation_mail"
+      // (le compte est créé mais l'email n'a pas encore été validé/envoyé)
       await supabase
         .from("tbl_user_requests")
         .update({
-          statut: "acceptee",
+          statut: "en_attente_validation_mail",
           traite_par: (await supabase.auth.getUser()).data.user?.id || null,
           date_traitement: new Date().toISOString(),
           role_attribue_id: selectedRoleId,
@@ -114,10 +115,10 @@ export default function UsersManagementClient({
       setSelectedRoleId("");
       setSelectedSiteIds([]);
       setError(null);
-      setSuccess("Compte créé avec succès ! L'utilisateur apparaît maintenant dans la liste des utilisateurs.");
+      setSuccess("Compte créé avec succès ! La demande est maintenant en attente de validation email. L'utilisateur apparaît dans la liste des utilisateurs.");
       
-      // Basculer vers l'onglet Utilisateurs pour voir le nouvel utilisateur
-      setActiveTab("users");
+      // Rester sur l'onglet Demandes pour voir la demande mise à jour avec le nouveau statut
+      // L'utilisateur peut basculer manuellement vers "Utilisateurs" s'il le souhaite
       
       // Forcer le rafraîchissement de la page pour afficher les nouvelles données
       router.refresh();
@@ -261,6 +262,9 @@ export default function UsersManagementClient({
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Date demande
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Statut
+                      </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                         Actions
                       </th>
@@ -281,21 +285,40 @@ export default function UsersManagementClient({
                               ? new Date(request.created_at).toLocaleDateString("fr-FR")
                               : "N/A"}
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            {request.statut === "en_attente_validation_mail" ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                ⏳ Attente validation email
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                📝 En attente
+                              </span>
+                            )}
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button
-                              onClick={() => handleAcceptRequest(request)}
-                              className="text-green-600 hover:text-green-900 mr-4 disabled:opacity-50"
-                              disabled={loading === request.id}
-                            >
-                              ✅ Accepter
-                            </button>
-                            <button
-                              onClick={() => handleRejectRequest(request.id)}
-                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                              disabled={loading === request.id}
-                            >
-                              ❌ Refuser
-                            </button>
+                            {request.statut === "en_attente_validation_mail" ? (
+                              <span className="text-gray-500 text-sm">
+                                Compte créé - Email en attente
+                              </span>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => handleAcceptRequest(request)}
+                                  className="text-green-600 hover:text-green-900 mr-4 disabled:opacity-50"
+                                  disabled={loading === request.id}
+                                >
+                                  ✅ Accepter
+                                </button>
+                                <button
+                                  onClick={() => handleRejectRequest(request.id)}
+                                  className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                                  disabled={loading === request.id}
+                                >
+                                  ❌ Refuser
+                                </button>
+                              </>
+                            )}
                           </td>
                         </tr>
                       ))
