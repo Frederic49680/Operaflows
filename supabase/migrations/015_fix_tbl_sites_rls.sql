@@ -9,22 +9,27 @@ DROP POLICY IF EXISTS "Admins and RH can manage sites" ON public.tbl_sites;
 -- Si elle n'existe pas, la créer
 -- Note: Cette fonction doit être créée AVANT les politiques RLS qui l'utilisent
 -- Utilisation de CREATE OR REPLACE directement (plus simple et plus fiable)
--- Note: Le paramètre est renommé p_user_id pour éviter l'ambiguïté avec ur.user_id
-CREATE OR REPLACE FUNCTION public.is_rh_or_admin(p_user_id UUID)
+-- Note: Utilisation d'une variable locale pour éviter l'ambiguïté avec ur.user_id
+CREATE OR REPLACE FUNCTION public.is_rh_or_admin(user_id UUID)
 RETURNS BOOLEAN AS $$
+DECLARE
+    v_user_id UUID;
 BEGIN
-  RETURN EXISTS (
-    SELECT 1 
-    FROM public.user_roles ur
-    INNER JOIN public.roles r ON ur.role_id = r.id
-    WHERE ur.user_id = p_user_id 
-    AND (
-      r.name = 'Administrateur' 
-      OR r.name LIKE '%RH%'
-      OR r.name LIKE '%Formation%'
-      OR r.name LIKE '%Dosimétrie%'
-    )
-  );
+    -- Stocker le paramètre dans une variable locale pour éviter l'ambiguïté
+    v_user_id := user_id;
+    
+    RETURN EXISTS (
+        SELECT 1 
+        FROM public.user_roles ur
+        INNER JOIN public.roles r ON ur.role_id = r.id
+        WHERE ur.user_id = v_user_id 
+        AND (
+            r.name = 'Administrateur' 
+            OR r.name LIKE '%RH%'
+            OR r.name LIKE '%Formation%'
+            OR r.name LIKE '%Dosimétrie%'
+        )
+    );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
