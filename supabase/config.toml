@@ -1,0 +1,41 @@
+# Configuration Supabase locale (pour développement)
+# Ce fichier permet de synchroniser le schéma local avec Supabase
+
+[project]
+# ID de votre projet Supabase (à remplir)
+id = "your-project-id"
+
+[auth]
+# Configuration de l'authentification
+enable_signup = true
+external_email_enabled = true
+external_phone_enabled = false
+
+[auth.email]
+# Configuration email
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+
+[auth.sms]
+# Configuration SMS (optionnel)
+enable_signup = false
+
+[auth.social]
+# Configuration OAuth (Microsoft 365)
+# enable_microsoft = true
+# microsoft_client_id = ""
+# microsoft_secret = ""
+
+[storage]
+# Configuration du stockage
+file_size_limit = "50MiB"
+
+[storage.buckets]
+# Configuration des buckets
+[[storage.buckets]]
+name = "documents"
+public = false
+file_size_limit = "50MiB"
+allowed_mime_types = ["application/pdf", "image/*"]
+

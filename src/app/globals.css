@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 31, 41, 55;
+  --background-rgb: 243, 244, 246;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-rgb: 17, 24, 39;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Styles personnalisés OperaFlow */
+.card {
+  @apply bg-white rounded-card shadow-card p-6;
+}
+
+.card:hover {
+  @apply shadow-cardHover transition-shadow duration-200;
+}
+
+.btn-primary {
+  @apply bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors duration-200;
+}
+
+.btn-secondary {
+  @apply bg-secondary text-white px-4 py-2 rounded-lg hover:bg-secondary-light transition-colors duration-200;
+}
+
+.btn-accent {
+  @apply bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-dark transition-colors duration-200;
+}
+

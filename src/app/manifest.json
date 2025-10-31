@@ -1,0 +1,18 @@
+{
+  "name": "OperaFlow",
+  "short_name": "OperaFlow",
+  "description": "Application de suivi, planification et pilotage d'activités",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F3F4F6",
+  "theme_color": "#0EA5E9",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}
+
