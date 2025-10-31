@@ -21,8 +21,8 @@ export default async function SitesPage() {
     redirect("/unauthorized");
   }
 
-  // Récupérer les sites avec leurs responsables
-  const { data: sites } = await supabase
+  // Récupérer les sites avec leurs responsables (inclure tous les sites, actifs et inactifs pour l'affichage)
+  const { data: sites, error: sitesError } = await supabase
     .from("tbl_sites")
     .select(`
       *,
@@ -34,6 +34,10 @@ export default async function SitesPage() {
       )
     `)
     .order("site_code", { ascending: true });
+
+  if (sitesError) {
+    console.error("Erreur récupération sites:", sitesError);
+  }
 
   // Formater les données pour le client
   const sitesWithResponsables = (sites || []).map((site) => ({

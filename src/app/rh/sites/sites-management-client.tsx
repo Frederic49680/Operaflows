@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, Users, AlertTriangle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Plus, Edit, Trash2, Users, AlertTriangle, CheckCircle } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase/client";
 import Modal from "@/components/rh/Modal";
 import type { SiteAvecResponsables } from "@/types/sites";
@@ -13,15 +14,18 @@ interface SitesManagementClientProps {
 export default function SitesManagementClient({
   sites: initialSites,
 }: SitesManagementClientProps) {
-  const [sites] = useState(initialSites);
+  const router = useRouter();
+  const [sites, setSites] = useState(initialSites);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSite, setSelectedSite] = useState<SiteAvecResponsables | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleSave = async (siteData: { site_code: string; site_label: string; parent_site_id?: string; is_active: boolean }) => {
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
     try {
       const supabase = createClientSupabase();
@@ -34,16 +38,52 @@ export default function SitesManagementClient({
           .eq("site_id", selectedSite.site_id);
 
         if (updateError) throw updateError;
+        setSuccess("Site modifié avec succès");
       } else {
         // Création
-        const { error: insertError } = await supabase
+        const { data, error: insertError } = await supabase
           .from("tbl_sites")
-          .insert(siteData);
+          .insert(siteData)
+          .select(`
+            *,
+            responsables:tbl_site_responsables!tbl_site_responsables_site_id_fkey(
+              *,
+              collaborateur:collaborateurs!tbl_site_responsables_collaborateur_id_fkey(
+                id, nom, prenom, email
+              )
+            )
+          `)
+          .single();
 
         if (insertError) throw insertError;
+
+        // Ajouter le nouveau site à la liste locale
+        const newSite: SiteAvecResponsables = {
+          ...data,
+          responsables_actifs: (data.responsables || [])
+            .filter((r: { is_active: boolean; date_fin: string | null }) => 
+              r.is_active && (!r.date_fin || new Date(r.date_fin) >= new Date())
+            )
+            .map((r: { collaborateur_id: string; role_fonctionnel: string; date_debut: string; date_fin: string | null; collaborateur: { nom: string; prenom: string } | null }) => ({
+              collaborateur_id: r.collaborateur_id,
+              role_fonctionnel: r.role_fonctionnel,
+              date_debut: r.date_debut,
+              date_fin: r.date_fin,
+              collaborateur: r.collaborateur,
+            })),
+        };
+
+        setSites([...sites, newSite].sort((a, b) => a.site_code.localeCompare(b.site_code)));
+        setSuccess("Site créé avec succès");
       }
 
-      window.location.reload();
+      // Fermer le modal après un court délai
+      setTimeout(() => {
+        setModalOpen(false);
+        setSelectedSite(null);
+        // Rafraîchir les données du serveur
+        router.refresh();
+      }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de la sauvegarde");
     } finally {
@@ -71,6 +111,22 @@ export default function SitesManagementClient({
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
+        {/* Message de succès */}
+        {success && (
+          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+            <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+            <p className="text-green-800 font-medium">{success}</p>
+          </div>
+        )}
+
+        {/* Message d'erreur */}
+        {error && !modalOpen && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
+            <p className="text-red-800 font-medium">{error}</p>
+          </div>
+        )}
+
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -247,6 +303,7 @@ function SiteForm({
   onCancel: () => void;
   loading: boolean;
   error: string | null;
+  success: string | null;
 }) {
   const [formData, setFormData] = useState({
     site_code: site?.site_code || "",
@@ -265,8 +322,15 @@ function SiteForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {success && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+          <CheckCircle className="h-4 w-4" />
+          {success}
+        </div>
+      )}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4" />
           {error}
         </div>
       )}
