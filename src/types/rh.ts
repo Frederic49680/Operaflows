@@ -17,8 +17,10 @@ export interface Collaborateur {
   prenom: string;
   email: string;
   telephone?: string | null;
-  site?: string | null;
-  responsable_id?: string | null;
+  site?: string | null; // Deprecated: utiliser site_id
+  site_id?: string | null; // FK vers tbl_sites
+  responsable_id?: string | null; // Deprecated: utiliser responsable_activite_id
+  responsable_activite_id?: string | null; // FK vers collaborateurs (responsable d'activité)
   fonction_metier?: string | null;
   type_contrat?: TypeContrat | null;
   date_embauche?: string | null;

@@ -21,8 +21,8 @@ export default async function CreateCollaborateurPage() {
     redirect("/unauthorized");
   }
 
-  // Récupérer les responsables et utilisateurs disponibles pour le formulaire
-  const [responsables, users] = await Promise.all([
+  // Récupérer les responsables, utilisateurs et sites disponibles pour le formulaire
+  const [responsables, users, sites] = await Promise.all([
     supabase
       .from("collaborateurs")
       .select("id, nom, prenom")
@@ -34,12 +34,18 @@ export default async function CreateCollaborateurPage() {
       .eq("statut", "actif")
       .is("collaborateur_id", null)
       .order("email", { ascending: true }),
+    supabase
+      .from("tbl_sites")
+      .select("site_id, site_code, site_label")
+      .eq("is_active", true)
+      .order("site_code", { ascending: true }),
   ]);
 
   return (
     <CreateCollaborateurClient
       responsables={responsables.data || []}
       availableUsers={users.data || []}
+      sites={sites.data || []}
     />
   );
 }

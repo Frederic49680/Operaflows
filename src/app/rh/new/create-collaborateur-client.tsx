@@ -9,11 +9,13 @@ import { createClientSupabase } from "@/lib/supabase/client";
 interface CreateCollaborateurClientProps {
   responsables: Array<{ id: string; nom: string; prenom: string }>;
   availableUsers: Array<{ id: string; email: string }>;
+  sites: Array<{ site_id: string; site_code: string; site_label: string }>;
 }
 
 export default function CreateCollaborateurClient({
   responsables,
   availableUsers,
+  sites,
 }: CreateCollaborateurClientProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -25,9 +27,11 @@ export default function CreateCollaborateurClient({
     email: "",
     telephone: "",
     fonction_metier: "",
-    site: "",
+    site: "", // Deprecated: gardé pour compatibilité
+    site_id: "", // Nouveau: FK vers tbl_sites
     type_contrat: "CDI",
-    responsable_id: "",
+    responsable_id: "", // Deprecated: gardé pour compatibilité
+    responsable_activite_id: "", // Nouveau: FK vers collaborateurs
     user_id: "",
     date_entree: "",
     date_sortie: "",
@@ -50,9 +54,11 @@ export default function CreateCollaborateurClient({
         email: formData.email.trim(),
         telephone: formData.telephone.trim() || null,
         fonction_metier: formData.fonction_metier.trim() || null,
-        site: formData.site.trim() || null,
+        site: formData.site.trim() || null, // Deprecated: gardé pour compatibilité
+        site_id: formData.site_id || null, // Nouveau: FK vers tbl_sites
         type_contrat: formData.type_contrat,
-        responsable_id: formData.responsable_id || null,
+        responsable_id: formData.responsable_id || null, // Deprecated: gardé pour compatibilité
+        responsable_activite_id: formData.responsable_activite_id || null, // Nouveau
         user_id: formData.user_id || null,
         date_entree: formData.date_entree || null,
         date_sortie: formData.date_sortie || null,
@@ -213,20 +219,23 @@ export default function CreateCollaborateurClient({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-1">
-                    Responsable
+                    Responsable d'activité
                   </label>
                   <select
-                    value={formData.responsable_id}
-                    onChange={(e) => setFormData({ ...formData, responsable_id: e.target.value })}
+                    value={formData.responsable_activite_id}
+                    onChange={(e) => setFormData({ ...formData, responsable_activite_id: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
                   >
-                    <option value="">Aucun</option>
+                    <option value="">Auto (selon le site)</option>
                     {responsables.map((resp) => (
                       <option key={resp.id} value={resp.id}>
                         {resp.prenom} {resp.nom}
                       </option>
                     ))}
                   </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Laissé vide, le responsable sera déterminé automatiquement selon le site
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-1">
