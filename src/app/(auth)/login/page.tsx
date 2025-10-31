@@ -105,17 +105,14 @@ export default function LoginPage() {
         // Mettre à jour la dernière connexion (optionnel, ne pas bloquer si erreur)
         if (data.session?.access_token) {
           try {
-            // Utiliser le hash du token pour éviter les problèmes de longueur (temporaire)
-            // En attendant la migration qui changera session_token en TEXT
-            const tokenHash = data.session.access_token.substring(0, 255);
-            
+            // Utiliser le token complet (session_token est maintenant TEXT)
             const { error: sessionError } = await supabase
               .from("tbl_sessions")
               .insert({
                 user_id: data.user.id,
-                session_token: tokenHash,
+                session_token: data.session.access_token,
                 ip_address: null,
-                user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : null,
+                user_agent: typeof window !== 'undefined' ? window.navigator.userAgent.substring(0, 500) : null,
                 date_debut: new Date().toISOString(),
                 statut: "active",
               });

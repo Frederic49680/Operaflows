@@ -3,6 +3,16 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 
+// Gérer les erreurs dans Header pour éviter les crashes
+function SafeHeader() {
+  try {
+    return <Header />;
+  } catch (error) {
+    console.error("Erreur Header:", error);
+    return null;
+  }
+}
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -14,6 +24,16 @@ export const metadata: Metadata = {
     apple: "/favicon.svg",
   },
 };
+
+// Gérer les erreurs dans Header pour éviter les crashes
+function SafeHeader() {
+  try {
+    return <Header />;
+  } catch (error) {
+    console.error("Erreur Header:", error);
+    return null;
+  }
+}
 
 export const viewport: Viewport = {
   themeColor: "#0EA5E9",
@@ -27,7 +47,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={inter.className}>
-        <Header />
+        <SafeHeader />
         {children}
       </body>
     </html>

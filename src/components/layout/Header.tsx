@@ -52,8 +52,9 @@ export default async function Header() {
   const hasRHAccess = await isRHOrAdmin(user.id);
 
   // Nom d'affichage
-  const displayName = userData?.collaborateurs
-    ? `${userData.collaborateurs.prenom} ${userData.collaborateurs.nom}`
+  const collaborateurs = userData?.collaborateurs;
+  const displayName = collaborateurs && typeof collaborateurs === 'object' && !Array.isArray(collaborateurs) && 'prenom' in collaborateurs && 'nom' in collaborateurs
+    ? `${collaborateurs.prenom} ${collaborateurs.nom}`
     : userData?.email || user.email || "Utilisateur";
 
   // Construction du menu selon les rôles
