@@ -76,7 +76,16 @@ export default function SitesManagementClient({
         router.refresh();
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la sauvegarde");
+      console.error("❌ Erreur complète handleSave:", err);
+      let errorMessage = "Erreur lors de la sauvegarde";
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'object' && err !== null && 'message' in err) {
+        errorMessage = String(err.message);
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
