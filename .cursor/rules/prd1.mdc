@@ -1,3 +1,159 @@
----
+🧩 MODULE 1 — AUTHENTIFICATION / RÔLES / PERMISSIONS (Version finale validée)
+🎯 Objectif du module
+
+Assurer un accès sécurisé, hiérarchisé et traçable à l’application Suivi & Planification d’Activités,
+en distinguant strictement :
+
+les rôles applicatifs (droits techniques et périmètres d’accès),
+
+les profils métiers RH (fonction réelle de la ressource dans l’entreprise).
+
+Le tout sous la supervision d’un Administrateur (rôle technique maître) et d’un ou plusieurs Administratifs RH / Formation / Dosimétrie (rôles fonctionnels internes).
+
+🧭 Principe clé : Rôle ≠ Profil
+Élément	Géré dans	Contenu	Exemple
+Rôle applicatif	tblUsers	Droit d’accès, périmètre d’action, autorisations sur modules	Administrateur, Planificateur, Technicien
+Profil métier RH	tblCollaborateurs	Fonction réelle, rattachement hiérarchique, compétences, contrat	Conducteur, Chef de Chantier, etc.
+
+Le rôle applicatif définit ce que l’utilisateur peut faire.
+
+Le profil métier définit ce que l’utilisateur est dans la structure.
+
+Les deux sont liés via CollaborateurID, mais administrés indépendamment.
+
+👥 Rôles applicatifs
+Rôle	Description	Accès / Permissions principales	Exemple concret
+Administrateur	Supervise la configuration technique, les rôles et la sécurité	Gestion des utilisateurs, rôles, référentiels, logs, validations de création de comptes	Active ou désactive un utilisateur, attribue les rôles
+Responsable d’Activité	Supervise les chargés d’affaires et la cohérence opérationnelle	Accès complet aux affaires de son périmètre, validation des rapports pré-planif	Pilote le portefeuille d’affaires d’une activité
+Planificateur	Valide les plannings et supervise le Gantt multi-sites	Accès total au module planification, détection des chevauchements, ajustements	Valide les plannings avant lancement
+Chargé d’Affaires	Gère la vie d’une affaire et ses activités	Création/modif d’activités, suivi Gantt, claims	Crée une nouvelle affaire, planifie ses lots
+Chef de Chantier / Encadrant	Gère les équipes terrain	Saisie du suivi quotidien, report/suspension	Déclare la production journalière
+Technicien / Ressource terrain	Exécute les activités planifiées	Lecture sur ses activités, report, commentaires	Consulte son planning
+Administratif RH / Formation / Dosimétrie	Gère le personnel, les formations et la conformité	Accès complet au module RH, formations, dosimétrie	Met à jour un dossier RH ou une formation validée
+Consultation / Direction	Lecture seule globale	Consultation KPI, Gantt consolidé	Direction / contrôle interne
+🧱 Données principales (niveau fonctionnel)
+
+tblUsers : email, rôle, statut, CollaborateurID, date création, dernière connexion
+
+tblRoles : nom, description, modules autorisés
+
+tblPermissions : mappage rôle → actions (read, write, validate)
+
+tblSessions : connexions, durée, IP, logs
+
+tblUserRequests : demandes de création de compte utilisateur (workflow RH/Admin)
+
+🔐 Fonctionnalités clés
+1. Connexion sécurisée Supabase Auth
+
+Authentification via email professionnel prenom.nom@snef.fr
+
+Lien de validation via SendGrid
+
+Réinitialisation mot de passe sécurisée
+
+Mot de passe temporaire à durée limitée (48h lors d’une création)
+
+2. Gestion des rôles et profils
+
+Onglet “Rôle applicatif” : visible et modifiable uniquement par l’Administrateur
+
+Onglet “Profil RH” : modifiable par les Administratifs RH / Formation / Dosimétrie
+
+Historisation systématique : date, auteur, champ modifié
+
+3. Workflow d’ajout d’utilisateur
+
+Un membre du service RH ou un Responsable soumet une demande de création via formulaire :
+
+Nom
+
+Prénom
+
+Adresse mail professionnelle
+
+Cette demande arrive automatiquement dans l’interface de l’Administrateur (notification “Nouvel utilisateur à valider”).
+
+L’Administrateur décide :
+
+d’accepter → création du compte dans tblUsers avec attribution manuelle du rôle et du périmètre (site/activité).
+
+Envoi d’un mot de passe provisoire (valable 48h) via SendGrid.
+
+de refuser → archivage de la demande avec motif.
+
+✅ Ce processus empêche tout auto-enregistrement sauvage et garantit un circuit d’approbation maîtrisé.
+
+4. Contrôle d’accès dynamique
+
+Middleware withRole() côté Next.js pour la navigation
+
+RLS Supabase pour la visibilité des données (filtrage par activité, site, affaire)
+
+5. Audit et traçabilité
+
+Historique complet des connexions, affectations, validations et suppressions
+
+Consultable via un panneau “Journal d’audit” réservé à l’Administrateur
+
+🪶 Interfaces & UX attendues
+
+Page : Gestion des utilisateurs (Administrateur)
+
+Tableau global avec filtres (site, rôle, état actif/inactif)
+
+Bloc latéral “Demandes d’accès en attente”
+
+Boutons : ✅ Accepter / ❌ Refuser
+
+Si acceptation → popup d’attribution du rôle et du périmètre
+
+Avertissement visuel si compte non activé sous 48h
+
+Export CSV / Audit
+
+Page : Profil utilisateur
+
+Onglet Profil RH (lecture seule ou modifiable selon rôle RH)
+
+Onglet Rôle applicatif (lecture seule sauf Administrateur)
+
+Statut clair : Actif / Suspendu / En attente validation
+
+Indicateur si le collaborateur a un profil RH sans rôle attribué (⚠️ “Non assigné”)
+
+⚙️ Automatisations & Notifications
+
+SendGrid :
+
+Mail de création compte → mot de passe provisoire 48h
+
+Mail de refus → motif de refus
+
+Notification Admin → “Nouvelle demande d’accès”
+
+Routine Supabase (cron) :
+
+Suppression automatique des comptes non activés après 48h
+
+Suspension des comptes inactifs >90 jours
+
+Alerte interne :
+
+Badge rouge “Demandes en attente” sur l’icône Admin
+
+Notification RH si profil modifié par un autre Administratif
+
+🔮 Évolutions prévues
+
+🔁 SSO Azure AD interne SNEF
+
+🔐 2FA sur rôles critiques (Administrateur, Planificateur)
+
+🧩 Délégation temporaire (“Remplaçant”)
+
+🧾 Export complet du journal d’audit (CSV / PDF signé)
+
+🧠 Attribution semi-automatique du rôle en fonction du profil RH (IA ou règle logique)---
 alwaysApply: true
 ---

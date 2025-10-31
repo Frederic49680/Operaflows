@@ -28,18 +28,30 @@ export default async function UsersManagementPage() {
     redirect("/unauthorized");
   }
 
-  // Récupérer les utilisateurs
+  // Récupérer les utilisateurs avec leurs rôles via user_roles
   const { data: users } = await supabase
     .from("tbl_users")
-    .select("*, roles(name, description), collaborateurs(nom, prenom)")
+    .select(`
+      *,
+      user_roles(
+        roles(name, description),
+        site_id
+      ),
+      collaborateurs(nom, prenom)
+    `)
     .order("created_at", { ascending: false });
 
   // Récupérer les demandes en attente
-  const { data: pendingRequests } = await supabase
+  const { data: pendingRequests, error: requestsError } = await supabase
     .from("tbl_user_requests")
     .select("*")
     .eq("statut", "en_attente")
     .order("created_at", { ascending: false });
+
+  // Debug: Afficher l'erreur si présente
+  if (requestsError) {
+    console.error("Erreur récupération demandes:", requestsError);
+  }
 
   // Récupérer tous les rôles pour le formulaire d'attribution
   const { data: roles } = await supabase

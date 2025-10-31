@@ -68,14 +68,22 @@ export default function LoginPage() {
         }
 
         // Mettre à jour la dernière connexion
-        await supabase
-          .from("tbl_sessions")
-          .insert({
-            user_id: data.user.id,
-            session_token: data.session?.access_token || "",
-            ip_address: null, // Sera récupéré côté serveur si nécessaire
-            statut: "active",
-          });
+        if (data.session?.access_token) {
+          try {
+            await supabase
+              .from("tbl_sessions")
+              .insert({
+                user_id: data.user.id,
+                session_token: data.session.access_token,
+                ip_address: null, // Sera récupéré côté serveur si nécessaire
+                date_debut: new Date().toISOString(),
+                statut: "active",
+              });
+          } catch (err) {
+            // Ignorer les erreurs de session (ne pas bloquer la connexion)
+            console.error("Erreur création session:", err);
+          }
+        }
 
         // Rediriger vers le tableau de bord
         router.push("/dashboard");

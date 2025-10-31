@@ -6,7 +6,10 @@ import { useRouter } from "next/navigation";
 import type { Database } from "@/types/supabase";
 
 type User = Database["public"]["Tables"]["tbl_users"]["Row"] & {
-  roles?: { name: string; description: string | null } | null;
+  user_roles?: Array<{
+    roles?: { name: string; description: string | null } | null;
+    site_id?: string | null;
+  }> | null;
   collaborateurs?: { nom: string; prenom: string } | null;
 };
 
@@ -297,7 +300,15 @@ export default function UsersManagementClient({
                     <tr key={user.id}>
                       <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {user.roles?.name || "Non attribué"}
+                        {(() => {
+                          const userRoles = user.user_roles || [];
+                          if (userRoles.length === 0) return "Non attribué";
+                          const firstRole = userRoles[0];
+                          const role = Array.isArray(firstRole?.roles) 
+                            ? firstRole.roles[0] 
+                            : firstRole?.roles;
+                          return role?.name || "Non attribué";
+                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getStatusBadge(user.statut)}
@@ -309,7 +320,7 @@ export default function UsersManagementClient({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <a
-                          href={`/admin/users/${user.id}`}
+                          href={`/profile`}
                           className="text-primary hover:text-primary-dark"
                         >
                           Voir
