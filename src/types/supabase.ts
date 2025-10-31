@@ -226,7 +226,6 @@ export interface Database {
           user_id: string;
           role_id: string;
           site_id: string | null;
-          activite_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -234,7 +233,6 @@ export interface Database {
           user_id: string;
           role_id: string;
           site_id?: string | null;
-          activite_id?: string | null;
           created_at?: string;
         };
         Update: {
@@ -242,7 +240,6 @@ export interface Database {
           user_id?: string;
           role_id?: string;
           site_id?: string | null;
-          activite_id?: string | null;
           created_at?: string;
         };
       };

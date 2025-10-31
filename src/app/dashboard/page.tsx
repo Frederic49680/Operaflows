@@ -27,10 +27,17 @@ export default async function DashboardPage() {
     .select("roles(name, description)")
     .eq("user_id", user.id);
 
-  const roles = userRoles?.map((ur) => ur.roles).filter(Boolean) || [];
+  // Extraire les rôles (Supabase retourne un tableau pour les jointures)
+  const roles = userRoles?.map((ur) => {
+    const role = Array.isArray(ur.roles) ? ur.roles[0] : ur.roles;
+    return role;
+  }).filter(Boolean) || [];
 
   // Compter les demandes en attente (si admin)
-  const isAdmin = roles.some((r) => r?.name === "Administrateur");
+  const isAdmin = roles.some((r) => {
+    const role = Array.isArray(r) ? r[0] : r;
+    return role?.name === "Administrateur";
+  });
   let pendingRequestsCount = 0;
   if (isAdmin) {
     const { count } = await supabase
@@ -78,12 +85,15 @@ export default async function DashboardPage() {
             </h2>
             {roles.length > 0 ? (
               <ul className="space-y-2">
-                {roles.map((role, index) => (
-                  <li key={index} className="flex items-center">
-                    <span className="w-2 h-2 bg-primary rounded-full mr-2"></span>
-                    <span className="text-gray-700">{role?.name}</span>
-                  </li>
-                ))}
+                {roles.map((role, index) => {
+                  const roleObj = Array.isArray(role) ? role[0] : role;
+                  return (
+                    <li key={index} className="flex items-center">
+                      <span className="w-2 h-2 bg-primary rounded-full mr-2"></span>
+                      <span className="text-gray-700">{roleObj?.name}</span>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p className="text-gray-500">Aucun rôle attribué</p>
@@ -145,22 +155,29 @@ export default async function DashboardPage() {
             Modules disponibles
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {(roles.some((r) => r?.name === "Administrateur") ||
-              roles.some((r) => r?.name === "Administratif RH")) && (
+            {(isAdmin ||
+              roles.some((r) => {
+                const roleObj = Array.isArray(r) ? r[0] : r;
+                return roleObj?.name === "Administratif RH";
+              })) && (
               <Link href="/rh" className="card hover:shadow-cardHover text-center">
                 <h3 className="font-semibold text-secondary">RH Collaborateurs</h3>
               </Link>
             )}
-            {(roles.some((r) => r?.name === "Administrateur") ||
-              roles.some((r) => r?.name === "Responsable d'Activité") ||
-              roles.some((r) => r?.name === "Chargé d'Affaires")) && (
+            {(isAdmin ||
+              roles.some((r) => {
+                const roleObj = Array.isArray(r) ? r[0] : r;
+                return roleObj?.name === "Responsable d'Activité" || roleObj?.name === "Chargé d'Affaires";
+              })) && (
               <Link href="/affaires" className="card hover:shadow-cardHover text-center">
                 <h3 className="font-semibold text-secondary">Affaires</h3>
               </Link>
             )}
-            {(roles.some((r) => r?.name === "Administrateur") ||
-              roles.some((r) => r?.name === "Planificateur") ||
-              roles.some((r) => r?.name === "Responsable d'Activité")) && (
+            {(isAdmin ||
+              roles.some((r) => {
+                const roleObj = Array.isArray(r) ? r[0] : r;
+                return roleObj?.name === "Planificateur" || roleObj?.name === "Responsable d'Activité";
+              })) && (
               <Link href="/planification" className="card hover:shadow-cardHover text-center">
                 <h3 className="font-semibold text-secondary">Planification</h3>
               </Link>

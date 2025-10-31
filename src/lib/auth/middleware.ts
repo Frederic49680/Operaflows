@@ -13,7 +13,7 @@ export async function withRole(
     redirectTo?: string;
     requireAll?: boolean; // Si true, l'utilisateur doit avoir TOUS les rôles
   }
-) {
+): Promise<NextResponse> {
   const supabase = await createServerClient();
 
   // Vérifier la session
@@ -43,7 +43,10 @@ export async function withRole(
 
   // Extraire les noms de rôles
   const userRoleNames = userRoles
-    .map((ur) => ur.roles?.name)
+    .map((ur) => {
+      const role = Array.isArray(ur.roles) ? ur.roles[0] : ur.roles;
+      return role?.name;
+    })
     .filter((name): name is RoleName => name !== undefined);
 
   // Vérifier les permissions
@@ -64,7 +67,7 @@ export async function withRole(
     );
     if (!hasAnyRole) {
       return NextResponse.redirect(
-        new URL(options.redirectTo || "/unauthorized", request.url)
+        new URL(options?.redirectTo || "/unauthorized", request.url)
       );
     }
   }
@@ -142,7 +145,10 @@ export async function getUserRoles(userId: string): Promise<RoleName[]> {
   }
 
   return userRoles
-    .map((ur) => ur.roles?.name)
+    .map((ur) => {
+      const role = Array.isArray(ur.roles) ? ur.roles[0] : ur.roles;
+      return role?.name;
+    })
     .filter((name): name is RoleName => name !== undefined);
 }
 

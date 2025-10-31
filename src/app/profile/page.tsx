@@ -28,10 +28,16 @@ export default async function ProfilePage() {
     .eq("user_id", user.id);
 
   // Vérifier si l'utilisateur est admin (pour modifier les rôles)
-  const isAdmin = userRoles?.some((ur) => ur.roles?.name === "Administrateur");
+  const isAdmin = userRoles?.some((ur) => {
+    const role = Array.isArray(ur.roles) ? ur.roles[0] : ur.roles;
+    return role?.name === "Administrateur";
+  }) ?? false;
 
   // Vérifier si l'utilisateur est RH (pour modifier le profil RH)
-  const isRH = userRoles?.some((ur) => ur.roles?.name === "Administratif RH");
+  const isRH = userRoles?.some((ur) => {
+    const role = Array.isArray(ur.roles) ? ur.roles[0] : ur.roles;
+    return role?.name === "Administratif RH";
+  }) ?? false;
 
   return (
     <ProfileClient

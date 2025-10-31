@@ -8,6 +8,9 @@ type UserData = {
   email: string;
   statut: string;
   collaborateur_id: string | null;
+  date_creation: string;
+  derniere_connexion: string | null;
+  password_expires_at: string | null;
   roles?: { name: string; description: string | null } | null;
   collaborateurs?: {
     nom: string;
@@ -18,7 +21,7 @@ type UserData = {
 };
 
 type UserRole = {
-  roles?: { name: string; description: string | null } | null;
+  roles?: { name: string; description: string | null }[] | { name: string; description: string | null } | null;
   site_id: string | null;
 };
 
@@ -68,17 +71,6 @@ export default function ProfileClient({
           </p>
         </div>
 
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-            {success}
-          </div>
-        )}
 
         {/* Carte principale */}
         <div className="card mb-6">
@@ -142,25 +134,28 @@ export default function ProfileClient({
                 </h3>
                 {userRoles.length > 0 ? (
                   <ul className="space-y-2">
-                    {userRoles.map((ur, index) => (
-                      <li key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <span className="font-medium text-secondary">
-                            {ur.roles?.name}
-                          </span>
-                          {ur.site_id && (
-                            <span className="ml-2 text-sm text-gray-500">
-                              (Site: {ur.site_id})
+                    {userRoles.map((ur, index) => {
+                      const role = Array.isArray(ur.roles) ? ur.roles[0] : ur.roles;
+                      return (
+                        <li key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div>
+                            <span className="font-medium text-secondary">
+                              {role?.name}
                             </span>
-                          )}
-                          {ur.roles?.description && (
-                            <p className="text-sm text-gray-600 mt-1">
-                              {ur.roles.description}
-                            </p>
-                          )}
-                        </div>
-                      </li>
-                    ))}
+                            {ur.site_id && (
+                              <span className="ml-2 text-sm text-gray-500">
+                                (Site: {ur.site_id})
+                              </span>
+                            )}
+                            {role?.description && (
+                              <p className="text-sm text-gray-600 mt-1">
+                                {role.description}
+                              </p>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : (
                   <p className="text-gray-500">Aucun rôle attribué</p>

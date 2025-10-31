@@ -1,7 +1,30 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/supabase";
+import type { Database, Json } from "@/types/supabase";
 import { sendAccountCreationEmail } from "@/lib/email/sendgrid";
+
+// Types explicites pour contourner le problème 'never' de Supabase
+interface TblUsersInsert {
+  id: string;
+  email: string;
+  role_id?: string | null;
+  statut?: 'actif' | 'inactif' | 'suspendu' | 'en_attente';
+  password_expires_at?: string | null;
+}
+
+interface UserRolesInsert {
+  user_id: string;
+  role_id: string;
+  site_id?: string | null;
+}
+
+interface AuditLogInsert {
+  action: string;
+  type_entite?: string | null;
+  entite_id?: string | null;
+  details?: Json;
+  user_id?: string | null;
+}
 
 /**
  * API Route pour créer un utilisateur (Admin uniquement)
@@ -52,15 +75,16 @@ export async function POST(request: Request) {
     passwordExpiresAt.setHours(passwordExpiresAt.getHours() + 48);
 
     // Créer l'utilisateur dans tbl_users
+    const userData: TblUsersInsert = {
+      id: userId,
+      email,
+      role_id,
+      statut: "actif",
+      password_expires_at: passwordExpiresAt.toISOString(),
+    };
     const { error: userError } = await supabaseAdmin
       .from("tbl_users")
-      .insert({
-        id: userId,
-        email,
-        role_id,
-        statut: "actif",
-        password_expires_at: passwordExpiresAt.toISOString(),
-      });
+      .insert(userData as never);
 
     if (userError) {
       // Rollback: supprimer l'utilisateur auth si erreur
@@ -73,13 +97,14 @@ export async function POST(request: Request) {
 
     // Créer l'association user_roles
     if (role_id) {
+      const roleData: UserRolesInsert = {
+        user_id: userId,
+        role_id,
+        site_id: site_id || null,
+      };
       const { error: roleError } = await supabaseAdmin
         .from("user_roles")
-        .insert({
-          user_id: userId,
-          role_id,
-          site_id: site_id || null,
-        });
+        .insert(roleData as never);
 
       if (roleError) {
         console.error("Erreur attribution rôle:", roleError);
@@ -96,7 +121,7 @@ export async function POST(request: Request) {
     }
 
     // Enregistrer dans l'audit
-    await supabaseAdmin.from("tbl_audit_log").insert({
+    const auditData: AuditLogInsert = {
       action: "creation_compte",
       type_entite: "user",
       entite_id: userId,
@@ -104,8 +129,9 @@ export async function POST(request: Request) {
         email,
         role_id,
         site_id,
-      },
-    });
+      } as Json,
+    };
+    await supabaseAdmin.from("tbl_audit_log").insert(auditData as never);
 
     return NextResponse.json({
       success: true,

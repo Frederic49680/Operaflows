@@ -40,7 +40,10 @@ export async function POST() {
       .select("roles(name)")
       .eq("user_id", user.id);
 
-    const isAdmin = userRoles?.some((ur) => ur.roles?.name === "Administrateur");
+    const isAdmin = userRoles?.some((ur) => {
+      const role = Array.isArray(ur.roles) ? ur.roles[0] : ur.roles;
+      return role?.name === "Administrateur";
+    });
     if (!isAdmin) {
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
     }
