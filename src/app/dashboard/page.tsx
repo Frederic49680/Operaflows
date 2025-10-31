@@ -141,9 +141,17 @@ export default async function DashboardPage() {
                 Mon profil
               </Link>
               {isAdmin && (
-                <Link href="/admin/users" className="block btn-secondary text-center">
-                  Gérer les utilisateurs
-                </Link>
+                <>
+                  <Link href="/admin/users" className="block btn-secondary text-center">
+                    Gérer les utilisateurs
+                  </Link>
+                  <Link href="/admin/roles" className="block btn-secondary text-center">
+                    Gérer les rôles
+                  </Link>
+                  <Link href="/admin/audit" className="block btn-secondary text-center">
+                    Journal d'audit
+                  </Link>
+                </>
               )}
             </div>
           </div>
