@@ -99,12 +99,12 @@ Charte graphique OperaFlow :
 
 ## 📦 Modules
 
-1. **Structure & UI / Droits** - Socle technique, design, responsive, gestion des rôles
-2. **Authentification / Rôles / Permissions** - Connexion, sécurité, gestion des accès
-3. **RH Collaborateurs** - Gestion des fiches RH, absences, formations, conformité
-4. **Affaires** - Création, suivi, valorisation, rapport pré-planif
-5. **Planification & Suivi** - Gantt interactif, suivi terrain, valorisation horaire
-6. **KPI & Alertes globales** - Tableaux de bord, performance, alertes intelligentes
+1. ✅ **Authentification / Rôles / Permissions** - COMPLET
+   - Connexion sécurisée, gestion des utilisateurs, gestion des rôles, journal d'audit
+2. **RH Collaborateurs** - À venir
+3. **Affaires** - À venir
+4. **Planification & Suivi** - À venir
+5. **KPI & Alertes globales** - À venir
 
 ## 🚢 Déploiement
 
