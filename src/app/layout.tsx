@@ -8,6 +8,14 @@ export const metadata: Metadata = {
   title: "OperaFlow - Planification et pilotage d'activités",
   description: "Application de suivi, planification et pilotage d'activités de terrain",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+  },
 };
 
 export const viewport: Viewport = {
