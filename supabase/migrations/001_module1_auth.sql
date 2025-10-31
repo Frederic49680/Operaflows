@@ -264,6 +264,15 @@ CREATE POLICY "Admins can view all requests" ON public.tbl_user_requests
 CREATE POLICY "Users can view own requests" ON public.tbl_user_requests
   FOR SELECT USING (demandeur_id = auth.uid());
 
+-- N'importe qui peut créer une demande d'accès (même non authentifié)
+CREATE POLICY "Anyone can create access request" ON public.tbl_user_requests
+  FOR INSERT WITH CHECK (true);
+
+-- Les utilisateurs peuvent voir leurs propres demandes par email (même sans être connectés via la requête)
+-- Cette politique permet de vérifier si un email a déjà une demande
+CREATE POLICY "Public can check requests by email" ON public.tbl_user_requests
+  FOR SELECT USING (true);
+
 -- Politiques RLS pour tbl_sessions
 -- Les utilisateurs peuvent voir leurs propres sessions
 CREATE POLICY "Users can view own sessions" ON public.tbl_sessions

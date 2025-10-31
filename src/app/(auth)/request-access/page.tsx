@@ -25,13 +25,14 @@ export default function RequestAccessPage() {
       const supabase = createClientSupabase();
 
       // Vérifier si l'email est déjà utilisé
-      const { data: existingUser } = await supabase
+      const { data: existingUsers } = await supabase
         .from("tbl_user_requests")
         .select("id, statut")
         .eq("email", formData.email)
         .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+        .limit(1);
+      
+      const existingUser = existingUsers && existingUsers.length > 0 ? existingUsers[0] : null;
 
       if (existingUser) {
         if (existingUser.statut === "en_attente") {
