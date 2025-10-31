@@ -182,10 +182,17 @@ export default async function SafeHeader() {
     );
   } catch (error) {
     // En cas d'erreur, ne pas afficher le header plutôt que de crasher
-    // Logger uniquement en développement pour éviter les erreurs en production
-    if (process.env.NODE_ENV === "development") {
-      console.error("Erreur dans SafeHeader:", error);
-    }
+    // Logger l'erreur pour diagnostic
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    console.error("Erreur dans SafeHeader:", {
+      message: errorMessage,
+      stack: errorStack,
+      error,
+    });
+    
+    // Retourner null pour éviter de casser l'application
     return null;
   }
 }
