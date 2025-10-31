@@ -77,11 +77,17 @@ export default async function SafeHeader() {
 
     // Vérifier les permissions (avec gestion d'erreur)
     let isAdmin = false;
+    let isRH = false;
     
     try {
       isAdmin = roles.some((r) => {
         const role = Array.isArray(r) ? r[0] : r;
         return role?.name === "Administrateur";
+      });
+      
+      isRH = roles.some((r) => {
+        const role = Array.isArray(r) ? r[0] : r;
+        return role?.name === "RH";
       });
     } catch {
       // Ignorer l'erreur
