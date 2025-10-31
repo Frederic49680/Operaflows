@@ -1,3 +1,170 @@
----
+Pré-requis techniques et DSI — OperaFlow
+🎯 Objectif de cette section
+
+Définir les exigences techniques, les contraintes d’infrastructure et les pré-requis d’intégration nécessaires au déploiement et à l’exploitation d’OperaFlow, afin d’assurer :
+
+la conformité avec les politiques IT internes,
+
+la sécurité des données (RGPD, RLS, authentification),
+
+la pérennité du déploiement (maintenance, montée de version),
+
+et la compatibilité avec les systèmes existants (SIRH, Microsoft 365, messagerie).
+
+🧱 1. Architecture globale
+Élément	Fournisseur / Stack	Rôle
+Front-end	Next.js 15 (hébergé sur Vercel)	Interface web et mobile OperaFlow (PWA installable)
+Back-end	Supabase (PostgreSQL + Auth + Storage + Edge Functions)	Base de données, sécurité, stockage, automatisations
+Envoi de mails	SendGrid (API SMTP)	Notifications et workflows (demande d’accès, visa, alerte)
+Authentification	Supabase Auth (JWT) + possibilité OAuth2 Microsoft	Gestion des utilisateurs et permissions
+Hébergement	Vercel (.app / HTTPS auto)	Déploiement continu, CDN, versioning
+Connecteurs externes	Microsoft 365, SIRH interne	Absences, Outlook, synchronisation RH
+🔐 2. Sécurité et conformité
+2.1 Authentification & permissions
+
+Authentification par Supabase Auth (email / mot de passe / OAuth Microsoft).
+
+Jeton JWT sécurisé, stocké dans cookie HTTP-Only.
+
+Politique de mot de passe configurable.
+
+Gestion centralisée des rôles et pages en base (tbl_roles, tbl_role_pages).
+
+Contrôle d’accès RLS Supabase :
+chaque requête SQL est filtrée selon l’identité de l’utilisateur connecté.
+
+2.2 Chiffrement et communication
+
+Toutes les communications se font en HTTPS / TLS 1.3.
+
+Données chiffrées au repos (PostgreSQL + Storage Supabase).
+
+Aucun accès direct à la base n’est exposé en clair.
+
+Les clés sensibles (SERVICE_ROLE_KEY, SENDGRID_API_KEY) sont stockées dans Vercel, non visibles côté client.
+
+2.3 Conformité RGPD
+
+Données hébergées en Europe (Supabase EU-Central).
+
+Traçabilité des connexions et actions critiques.
+
+Droit à l’oubli et suppression utilisateur automatisée.
+
+Conservation des documents dosimétriques et légaux 5 ans max.
+
+☁️ 3. Hébergement et déploiement
+3.1 Vercel
+
+Hébergement managé pour Next.js (front OperaFlow).
+
+Domaines personnalisés (https://operaflow.app ou sous-domaine interne).
+
+HTTPS automatique et CDN mondial.
+
+Déploiement CI/CD GitHub :
+
+chaque branche = environnement “preview”
+
+branche main = production
+
+Environnements :
+
+Production : instance stable pour les utilisateurs
+
+Preview : test de nouvelles fonctions
+
+Développement : instance privée pour intégration Cursor
+
+3.2 Supabase
+
+Hébergement base PostgreSQL managée.
+
+Fonctionnalités activées :
+
+Auth (comptes, sécurité JWT)
+
+Storage (documents, PDF signés)
+
+RLS (filtrage par rôle)
+
+Edge Functions (envois automatiques, synchronisation SIRH)
+
+Sauvegardes automatiques quotidiennes.
+
+Tableau de bord web pour gestion de la base (Supabase Studio).
+
+🗝️ 4. Variables d’environnement requises (Vercel)
+
+À configurer avant le premier déploiement :
+
+Variable	Description
+NEXT_PUBLIC_SUPABASE_URL	URL de l’instance Supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY	Clé publique du client Supabase
+SUPABASE_SERVICE_ROLE_KEY	Clé serveur sécurisée (admin base)
+NEXTAUTH_SECRET	Clé de chiffrement des sessions
+SENDGRID_API_KEY	Clé API SendGrid (notifications)
+SUPABASE_STORAGE_BUCKET	Nom du bucket documents RH / Affaires
+SUPABASE_FUNCTION_URL	(optionnel) URL des Edge Functions
+APP_BASE_URL	URL publique de l’application (https://operaflow.app)
+🔁 5. Intégrations et synchronisations
+Source	Type	Méthode
+SIRH interne	Import collaborateurs, absences, formations	Via Edge Function Supabase planifiée (cron)
+Microsoft Outlook / 365	Absences / disponibilités / réunions	Webhooks ou API Graph
+SendGrid	Notifications (demande accès, visa client, alerte RH)	API REST
+Power BI (option)	Lecture KPI agrégés	API REST Supabase / vue SQL view_kpi_global
+⚙️ 6. Pré-requis techniques DSI
+Élément	Spécification minimale
+Navigateur utilisateur	Chrome / Edge / Firefox / Safari (version ≥2022)
+Réseau	Accès HTTPS vers *.vercel.app et *.supabase.co
+Infrastructure interne	Aucun serveur local requis
+Authentification Microsoft (option)	Azure AD / Entra ID compatible OAuth2
+Compte SendGrid	Accès API clé (niveau “Full Access”)
+Politique IT interne	Autoriser installation PWA (.app) sur poste
+Sauvegarde / Export	Accès admin Supabase Studio pour dump SQL mensuel
+Supervision	Monitoring natif Supabase + logs Vercel (gratuits)
+🧩 7. Administration & maintenance
+
+L’application OperaFlow est entièrement administrable depuis l’interface :
+
+Rôles et droits par page
+
+Activation / désactivation de fonctionnalités (feature flags)
+
+Suivi des utilisateurs et journaux d’accès
+
+Les opérations techniques (sauvegarde, déploiement, logs) sont automatisées via Supabase & Vercel.
+
+Aucune dépendance serveur physique, VM ou VPN.
+Les mises à jour se font par push GitHub → build Vercel.
+
+🔮 8. Scalabilité et perspectives
+
+Architecture stateless : montée en charge native via Vercel (CDN) et Supabase (scaling horizontal PostgreSQL).
+
+Compatible multi-site / multi-entité via la gestion dynamique des rôles et périmètres.
+
+Extensible vers :
+
+Power BI (reporting corporate),
+
+Microsoft Teams (alertes),
+
+Signature qualifiée eIDAS (v2),
+
+IA prédictive (v3).
+
+🧭 9. Phrase de synthèse technique
+
+OperaFlow repose sur une architecture serverless, sécurisée et managée, associant Next.js (front) déployé sur Vercel et Supabase (back) pour les données, l’authentification et le stockage.
+Cette combinaison garantit :
+
+une mise en production rapide,
+
+une sécurité conforme RGPD,
+
+un coût de maintenance réduit,
+
+et une scalabilité immédiate pour accompagner la croissance du nombre de sites et d’utilisateurs.---
 alwaysApply: true
 ---

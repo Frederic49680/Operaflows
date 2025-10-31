@@ -1,3 +1,257 @@
----
-alwaysApply: true
----
+🏗️ CAHIER DES CHARGES GLOBAL — OperaFlow
+Version 1.0 – Application de suivi, planification et pilotage d’activités
+🔹 1. Présentation générale
+
+OperaFlow est une application web et mobile destinée à la planification, au suivi et au pilotage opérationnel des activités de terrain, intégrant la gestion des ressources humaines, des affaires, des temps, des compétences et des indicateurs clés de performance (KPI).
+
+Elle vise à :
+
+Centraliser la planification et la valorisation des tâches par affaire,
+
+Garantir la cohérence RH / planif (habilitations, absences, conformité),
+
+Fluidifier la communication entre les acteurs de terrain et les encadrants,
+
+Automatiser la remontée d’indicateurs pour le management,
+
+Offrir une traçabilité complète des actions, validations et signatures.
+
+OperaFlow s’adresse principalement aux équipes chantier / site industriel (énergie, maintenance, travaux, etc.) et se déploie sur les rôles :
+
+Conducteur de travaux / Responsable d’activité,
+
+Planificateur,
+
+Chargé d’affaires,
+
+Administratif RH,
+
+Chef de chantier / Technicien,
+
+Direction / Consultation.
+
+🔹 2. Objectifs fonctionnels
+
+Planifier efficacement les activités :
+Gantt interactif, gestion des ressources, détection de conflits.
+
+Assurer la cohérence RH / planning :
+Vérification automatique des absences, habilitations, dosimétrie et visites médicales.
+
+Suivre l’avancement en temps réel :
+Suivi quotidien des heures, des statuts (planifiée, suspendue, reportée, terminée) et des anomalies terrain (Claims).
+
+Valoriser les heures et coûts automatiquement :
+Application de coefficients paramétrables (nuit, férié, week-end).
+
+Garantir la traçabilité et la conformité légale :
+Signature électronique (internes / clients), archivage RGPD, journalisation complète.
+
+Piloter globalement l’activité :
+Tableau de bord consolidé, indicateurs de charge, productivité, conformité et alertes.
+
+🔹 3. Périmètre fonctionnel
+
+OperaFlow regroupe 6 modules principaux interconnectés :
+
+Module	Fonction principale
+0. Structure & UI / Droits	Socle technique, design, responsive, gestion des rôles et des pages
+1. Authentification / Rôles / Permissions	Connexion, sécurité, gestion des accès, dissociation rôle/profil
+2. RH Collaborateurs	Gestion des fiches RH, absences, formations, dosimétrie, conformité
+3. Affaires	Création, suivi, valorisation (BPU / forfait / dépense), rapport pré-planif
+4. Planification & Suivi	Gantt interactif, suivi terrain, valorisation horaire, synchronisation RH
+5. KPI & Alertes globales	Tableaux de bord, performance, alertes intelligentes, reporting
+
+Un Module transverse Signature / Visa permet la validation numérique centralisée des documents (rapports, planifications, justificatifs, etc.).
+
+🔹 4. Utilisateurs et rôles
+Rôle	Description	Accès principal
+Administrateur	Paramétrage global, droits, synchronisations	Tous modules
+Administratif RH	Gestion collaborateurs, absences, conformité	RH + KPI
+Responsable d’activité	Supervision affaires et ressources locales	Affaires + Planif
+Planificateur	Planification et suivi Gantt	Planif + RH lecture
+Chargé d’affaires	Création / valorisation d’affaires	Affaires + KPI
+Chef de chantier	Saisie terrain (heures, avancement, anomalies)	Suivi quotidien
+Consultation / Direction	Lecture consolidée	Dashboard + KPI
+Rôle personnalisé	Défini par admin selon besoin	Pages attribuées dynamiquement
+
+Les rôles sont administrables dynamiquement depuis l’application (création, clonage, suppression, masquage de pages).
+
+🔹 5. Environnement technique cible
+
+Stack principale : Next.js + Supabase + TailwindCSS + Recharts + SendGrid
+
+Déploiement : Vercel (.app)
+
+Compatibilité PWA : installable sur PC et mobile
+
+Base de données : PostgreSQL Supabase
+
+Authentification : Supabase Auth / OAuth2
+
+Stockage : Supabase Storage (documents RH, signatures, rapports)
+
+Notifications : SendGrid (mail) + Webhooks Teams / Outlook
+
+Sécurité :
+
+HTTPS
+
+RLS Supabase (row-level security)
+
+Contrôles middleware par rôle
+
+🔹 6. Design & ergonomie
+Charte graphique OperaFlow
+
+Primaire : Bleu OperaFlow (#0EA5E9)
+
+Secondaire : Gris anthracite (#1F2937)
+
+Accent : Orange chantier (#F97316)
+
+Fond clair : #F3F4F6
+
+Composants communs
+
+Cartes à coins arrondis, ombres douces, padding généreux
+
+Couleurs de statuts uniformisées dans tous les modules
+
+Tableaux dynamiques avec filtres, tris, export
+
+Boutons interactifs (hover, tooltip, confirmation)
+
+Responsive mobile-first (affichage en cartes et listes verticales)
+
+🔹 7. Processus clé de l’application
+🔸 7.1 Cycle de vie d’une affaire
+
+Création → par le Chargé d’affaires
+
+Pré-planification → analyse charge, ressources, besoins compétences
+
+Planification → intégration dans le Gantt (Planificateur / Responsable activité)
+
+Exécution → suivi terrain, heures, anomalies
+
+Clôture → validation + visa client
+
+Archivage → rapport signé + valorisation finale
+
+🔸 7.2 Cycle RH complet
+
+Création collaborateur
+
+Affectation site / responsable
+
+Gestion visites, habilitations, dosimétrie
+
+Gestion des absences (avec validation et blocage planif)
+
+Synchronisation SIRH + Outlook (absences / formations)
+
+Export conformité et reporting KPI RH
+
+🔸 7.3 Planification & suivi
+
+Vue Gantt multi-niveaux (site > affaire > activité > ressource)
+
+Saisie et validation des heures réelles
+
+Calcul automatique valorisation horaire (coefficients jour/nuit/férié)
+
+Blocage automatique si absence ou non-conformité RH
+
+Synchronisation Outlook + visa hebdomadaire des plannings
+
+🔸 7.4 Pilotage KPI
+
+Consolidation des données RH / Planif / Affaires
+
+Génération de graphiques et tableaux comparatifs
+
+Calcul automatique des ratios (charge, avancement, productivité, marge)
+
+Détection automatique des anomalies (retard, absence, suraffectation, dérive financière)
+
+Envoi d’alertes (email / Teams / notification interne)
+
+🔹 8. Intégrations externes
+Intégration	Fonction	Fréquence
+SIRH corporate	Import contrats / absences / formations	Quotidienne
+Outlook / Microsoft 365	Synchronisation absences / planifications	Temps réel (webhook)
+SendGrid	Envoi mails automatiques (validation, visa, alerte)	Temps réel
+Power BI / API externe	Exploitation des KPI consolidés	Hebdomadaire
+DocuSign / Yousign (v2)	Signature avancée (niveau eIDAS)	À la demande
+🔹 9. Sécurité et conformité
+
+Authentification sécurisée (Supabase Auth / JWT)
+
+Chiffrement HTTPS + stockage sécurisé Supabase
+
+Contrôle d’accès multi-niveau :
+
+Par rôle applicatif
+
+Par site / périmètre
+
+Par statut (lecture / écriture / validation)
+
+Journalisation complète des actions sensibles
+
+Conformité RGPD : stockage UE, consentement explicite, archivage dosimétrique 5 ans.
+
+🔹 10. Fonctionnalités transverses
+🔸 Module Signature / Visa
+
+Signature numérique interne / client
+
+Archivage automatique du document signé
+
+Horodatage / intégrité / export PDF
+
+Utilisable par tous les modules (Affaires, RH, Planif, KPI)
+
+🔸 Notifications centralisées
+
+Notifications internes + emails SendGrid
+
+Centre de notifications dans l’UI (badge header)
+
+🔸 Feature Flags
+
+Activation/désactivation de fonctionnalités (ex. dosimétrie, BPU, signature)
+
+Restreint à certains rôles / sites
+
+🔹 11. Évolutions prévues (v2+)
+
+IA prédictive pour prévision charge, détection dérive, suggestion de planification
+
+Simulation “what-if” (impact d’un décalage sur les affaires / ressources)
+
+Portail client externe (lecture KPI / validation rapports)
+
+Mode offline mobile (saisie hors connexion)
+
+Reporting Power BI / Power Automate intégré
+
+Multi-filiales / multi-sites (mode “tenant”)
+
+Signature certifiée eIDAS (niveau avancé)
+
+🔹 12. Synthèse
+
+OperaFlow est une plateforme intégrée de pilotage d’activités conçue pour :
+
+fluidifier la gestion quotidienne des chantiers,
+
+fiabiliser la planification et la conformité RH,
+
+automatiser les valorisations et signatures,
+
+et donner aux responsables une visibilité temps réel sur la charge, la performance et les risques.
+
+En une phrase :
+OperaFlow, c’est la colonne vertébrale numérique du suivi d’activité — robuste, claire, connectée, et pensée pour le terrain.
