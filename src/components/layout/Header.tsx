@@ -22,8 +22,8 @@ export default async function Header() {
     return null; // Pas de header si non connecté
   }
 
-  // Récupérer les informations utilisateur
-  const { data: userData } = await supabase
+  // Récupérer les informations utilisateur (gérer les erreurs gracieusement)
+  const { data: userData, error: userDataError } = await supabase
     .from("tbl_users")
     .select(`
       *,
@@ -31,6 +31,8 @@ export default async function Header() {
     `)
     .eq("id", user.id)
     .maybeSingle();
+  
+  // Ignorer les erreurs silencieusement (utilisateur peut ne pas être dans tbl_users)
 
   // Récupérer les rôles de l'utilisateur
   const { data: userRoles } = await supabase
