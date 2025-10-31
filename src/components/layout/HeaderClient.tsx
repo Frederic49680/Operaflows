@@ -12,13 +12,17 @@ import {
   Menu,
   X,
   ChevronDown,
+  Users,
+  Briefcase,
+  Calendar,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 interface MenuItem {
   label: string;
   href: string;
-  icon?: React.ComponentType<{ className?: string }>;
+  iconName?: string;
   alwaysVisible?: boolean;
   visible?: boolean;
   comingSoon?: boolean;
@@ -27,9 +31,19 @@ interface MenuItem {
 
 interface AdminItem {
   label: string;
-  icon?: React.ComponentType<{ className?: string }>;
+  iconName?: string;
   submenu: { label: string; href: string }[];
 }
+
+// Mapping des noms d'icônes vers les composants
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  LayoutDashboard,
+  Users,
+  Briefcase,
+  Calendar,
+  BarChart3,
+  Settings,
+};
 
 interface HeaderClientProps {
   user: {
@@ -88,7 +102,7 @@ export default function HeaderClient({
             {menuItems.map((item) => {
               if (!item.visible && !item.alwaysVisible) return null;
 
-              const Icon = item.icon || LayoutDashboard;
+              const Icon = item.iconName ? iconMap[item.iconName] || LayoutDashboard : LayoutDashboard;
               const active = isActive(item.href);
 
               return (
@@ -227,7 +241,7 @@ export default function HeaderClient({
             {menuItems.map((item) => {
               if (!item.visible && !item.alwaysVisible) return null;
 
-              const Icon = item.icon || LayoutDashboard;
+              const Icon = item.iconName ? iconMap[item.iconName] || LayoutDashboard : LayoutDashboard;
               const active = isActive(item.href);
 
               return (

@@ -107,37 +107,38 @@ export default async function SafeHeader() {
     }
 
     // Construction du menu selon les rôles
+    // Utiliser des strings pour les icônes au lieu de composants React
     const menuItems = [
       {
         label: "Tableau de bord",
         href: "/dashboard",
-        icon: LayoutDashboard,
+        iconName: "LayoutDashboard",
         alwaysVisible: true,
       },
       {
         label: "RH Collaborateurs",
         href: "/rh",
-        icon: Users,
+        iconName: "Users",
         visible: true,
       },
       {
         label: "Affaires",
         href: "/affaires",
-        icon: Briefcase,
+        iconName: "Briefcase",
         visible: true,
         comingSoon: true,
       },
       {
         label: "Planification",
         href: "/planification",
-        icon: Calendar,
+        iconName: "Calendar",
         visible: true,
         comingSoon: true,
       },
       {
         label: "KPI & Alertes",
         href: "/kpi",
-        icon: BarChart3,
+        iconName: "BarChart3",
         visible: true,
         comingSoon: true,
       },
@@ -148,7 +149,7 @@ export default async function SafeHeader() {
       ? [
           {
             label: "Administration",
-            icon: Settings,
+            iconName: "Settings",
             submenu: [
               {
                 label: "Utilisateurs",
