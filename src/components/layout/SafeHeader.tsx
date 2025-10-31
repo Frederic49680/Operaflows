@@ -39,20 +39,24 @@ export default async function SafeHeader() {
     // Ignorer les erreurs silencieusement (utilisateur peut ne pas être dans tbl_users)
 
     // Récupérer les rôles de l'utilisateur
-    let userRoles: any[] = [];
+    type UserRole = {
+      roles?: { name: string; description?: string | null } | { name: string; description?: string | null }[] | null;
+    };
+    
+    let userRoles: UserRole[] = [];
     try {
       const { data } = await supabase
         .from("user_roles")
         .select("roles(name, description)")
         .eq("user_id", user.id);
       userRoles = data || [];
-    } catch (e) {
+    } catch {
       // Ignorer l'erreur, userRoles reste []
     }
 
     // Extraire les rôles
     const roles = userRoles
-      .map((ur: any) => {
+      .map((ur) => {
         const role = Array.isArray(ur.roles) ? ur.roles[0] : ur.roles;
         return role;
       })
@@ -60,22 +64,14 @@ export default async function SafeHeader() {
 
     // Vérifier les permissions (avec gestion d'erreur)
     let isAdmin = false;
-    let hasRHAccess = false;
     
     try {
-      isAdmin = roles.some((r: any) => {
+      isAdmin = roles.some((r) => {
         const role = Array.isArray(r) ? r[0] : r;
         return role?.name === "Administrateur";
       });
-    } catch (e) {
+    } catch {
       // Ignorer l'erreur
-    }
-
-    try {
-      const { isRHOrAdmin } = await import("@/lib/auth/rh-check");
-      hasRHAccess = await isRHOrAdmin(user.id).catch(() => false);
-    } catch (e) {
-      // Ignorer l'erreur, hasRHAccess reste false
     }
 
     // Nom d'affichage (gérer les cas où collaborateurs peut être null ou un tableau)

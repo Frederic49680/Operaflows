@@ -15,16 +15,6 @@ export const metadata: Metadata = {
   },
 };
 
-// Gérer les erreurs dans Header pour éviter les crashes
-function SafeHeader() {
-  try {
-    return <Header />;
-  } catch (error) {
-    console.error("Erreur Header:", error);
-    return null;
-  }
-}
-
 export const viewport: Viewport = {
   themeColor: "#0EA5E9",
 };

@@ -23,7 +23,7 @@ export default async function Header() {
   }
 
   // Récupérer les informations utilisateur (gérer les erreurs gracieusement)
-  const { data: userData, error: userDataError } = await supabase
+  const { data: userData } = await supabase
     .from("tbl_users")
     .select(`
       *,
