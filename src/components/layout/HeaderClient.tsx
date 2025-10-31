@@ -31,7 +31,7 @@ interface MenuItem {
   badge?: string | number;
 }
 
-interface AdminItem {
+interface MenuItemWithSubmenu {
   label: string;
   iconName?: string;
   submenu: { label: string; href: string }[];
@@ -56,18 +56,21 @@ interface HeaderClientProps {
     avatar: string | null;
   };
   menuItems: MenuItem[];
-  adminItems: AdminItem[];
+  rhItems?: MenuItemWithSubmenu[];
+  adminItems: MenuItemWithSubmenu[];
   isAdmin: boolean;
 }
 
 export default function HeaderClient({
   user,
   menuItems,
+  rhItems = [],
   adminItems,
   isAdmin,
 }: HeaderClientProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [rhMenuOpen, setRhMenuOpen] = useState(false);
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -141,6 +144,68 @@ export default function HeaderClient({
                 </Link>
               );
             })}
+
+            {/* Menu RH */}
+            {rhItems.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setRhMenuOpen(!rhMenuOpen)}
+                  className={cn(
+                    "group relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                    pathname.startsWith("/rh")
+                      ? "bg-gradient-to-r from-primary to-primary-dark text-white shadow-md shadow-primary/30"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-primary"
+                  )}
+                >
+                  {rhItems[0].iconName && (() => {
+                    const Icon = iconMap[rhItems[0].iconName] || Users;
+                    return (
+                      <Icon
+                        className={cn(
+                          "h-4 w-4 transition-transform duration-200",
+                          pathname.startsWith("/rh")
+                            ? "text-white"
+                            : "text-gray-500 group-hover:text-primary group-hover:scale-110"
+                        )}
+                      />
+                    );
+                  })()}
+                  <span className={cn(pathname.startsWith("/rh") && "font-semibold")}>
+                    {rhItems[0].label}
+                  </span>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 transition-transform duration-200",
+                      rhMenuOpen && "rotate-180",
+                      pathname.startsWith("/rh") ? "text-white" : "text-gray-500"
+                    )}
+                  />
+                </button>
+
+                {rhMenuOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                    {rhItems[0].submenu.map((subItem) => {
+                      const subActive = pathname === subItem.href || pathname.startsWith(subItem.href + "/");
+                      return (
+                        <Link
+                          key={subItem.href}
+                          href={subItem.href}
+                          onClick={() => setRhMenuOpen(false)}
+                          className={cn(
+                            "flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
+                            subActive
+                              ? "bg-primary/10 text-primary border-l-2 border-primary font-semibold"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-primary"
+                          )}
+                        >
+                          {subItem.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Menu Admin */}
             {isAdmin && adminItems.length > 0 && (
@@ -299,6 +364,39 @@ export default function HeaderClient({
               );
             })}
 
+            {rhItems.length > 0 && (
+              <div className="pt-3 border-t border-gray-200/80">
+                <div className="px-4 py-2 text-xs font-semibold text-primary uppercase tracking-wider mb-1">
+                  RH
+                </div>
+                {rhItems[0].submenu.map((subItem) => {
+                  const Icon = Users;
+                  const subActive = pathname === subItem.href || pathname.startsWith(subItem.href + "/");
+                  return (
+                    <Link
+                      key={subItem.href}
+                      href={subItem.href}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200",
+                        subActive
+                          ? "bg-gradient-to-r from-primary/10 to-primary/5 text-primary font-semibold border-l-2 border-primary"
+                          : "text-gray-700 hover:bg-gray-50 hover:text-primary"
+                      )}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Icon
+                        className={cn(
+                          "h-5 w-5",
+                          subActive ? "text-primary" : "text-gray-500"
+                        )}
+                      />
+                      {subItem.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+
             {isAdmin && adminItems.length > 0 && (
               <div className="pt-3 border-t border-gray-200/80">
                 <div className="px-4 py-2 text-xs font-semibold text-amber-600 uppercase tracking-wider mb-1">
@@ -357,12 +455,13 @@ export default function HeaderClient({
       )}
 
       {/* Overlay pour fermer les menus en cliquant à l'extérieur */}
-      {(userMenuOpen || adminMenuOpen) && (
+      {(userMenuOpen || adminMenuOpen || rhMenuOpen) && (
         <div
           className="fixed inset-0 z-10"
           onClick={() => {
             setUserMenuOpen(false);
             setAdminMenuOpen(false);
+            setRhMenuOpen(false);
           }}
         />
       )}

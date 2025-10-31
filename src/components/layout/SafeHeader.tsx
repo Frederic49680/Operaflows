@@ -114,18 +114,6 @@ export default async function SafeHeader() {
         alwaysVisible: true,
       },
       {
-        label: "RH Collaborateurs",
-        href: "/rh",
-        iconName: "Users",
-        visible: true,
-      },
-      {
-        label: "Référentiel Sites",
-        href: "/rh/sites",
-        iconName: "MapPin",
-        visible: isRH || isAdmin || false,
-      },
-      {
         label: "Affaires",
         href: "/affaires",
         iconName: "Briefcase",
@@ -147,6 +135,26 @@ export default async function SafeHeader() {
         comingSoon: true,
       },
     ];
+
+    // Menu RH avec sous-menu (pour utilisateurs avec accès RH)
+    const rhItems = (isRH || isAdmin)
+      ? [
+          {
+            label: "RH",
+            iconName: "Users",
+            submenu: [
+              {
+                label: "Collaborateurs",
+                href: "/rh",
+              },
+              {
+                label: "Référentiel Sites",
+                href: "/rh/sites",
+              },
+            ],
+          },
+        ]
+      : [];
 
     // Menu admin
     const adminItems = isAdmin
@@ -181,6 +189,7 @@ export default async function SafeHeader() {
           avatar: null,
         }}
         menuItems={menuItems}
+        rhItems={rhItems}
         adminItems={adminItems}
         isAdmin={isAdmin}
       />
