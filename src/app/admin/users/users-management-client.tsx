@@ -32,18 +32,26 @@ export default function UsersManagementClient({
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAcceptModal, setShowAcceptModal] = useState<UserRequest | null>(null);
-  const [selectedRoleId, setSelectedRoleId] = useState<string>("");
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState<string>("");
 
 
   const handleAcceptRequest = async (request: UserRequest) => {
     setShowAcceptModal(request);
-    setSelectedRoleId(roles[0]?.id || "");
+    setSelectedRoleIds([]); // Réinitialiser les sélections
+  };
+
+  const handleToggleRole = (roleId: string) => {
+    setSelectedRoleIds((prev) =>
+      prev.includes(roleId)
+        ? prev.filter((id) => id !== roleId)
+        : [...prev, roleId]
+    );
   };
 
   const confirmAcceptRequest = async () => {
-    if (!showAcceptModal || !selectedRoleId) {
-      setError("Veuillez sélectionner un rôle");
+    if (!showAcceptModal || selectedRoleIds.length === 0) {
+      setError("Veuillez sélectionner au moins un rôle");
       return;
     }
 
@@ -86,7 +94,7 @@ export default function UsersManagementClient({
           statut: "acceptee",
           traite_par: (await supabase.auth.getUser()).data.user?.id || null,
           date_traitement: new Date().toISOString(),
-          role_attribue_id: selectedRoleId,
+          role_attribue_id: selectedRoleIds[0] || null, // Prendre le premier rôle pour compatibilité
           site_id: selectedSiteId,
         })
         .eq("id", showAcceptModal.id);
@@ -95,7 +103,7 @@ export default function UsersManagementClient({
 
       router.refresh();
       setShowAcceptModal(null);
-      setSelectedRoleId("");
+      setSelectedRoleIds([]);
       setSelectedSiteId("");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erreur lors de l'acceptation de la demande";
@@ -356,28 +364,45 @@ export default function UsersManagementClient({
               </h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-secondary mb-1">
-                    Rôle *
+                  <label className="block text-sm font-medium text-secondary mb-2">
+                    Rôles * (choix multiple)
                   </label>
-                  <select
-                    value={selectedRoleId}
-                    onChange={(e) => setSelectedRoleId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900 text-sm"
-                    style={{
-                      color: '#111827',
-                    }}
-                  >
-                    <option value="" style={{ color: '#6B7280' }}>Sélectionner un rôle</option>
-                    {roles.map((role) => (
-                      <option 
-                        key={role.id} 
-                        value={role.id}
-                        style={{ color: '#111827', backgroundColor: '#ffffff' }}
-                      >
-                        {role.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="max-h-60 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-white">
+                    {roles.length === 0 ? (
+                      <p className="text-sm text-gray-500">Aucun rôle disponible</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {roles.map((role) => (
+                          <label
+                            key={role.id}
+                            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedRoleIds.includes(role.id)}
+                              onChange={() => handleToggleRole(role.id)}
+                              className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
+                              style={{
+                                color: '#4F46E5',
+                                backgroundColor: selectedRoleIds.includes(role.id) ? '#4F46E5' : '#ffffff',
+                              }}
+                            />
+                            <div className="flex-1">
+                              <span className="text-sm font-medium text-gray-900">{role.name}</span>
+                              {role.description && (
+                                <p className="text-xs text-gray-500 mt-0.5">{role.description}</p>
+                              )}
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {selectedRoleIds.length > 0 && (
+                    <p className="mt-2 text-xs text-gray-600">
+                      {selectedRoleIds.length} rôle{selectedRoleIds.length > 1 ? 's' : ''} sélectionné{selectedRoleIds.length > 1 ? 's' : ''}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-1">
@@ -394,7 +419,7 @@ export default function UsersManagementClient({
                 <div className="flex space-x-2">
                   <button
                     onClick={confirmAcceptRequest}
-                    disabled={!selectedRoleId || loading === showAcceptModal.id}
+                    disabled={selectedRoleIds.length === 0 || loading === showAcceptModal.id}
                     className="btn-primary flex-1 disabled:opacity-50"
                   >
                     {loading === showAcceptModal.id ? "Création..." : "Créer le compte"}

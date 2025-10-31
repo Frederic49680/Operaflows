@@ -33,11 +33,16 @@ interface AuditLogInsert {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password, nom, prenom, role_id, site_id } = body;
+    const { email, password, nom, prenom, role_id, role_ids, site_id } = body;
 
-    if (!email || !password || !role_id) {
+    // Support pour role_id (ancien) et role_ids (nouveau - multiple)
+    const roleIds = role_ids && Array.isArray(role_ids) && role_ids.length > 0 
+      ? role_ids 
+      : (role_id ? [role_id] : []);
+
+    if (!email || !password || roleIds.length === 0) {
       return NextResponse.json(
-        { error: "Email, mot de passe et rôle requis" },
+        { error: "Email, mot de passe et au moins un rôle requis" },
         { status: 400 }
       );
     }
@@ -75,10 +80,11 @@ export async function POST(request: Request) {
     passwordExpiresAt.setHours(passwordExpiresAt.getHours() + 48);
 
     // Créer l'utilisateur dans tbl_users
+    // Prendre le premier rôle pour role_id (compatibilité avec l'ancien système)
     const userData: TblUsersInsert = {
       id: userId,
       email,
-      role_id,
+      role_id: roleIds[0] || null,
       statut: "actif",
       password_expires_at: passwordExpiresAt.toISOString(),
     };
@@ -95,19 +101,20 @@ export async function POST(request: Request) {
       );
     }
 
-    // Créer l'association user_roles
-    if (role_id) {
-      const roleData: UserRolesInsert = {
+    // Créer les associations user_roles pour tous les rôles sélectionnés
+    if (roleIds.length > 0) {
+      const rolesData: UserRolesInsert[] = roleIds.map((roleId: string) => ({
         user_id: userId,
-        role_id,
+        role_id: roleId,
         site_id: site_id || null,
-      };
+      }));
+
       const { error: roleError } = await supabaseAdmin
         .from("user_roles")
-        .insert(roleData as never);
+        .insert(rolesData as never);
 
       if (roleError) {
-        console.error("Erreur attribution rôle:", roleError);
+        console.error("Erreur attribution rôles:", roleError);
         // Ne pas rollback, l'utilisateur peut être créé sans rôle attribué
       }
     }
@@ -127,7 +134,7 @@ export async function POST(request: Request) {
       entite_id: userId,
       details: {
         email,
-        role_id,
+        role_ids: roleIds,
         site_id,
       } as Json,
     };
