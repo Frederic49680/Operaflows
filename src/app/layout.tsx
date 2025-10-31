@@ -9,12 +9,8 @@ export const metadata: Metadata = {
   description: "Application de suivi, planification et pilotage d'activités de terrain",
   manifest: "/manifest.json",
   icons: {
-    icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-    ],
-    apple: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-    ],
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
   },
 };
 
