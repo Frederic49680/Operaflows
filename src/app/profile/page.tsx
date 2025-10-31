@@ -33,13 +33,6 @@ export default async function ProfilePage() {
   // Vérifier si l'utilisateur est RH (pour modifier le profil RH)
   const isRH = userRoles?.some((ur) => ur.roles?.name === "Administratif RH");
 
-  // Récupérer tous les rôles disponibles (si admin)
-  let allRoles = null;
-  if (isAdmin) {
-    const { data: roles } = await supabase.from("roles").select("*").order("name");
-    allRoles = roles;
-  }
-
   return (
     <ProfileClient
       user={user}
@@ -47,7 +40,6 @@ export default async function ProfilePage() {
       userRoles={userRoles || []}
       isAdmin={isAdmin}
       isRH={isRH}
-      allRoles={allRoles}
     />
   );
 }

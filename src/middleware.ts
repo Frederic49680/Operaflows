@@ -3,7 +3,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
   // Mettre à jour la session Supabase
-  let response = await updateSession(request);
+  const response = await updateSession(request);
 
   // Routes publiques (pas besoin d'authentification)
   const publicRoutes = ["/login", "/request-access", "/forgot-password"];

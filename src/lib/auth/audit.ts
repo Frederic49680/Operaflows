@@ -4,7 +4,7 @@ export interface AuditLogData {
   action: string;
   type_entite?: string;
   entite_id?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   ip_address?: string;
   user_agent?: string;
 }

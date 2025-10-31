@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClientSupabase } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 
 type UserData = {
@@ -30,7 +28,6 @@ interface Props {
   userRoles: UserRole[];
   isAdmin: boolean;
   isRH: boolean;
-  allRoles: any[] | null;
 }
 
 export default function ProfileClient({
@@ -39,13 +36,8 @@ export default function ProfileClient({
   userRoles,
   isAdmin,
   isRH,
-  allRoles,
 }: Props) {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"role" | "rh">("role");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const getStatusBadge = (statut: string) => {
     const styles = {

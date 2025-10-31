@@ -112,10 +112,11 @@ export async function POST(request: Request) {
       user_id: userId,
       message: "Compte créé avec succès",
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Erreur création utilisateur:", error);
+    const errorMessage = error instanceof Error ? error.message : "Erreur serveur";
     return NextResponse.json(
-      { error: error.message || "Erreur serveur" },
+      { error: errorMessage },
       { status: 500 }
     );
   }

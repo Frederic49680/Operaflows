@@ -21,7 +21,7 @@ function generateTemporaryPassword(length: number = 12): string {
  * API Route pour générer un mot de passe provisoire
  * Utilisée uniquement par l'admin lors de la création d'un compte
  */
-export async function POST(request: Request) {
+export async function POST() {
   try {
     const supabase = await createServerClient();
     

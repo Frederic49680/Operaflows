@@ -93,8 +93,9 @@ export default function UsersManagementClient({
       setShowAcceptModal(null);
       setSelectedRoleId("");
       setSelectedSiteId("");
-    } catch (err: any) {
-      setError(err.message || "Erreur lors de l'acceptation de la demande");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Erreur lors de l'acceptation de la demande";
+      setError(errorMessage);
     } finally {
       setLoading(null);
     }
@@ -126,8 +127,9 @@ export default function UsersManagementClient({
       // Envoyer email de refus (sera fait via une API route)
 
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Erreur lors du refus de la demande");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Erreur lors du refus de la demande";
+      setError(errorMessage);
     } finally {
       setLoading(null);
     }
