@@ -31,7 +31,6 @@ interface CollaborateurDetailClientProps {
   formations: Formation[];
   competences: any[];
   hasRHAccess: boolean;
-  currentUserId: string;
 }
 
 type Tab = "general" | "competences" | "dosimetrie" | "medical" | "absences";
