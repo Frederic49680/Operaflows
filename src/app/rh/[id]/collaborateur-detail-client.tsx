@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   User,
   Award,
@@ -10,6 +11,8 @@ import {
   Calendar,
   ChevronLeft,
   Edit,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import type {
   Collaborateur,
@@ -21,6 +24,8 @@ import type {
 } from "@/types/rh";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import Modal from "@/components/rh/Modal";
+import HabilitationForm from "@/components/rh/forms/HabilitationForm";
 
 interface CollaborateurDetailClientProps {
   collaborateur: Collaborateur;
@@ -57,7 +62,16 @@ export default function CollaborateurDetailClient({
   competences,
   hasRHAccess,
 }: CollaborateurDetailClientProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("general");
+  const [modalHabilitationOpen, setModalHabilitationOpen] = useState(false);
+  const [selectedHabilitation, setSelectedHabilitation] = useState<Habilitation | null>(null);
+  const [modalAbsenceOpen, setModalAbsenceOpen] = useState(false);
+  const [selectedAbsence, setSelectedAbsence] = useState<Absence | null>(null);
+
+  const refreshData = () => {
+    router.refresh();
+  };
 
   const tabs = [
     { id: "general" as Tab, label: "Informations générales", icon: User },
@@ -166,6 +180,15 @@ export default function CollaborateurDetailClient({
               habilitations={habilitations}
               competences={competences}
               hasRHAccess={hasRHAccess}
+              collaborateurId={collaborateur.id}
+              onAddHabilitation={() => {
+                setSelectedHabilitation(null);
+                setModalHabilitationOpen(true);
+              }}
+              onEditHabilitation={(hab) => {
+                setSelectedHabilitation(hab);
+                setModalHabilitationOpen(true);
+              }}
             />
           )}
           {activeTab === "dosimetrie" && (
@@ -184,11 +207,63 @@ export default function CollaborateurDetailClient({
             <OngletAbsences
               absences={absences}
               formations={formations}
-              canValidate={hasRHAccess || false} // TODO: vérifier si responsable
+              canValidate={hasRHAccess || false}
+              collaborateurId={collaborateur.id}
+              hasRHAccess={hasRHAccess}
+              onAddAbsence={() => {
+                setSelectedAbsence(null);
+                setModalAbsenceOpen(true);
+              }}
+              onEditAbsence={(abs) => {
+                setSelectedAbsence(abs);
+                setModalAbsenceOpen(true);
+              }}
             />
           )}
         </div>
       </div>
+
+      {/* Modal Habilitation */}
+      <Modal
+        isOpen={modalHabilitationOpen}
+        onClose={() => {
+          setModalHabilitationOpen(false);
+          setSelectedHabilitation(null);
+        }}
+        title={selectedHabilitation ? "Modifier l'habilitation" : "Nouvelle habilitation"}
+        size="lg"
+      >
+        <HabilitationForm
+          collaborateurId={collaborateur.id}
+          habilitation={selectedHabilitation}
+          onClose={() => {
+            setModalHabilitationOpen(false);
+            setSelectedHabilitation(null);
+          }}
+          onSuccess={refreshData}
+        />
+      </Modal>
+
+      {/* Modal Absence */}
+      <Modal
+        isOpen={modalAbsenceOpen}
+        onClose={() => {
+          setModalAbsenceOpen(false);
+          setSelectedAbsence(null);
+        }}
+        title={selectedAbsence ? "Modifier l'absence" : "Nouvelle absence"}
+        size="lg"
+      >
+        <AbsenceForm
+          collaborateurId={collaborateur.id}
+          absence={selectedAbsence}
+          onClose={() => {
+            setModalAbsenceOpen(false);
+            setSelectedAbsence(null);
+          }}
+          onSuccess={refreshData}
+        />
+      </Modal>
     </div>
   );
 }
@@ -333,6 +408,9 @@ function OngletCompetences({
   habilitations,
   competences,
   hasRHAccess,
+  collaborateurId,
+  onAddHabilitation,
+  onEditHabilitation,
 }: {
   habilitations: Habilitation[];
   competences: Array<{
@@ -349,13 +427,34 @@ function OngletCompetences({
     } | null;
   }>;
   hasRHAccess: boolean;
+  collaborateurId: string;
+  onAddHabilitation: () => void;
+  onEditHabilitation: (hab: Habilitation) => void;
 }) {
+  const handleDelete = async (id: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette habilitation ?")) return;
+    
+    try {
+      const { createClientSupabase } = await import("@/lib/supabase/client");
+      const supabase = createClientSupabase();
+      const { error } = await supabase.from("habilitations").delete().eq("id", id);
+      
+      if (error) throw error;
+      window.location.reload();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erreur lors de la suppression");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Habilitations</h3>
         {hasRHAccess && (
-          <button className="btn-primary text-sm">Ajouter une habilitation</button>
+          <button onClick={onAddHabilitation} className="btn-primary text-sm flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Ajouter une habilitation
+          </button>
         )}
       </div>
 
@@ -384,11 +483,16 @@ function OngletCompetences({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Organisme
                 </th>
+                {hasRHAccess && (
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {habilitations.map((hab) => (
-                <tr key={hab.id}>
+                <tr key={hab.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {hab.type}
                   </td>
@@ -419,6 +523,26 @@ function OngletCompetences({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {hab.organisme || "-"}
                   </td>
+                  {hasRHAccess && (
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => onEditHabilitation(hab)}
+                          className="text-primary hover:text-primary-dark"
+                          title="Modifier"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(hab.id)}
+                          className="text-red-600 hover:text-red-800"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -641,11 +765,53 @@ function OngletAbsences({
   absences,
   formations,
   canValidate,
+  collaborateurId,
+  hasRHAccess,
+  onAddAbsence,
+  onEditAbsence,
 }: {
   absences: Absence[];
   formations: Formation[];
   canValidate: boolean;
+  collaborateurId: string;
+  hasRHAccess: boolean;
+  onAddAbsence: () => void;
+  onEditAbsence: (abs: Absence) => void;
 }) {
+  const handleDelete = async (id: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette absence ?")) return;
+    
+    try {
+      const { createClientSupabase } = await import("@/lib/supabase/client");
+      const supabase = createClientSupabase();
+      const { error } = await supabase.from("absences").delete().eq("id", id);
+      
+      if (error) throw error;
+      window.location.reload();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erreur lors de la suppression");
+    }
+  };
+
+  const handleValidate = async (id: string, statut: "validee" | "refusee") => {
+    try {
+      const { createClientSupabase } = await import("@/lib/supabase/client");
+      const supabase = createClientSupabase();
+      const { error } = await supabase
+        .from("absences")
+        .update({
+          statut,
+          date_validation: new Date().toISOString(),
+        })
+        .eq("id", id);
+      
+      if (error) throw error;
+      window.location.reload();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erreur lors de la validation");
+    }
+  };
+
   const typeLabels: Record<string, string> = {
     conges_payes: "Congés payés",
     rtt: "RTT",
@@ -663,7 +829,12 @@ function OngletAbsences({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Absences</h3>
-        <button className="btn-primary text-sm">Nouvelle absence</button>
+        {(hasRHAccess || canValidate) && (
+          <button onClick={onAddAbsence} className="btn-primary text-sm flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Nouvelle absence
+          </button>
+        )}
       </div>
 
       {absences.length === 0 ? (
@@ -688,8 +859,8 @@ function OngletAbsences({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Validé par
                 </th>
-                {canValidate && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                {(hasRHAccess || canValidate) && (
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                     Actions
                   </th>
                 )}
@@ -725,14 +896,46 @@ function OngletAbsences({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {abs.valide_par_user?.email || "-"}
                   </td>
-                  {canValidate && abs.statut === "en_attente" && (
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-green-600 hover:text-green-900 mr-4">
-                        Valider
-                      </button>
-                      <button className="text-red-600 hover:text-red-900">
-                        Refuser
-                      </button>
+                  {(hasRHAccess || canValidate) && (
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-2">
+                        {abs.statut === "en_attente" && canValidate && (
+                          <>
+                            <button
+                              onClick={() => handleValidate(abs.id, "validee")}
+                              className="text-green-600 hover:text-green-900"
+                              title="Valider"
+                            >
+                              Valider
+                            </button>
+                            <button
+                              onClick={() => handleValidate(abs.id, "refusee")}
+                              className="text-red-600 hover:text-red-900"
+                              title="Refuser"
+                            >
+                              Refuser
+                            </button>
+                          </>
+                        )}
+                        {hasRHAccess && (
+                          <>
+                            <button
+                              onClick={() => onEditAbsence(abs)}
+                              className="text-primary hover:text-primary-dark"
+                              title="Modifier"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(abs.id)}
+                              className="text-red-600 hover:text-red-800"
+                              title="Supprimer"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   )}
                 </tr>
