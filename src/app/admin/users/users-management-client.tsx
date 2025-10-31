@@ -35,9 +35,6 @@ export default function UsersManagementClient({
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
   const [selectedSiteId, setSelectedSiteId] = useState<string>("");
 
-  // Debug côté client
-  console.log("Client - pendingRequests:", pendingRequests);
-  console.log("Client - pendingRequests.length:", pendingRequests?.length || 0);
 
   const handleAcceptRequest = async (request: UserRequest) => {
     setShowAcceptModal(request);
@@ -216,15 +213,6 @@ export default function UsersManagementClient({
             <h2 className="text-xl font-semibold text-secondary mb-4">
               Demandes d&apos;accès en attente
             </h2>
-            {/* Debug */}
-            <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
-              Debug: {pendingRequests?.length || 0} demande(s) trouvée(s)
-              {pendingRequests && pendingRequests.length > 0 && (
-                <div className="mt-2">
-                  Première demande: {pendingRequests[0].nom} {pendingRequests[0].prenom}
-                </div>
-              )}
-            </div>
             {!pendingRequests || pendingRequests.length === 0 ? (
               <p className="text-gray-500">Aucune demande en attente</p>
             ) : (

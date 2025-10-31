@@ -49,15 +49,9 @@ export default async function UsersManagementPage() {
     .eq("statut", "en_attente")
     .order("created_at", { ascending: false });
 
-  // Debug: Afficher l'erreur et les données pour diagnostic
+  // Gestion des erreurs silencieuse (les erreurs sont déjà gérées par le composant)
   if (requestsError) {
     console.error("Erreur récupération demandes:", requestsError);
-  }
-  
-  // Debug: Vérifier ce qui est retourné
-  console.log("Pending requests count:", pendingRequests?.length || 0);
-  if (pendingRequests && pendingRequests.length > 0) {
-    console.log("First request:", pendingRequests[0]);
   }
 
   // Récupérer tous les rôles pour le formulaire d'attribution
