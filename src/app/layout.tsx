@@ -8,7 +8,10 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "OperaFlow - Planification et pilotage d'activités",
   description: "Application de suivi, planification et pilotage d'activités de terrain",
-  manifest: "/manifest.json",
+  manifest: {
+    url: "/manifest.json",
+    type: "application/manifest+json",
+  },
   icons: {
     icon: "/favicon.svg",
     apple: "/favicon.svg",
