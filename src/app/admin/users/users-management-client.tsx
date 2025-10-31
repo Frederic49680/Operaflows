@@ -39,6 +39,7 @@ export default function UsersManagementClient({
   const [activeTab, setActiveTab] = useState<"users" | "requests">("requests");
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [showAcceptModal, setShowAcceptModal] = useState<UserRequest | null>(null);
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
   const [selectedSiteIds, setSelectedSiteIds] = useState<string[]>([]);
