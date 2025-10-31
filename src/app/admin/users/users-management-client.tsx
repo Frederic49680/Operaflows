@@ -35,6 +35,10 @@ export default function UsersManagementClient({
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
   const [selectedSiteId, setSelectedSiteId] = useState<string>("");
 
+  // Debug côté client
+  console.log("Client - pendingRequests:", pendingRequests);
+  console.log("Client - pendingRequests.length:", pendingRequests?.length || 0);
+
   const handleAcceptRequest = async (request: UserRequest) => {
     setShowAcceptModal(request);
     setSelectedRoleId(roles[0]?.id || "");
@@ -212,7 +216,16 @@ export default function UsersManagementClient({
             <h2 className="text-xl font-semibold text-secondary mb-4">
               Demandes d&apos;accès en attente
             </h2>
-            {pendingRequests.length === 0 ? (
+            {/* Debug */}
+            <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
+              Debug: {pendingRequests?.length || 0} demande(s) trouvée(s)
+              {pendingRequests && pendingRequests.length > 0 && (
+                <div className="mt-2">
+                  Première demande: {pendingRequests[0].nom} {pendingRequests[0].prenom}
+                </div>
+              )}
+            </div>
+            {!pendingRequests || pendingRequests.length === 0 ? (
               <p className="text-gray-500">Aucune demande en attente</p>
             ) : (
               <div className="overflow-x-auto">
@@ -234,33 +247,45 @@ export default function UsersManagementClient({
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {pendingRequests.map((request) => (
-                      <tr key={request.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {request.nom} {request.prenom}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">{request.email}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {new Date(request.created_at).toLocaleDateString("fr-FR")}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            onClick={() => handleAcceptRequest(request)}
-                            className="text-green-600 hover:text-green-900 mr-4"
-                            disabled={loading === request.id}
-                          >
-                            ✅ Accepter
-                          </button>
-                          <button
-                            onClick={() => handleRejectRequest(request.id)}
-                            className="text-red-600 hover:text-red-900"
-                            disabled={loading === request.id}
-                          >
-                            ❌ Refuser
-                          </button>
+                    {pendingRequests && pendingRequests.length > 0 ? (
+                      pendingRequests.map((request) => (
+                        <tr key={request.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {request.nom} {request.prenom}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {request.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {request.created_at
+                              ? new Date(request.created_at).toLocaleDateString("fr-FR")
+                              : "N/A"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                              onClick={() => handleAcceptRequest(request)}
+                              className="text-green-600 hover:text-green-900 mr-4 disabled:opacity-50"
+                              disabled={loading === request.id}
+                            >
+                              ✅ Accepter
+                            </button>
+                            <button
+                              onClick={() => handleRejectRequest(request.id)}
+                              className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                              disabled={loading === request.id}
+                            >
+                              ❌ Refuser
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                          Aucune demande en attente
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>

@@ -66,10 +66,13 @@ export default async function UsersManagementPage() {
     .select("*")
     .order("name");
 
+  // S'assurer que les données sont bien passées
+  const pendingRequestsArray = Array.isArray(pendingRequests) ? pendingRequests : [];
+  
   return (
     <UsersManagementClient
       users={users || []}
-      pendingRequests={pendingRequests || []}
+      pendingRequests={pendingRequestsArray}
       roles={roles || []}
     />
   );
