@@ -21,22 +21,53 @@ export default async function SitesPage() {
     redirect("/unauthorized");
   }
 
-  // Récupérer les sites avec leurs responsables (inclure tous les sites, actifs et inactifs pour l'affichage)
-  const { data: sites, error: sitesError } = await supabase
+  // Récupérer d'abord les sites sans les responsables pour diagnostiquer
+  const { data: sitesRaw, error: sitesError } = await supabase
     .from("tbl_sites")
-    .select(`
-      *,
-      responsables:tbl_site_responsables!tbl_site_responsables_site_id_fkey(
-        *,
-        collaborateur:collaborateurs!tbl_site_responsables_collaborateur_id_fkey(
-          id, nom, prenom, email
-        )
-      )
-    `)
+    .select("*")
     .order("site_code", { ascending: true });
 
+  // Logs de debug en développement
+  if (process.env.NODE_ENV === "development") {
+    console.log("🔍 DEBUG Sites (sans responsables) - Nombre:", sitesRaw?.length || 0);
+    console.log("🔍 DEBUG Sites - Erreur:", sitesError);
+    if (sitesRaw && sitesRaw.length > 0) {
+      console.log("🔍 DEBUG Sites - Premier site:", sitesRaw[0]);
+    }
+  }
+
+  // Si on a réussi à récupérer les sites, récupérer aussi les responsables
+  let sites = sitesRaw || [];
+  if (sites.length > 0) {
+    const { data: sitesWithResponsables, error: responsablesError } = await supabase
+      .from("tbl_sites")
+      .select(`
+        *,
+        responsables:tbl_site_responsables!tbl_site_responsables_site_id_fkey(
+          *,
+          collaborateur:collaborateurs!tbl_site_responsables_collaborateur_id_fkey(
+            id, nom, prenom, email
+          )
+        )
+      `)
+      .order("site_code", { ascending: true });
+
+    if (responsablesError) {
+      console.error("⚠️ Erreur récupération responsables (non bloquante):", responsablesError);
+      // Utiliser les sites sans responsables si la jointure échoue
+      sites = sitesRaw || [];
+    } else {
+      sites = sitesWithResponsables || [];
+    }
+  }
+
   if (sitesError) {
-    console.error("Erreur récupération sites:", sitesError);
+    console.error("❌ Erreur récupération sites:", sitesError);
+    // Log détaillé de l'erreur
+    console.error("Code:", sitesError.code);
+    console.error("Message:", sitesError.message);
+    console.error("Details:", sitesError.details);
+    console.error("Hint:", sitesError.hint);
   }
 
   // Formater les données pour le client
