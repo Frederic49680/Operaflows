@@ -1,6 +1,34 @@
 -- Migration 016 : Fix ambiguïté user_id pour tbl_sites
 -- Corrige l'erreur "column reference 'user_id' is ambiguous" lors de l'insertion
 
+-- ============================================================================
+-- 1. Fix ambiguïté dans la fonction is_rh_or_admin
+-- ============================================================================
+-- Le problème : le paramètre user_id entre en conflit avec ur.user_id dans la requête
+-- Solution : Renommer le paramètre ou qualifier explicitement la colonne
+
+CREATE OR REPLACE FUNCTION public.is_rh_or_admin(p_user_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 
+    FROM public.user_roles ur
+    INNER JOIN public.roles r ON ur.role_id = r.id
+    WHERE ur.user_id = p_user_id 
+    AND (
+      r.name = 'Administrateur' 
+      OR r.name LIKE '%RH%'
+      OR r.name LIKE '%Formation%'
+      OR r.name LIKE '%Dosimétrie%'
+    )
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================================================
+-- 2. Fix trigger pour gérer created_by et updated_by
+-- ============================================================================
+
 -- Supprimer les triggers existants si nécessaire
 DROP TRIGGER IF EXISTS trigger_tbl_sites_created_by ON public.tbl_sites;
 DROP TRIGGER IF EXISTS trigger_tbl_sites_updated_by ON public.tbl_sites;
