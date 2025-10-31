@@ -22,22 +22,21 @@ Erreur création session: {code: '42702', details: 'It could refer to either a P
 
 ```sql
 -- Fix: Corriger la référence ambiguë user_id dans update_derniere_connexion
--- Cette fonction est déclenchée lors de l'insertion ou mise à jour dans tbl_users
+-- Cette fonction est déclenchée par un trigger AFTER INSERT sur tbl_sessions
 
 CREATE OR REPLACE FUNCTION public.update_derniere_connexion()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_user_id UUID;
 BEGIN
-  -- Qualification explicite de user_id pour éviter l'ambiguïté
-  IF OLD IS NULL THEN
-    -- INSERT: on utilise NEW.id pour obtenir le user_id
+  -- Récupérer explicitement user_id depuis NEW (tbl_sessions)
+  v_user_id := NEW.user_id;
+  
+  -- Mettre à jour derniere_connexion dans tbl_users
+  IF NEW.date_debut IS NOT NULL THEN
     UPDATE public.tbl_users
-    SET derniere_connexion = CURRENT_TIMESTAMP
-    WHERE public.tbl_users.id = NEW.id;
-  ELSE
-    -- UPDATE: on utilise OLD.id (ou NEW.id, les deux sont identiques)
-    UPDATE public.tbl_users
-    SET derniere_connexion = CURRENT_TIMESTAMP
-    WHERE public.tbl_users.id = OLD.id;
+    SET derniere_connexion = NEW.date_debut
+    WHERE public.tbl_users.id = v_user_id;
   END IF;
   
   RETURN NEW;
