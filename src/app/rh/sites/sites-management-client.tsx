@@ -299,6 +299,7 @@ function SiteForm({
   onCancel,
   loading,
   error,
+  success,
 }: {
   site: SiteAvecResponsables | null;
   allSites: SiteAvecResponsables[];
