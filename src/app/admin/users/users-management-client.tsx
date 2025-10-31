@@ -108,12 +108,21 @@ export default function UsersManagementClient({
         })
         .eq("id", showAcceptModal.id);
 
-      // Envoyer l'email (sera fait côté serveur dans l'API route)
-
-      router.refresh();
+      // Fermer le modal et afficher un message de succès
       setShowAcceptModal(null);
       setSelectedRoleId("");
       setSelectedSiteIds([]);
+      setError(null);
+      setSuccess("Compte créé avec succès ! L'utilisateur apparaît maintenant dans la liste des utilisateurs.");
+      
+      // Basculer vers l'onglet Utilisateurs pour voir le nouvel utilisateur
+      setActiveTab("users");
+      
+      // Forcer le rafraîchissement de la page pour afficher les nouvelles données
+      router.refresh();
+      
+      // Effacer le message de succès après 5 secondes
+      setTimeout(() => setSuccess(null), 5000);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erreur lors de l'acceptation de la demande";
       setError(errorMessage);
