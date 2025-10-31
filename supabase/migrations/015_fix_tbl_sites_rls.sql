@@ -55,9 +55,10 @@ CREATE POLICY "RH/Admin can manage all sites"
 -- Fix RLS pour tbl_site_responsables
 -- ============================================================================
 
--- Supprimer les anciennes politiques
+-- Supprimer toutes les politiques existantes avant de créer les nouvelles
 DROP POLICY IF EXISTS "Authenticated users can view site responsables" ON public.tbl_site_responsables;
 DROP POLICY IF EXISTS "Admins and RH can manage site responsables" ON public.tbl_site_responsables;
+DROP POLICY IF EXISTS "RH/Admin can manage site responsables" ON public.tbl_site_responsables;
 
 -- Nouvelle politique : Utilisateurs authentifiés peuvent voir les responsables
 CREATE POLICY "Authenticated users can view site responsables"
