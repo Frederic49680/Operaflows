@@ -119,7 +119,14 @@ export default function LoginPage() {
             
             if (sessionError) {
               // Ignorer les erreurs de session (ne pas bloquer la connexion)
-              console.error("Erreur création session:", sessionError);
+              // Logger l'erreur complète pour diagnostic
+              console.error("Erreur création session:", {
+                code: sessionError.code,
+                message: sessionError.message,
+                details: sessionError.details,
+                hint: sessionError.hint,
+                fullError: sessionError
+              });
             }
           } catch (err) {
             // Ignorer les erreurs de session (ne pas bloquer la connexion)
