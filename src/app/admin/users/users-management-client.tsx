@@ -373,57 +373,68 @@ export default function UsersManagementClient({
               </h3>
               <div className="space-y-4">
                 <div>
+                  <label className="block text-sm font-medium text-secondary mb-1">
+                    Rôle *
+                  </label>
+                  <select
+                    value={selectedRoleId}
+                    onChange={(e) => setSelectedRoleId(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900 text-sm"
+                    style={{
+                      color: '#111827',
+                    }}
+                  >
+                    <option value="" style={{ color: '#6B7280' }}>Sélectionner un rôle</option>
+                    {roles.map((role) => (
+                      <option 
+                        key={role.id} 
+                        value={role.id}
+                        style={{ color: '#111827', backgroundColor: '#ffffff' }}
+                      >
+                        {role.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-secondary mb-2">
-                    Rôles * (choix multiple)
+                    Sites (optionnel - choix multiple)
                   </label>
                   <div className="max-h-60 overflow-y-auto border border-gray-300 rounded-lg p-3 bg-white">
-                    {roles.length === 0 ? (
-                      <p className="text-sm text-gray-500">Aucun rôle disponible</p>
+                    {sites.length === 0 ? (
+                      <p className="text-sm text-gray-500">Aucun site disponible</p>
                     ) : (
                       <div className="space-y-2">
-                        {roles.map((role) => (
+                        {sites.map((site) => (
                           <label
-                            key={role.id}
+                            key={site.site_id}
                             className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                           >
                             <input
                               type="checkbox"
-                              checked={selectedRoleIds.includes(role.id)}
-                              onChange={() => handleToggleRole(role.id)}
+                              checked={selectedSiteIds.includes(site.site_id)}
+                              onChange={() => handleToggleSite(site.site_id)}
                               className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2 cursor-pointer"
                               style={{
                                 color: '#4F46E5',
-                                backgroundColor: selectedRoleIds.includes(role.id) ? '#4F46E5' : '#ffffff',
+                                backgroundColor: selectedSiteIds.includes(site.site_id) ? '#4F46E5' : '#ffffff',
                               }}
                             />
                             <div className="flex-1">
-                              <span className="text-sm font-medium text-gray-900">{role.name}</span>
-                              {role.description && (
-                                <p className="text-xs text-gray-500 mt-0.5">{role.description}</p>
-                              )}
+                              <span className="text-sm font-medium text-gray-900">
+                                {site.site_code} - {site.site_label}
+                              </span>
                             </div>
                           </label>
                         ))}
                       </div>
                     )}
                   </div>
-                  {selectedRoleIds.length > 0 && (
+                  {selectedSiteIds.length > 0 && (
                     <p className="mt-2 text-xs text-gray-600">
-                      {selectedRoleIds.length} rôle{selectedRoleIds.length > 1 ? 's' : ''} sélectionné{selectedRoleIds.length > 1 ? 's' : ''}
+                      {selectedSiteIds.length} site{selectedSiteIds.length > 1 ? 's' : ''} sélectionné{selectedSiteIds.length > 1 ? 's' : ''}
                     </p>
                   )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-secondary mb-1">
-                    Site (optionnel)
-                  </label>
-                  <input
-                    type="text"
-                    value={selectedSiteId}
-                    onChange={(e) => setSelectedSiteId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900"
-                    placeholder="Ex: Site A, Site B"
-                  />
                 </div>
                 <div className="flex space-x-2">
                   <button
