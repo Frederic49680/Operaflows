@@ -27,6 +27,11 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Supprimer les anciennes politiques avant de créer les nouvelles
+DROP POLICY IF EXISTS "Authenticated users can view active sites" ON public.tbl_sites;
+DROP POLICY IF EXISTS "RH/Admin can view all sites" ON public.tbl_sites;
+DROP POLICY IF EXISTS "RH/Admin can manage all sites" ON public.tbl_sites;
+
 -- Nouvelle politique : Utilisateurs authentifiés peuvent voir les sites actifs
 CREATE POLICY "Authenticated users can view active sites"
     ON public.tbl_sites FOR SELECT
