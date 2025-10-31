@@ -16,42 +16,51 @@ type User = Database["public"]["Tables"]["tbl_users"]["Row"] & {
 type UserRequest = Database["public"]["Tables"]["tbl_user_requests"]["Row"];
 type Role = Database["public"]["Tables"]["roles"]["Row"];
 
+type Site = {
+  site_id: string;
+  site_code: string;
+  site_label: string;
+};
+
 interface Props {
   users: User[];
   pendingRequests: UserRequest[];
   roles: Role[];
+  sites: Site[];
 }
 
 export default function UsersManagementClient({
   users,
   pendingRequests,
   roles,
+  sites,
 }: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"users" | "requests">("requests");
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showAcceptModal, setShowAcceptModal] = useState<UserRequest | null>(null);
-  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
-  const [selectedSiteId, setSelectedSiteId] = useState<string>("");
+  const [selectedRoleId, setSelectedRoleId] = useState<string>("");
+  const [selectedSiteIds, setSelectedSiteIds] = useState<string[]>([]);
 
 
   const handleAcceptRequest = async (request: UserRequest) => {
     setShowAcceptModal(request);
-    setSelectedRoleIds([]); // Réinitialiser les sélections
+    setSelectedRoleId(roles[0]?.id || ""); // Réinitialiser avec le premier rôle
+    setSelectedSiteIds([]); // Réinitialiser les sélections de sites
   };
 
-  const handleToggleRole = (roleId: string) => {
-    setSelectedRoleIds((prev) =>
-      prev.includes(roleId)
-        ? prev.filter((id) => id !== roleId)
-        : [...prev, roleId]
+  const handleToggleSite = (siteId: string) => {
+    setSelectedSiteIds((prev) =>
+      prev.includes(siteId)
+        ? prev.filter((id) => id !== siteId)
+        : [...prev, siteId]
     );
   };
 
   const confirmAcceptRequest = async () => {
-    if (!showAcceptModal || selectedRoleIds.length === 0) {
-      setError("Veuillez sélectionner au moins un rôle");
+    if (!showAcceptModal || !selectedRoleId) {
+      setError("Veuillez sélectionner un rôle");
       return;
     }
 
@@ -77,8 +86,8 @@ export default function UsersManagementClient({
           password,
           nom: showAcceptModal.nom,
           prenom: showAcceptModal.prenom,
-          role_ids: selectedRoleIds, // Envoyer un tableau de rôles
-          site_id: selectedSiteId,
+          role_id: selectedRoleId,
+          site_ids: selectedSiteIds, // Envoyer un tableau de sites
         }),
       });
 
@@ -94,8 +103,8 @@ export default function UsersManagementClient({
           statut: "acceptee",
           traite_par: (await supabase.auth.getUser()).data.user?.id || null,
           date_traitement: new Date().toISOString(),
-          role_attribue_id: selectedRoleIds[0] || null, // Prendre le premier rôle pour compatibilité
-          site_id: selectedSiteId,
+          role_attribue_id: selectedRoleId,
+          site_id: selectedSiteIds[0] || null, // Prendre le premier site pour compatibilité
         })
         .eq("id", showAcceptModal.id);
 
@@ -103,8 +112,8 @@ export default function UsersManagementClient({
 
       router.refresh();
       setShowAcceptModal(null);
-      setSelectedRoleIds([]);
-      setSelectedSiteId("");
+      setSelectedRoleId("");
+      setSelectedSiteIds([]);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erreur lors de l'acceptation de la demande";
       setError(errorMessage);
@@ -419,7 +428,7 @@ export default function UsersManagementClient({
                 <div className="flex space-x-2">
                   <button
                     onClick={confirmAcceptRequest}
-                    disabled={selectedRoleIds.length === 0 || loading === showAcceptModal.id}
+                    disabled={!selectedRoleId || loading === showAcceptModal.id}
                     className="btn-primary flex-1 disabled:opacity-50"
                   >
                     {loading === showAcceptModal.id ? "Création..." : "Créer le compte"}

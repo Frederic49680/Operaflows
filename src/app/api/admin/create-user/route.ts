@@ -33,19 +33,19 @@ interface AuditLogInsert {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password, nom, prenom, role_id, role_ids, site_id } = body;
+    const { email, password, nom, prenom, role_id, site_id, site_ids } = body;
 
-    // Support pour role_id (ancien) et role_ids (nouveau - multiple)
-    const roleIds = role_ids && Array.isArray(role_ids) && role_ids.length > 0 
-      ? role_ids 
-      : (role_id ? [role_id] : []);
-
-    if (!email || !password || roleIds.length === 0) {
+    if (!email || !password || !role_id) {
       return NextResponse.json(
-        { error: "Email, mot de passe et au moins un rôle requis" },
+        { error: "Email, mot de passe et rôle requis" },
         { status: 400 }
       );
     }
+
+    // Support pour site_id (ancien) et site_ids (nouveau - multiple)
+    const siteIds = site_ids && Array.isArray(site_ids) && site_ids.length > 0 
+      ? site_ids 
+      : (site_id ? [site_id] : []);
 
     // Utiliser le service role key pour créer l'utilisateur
     const supabaseAdmin = createClient<Database>(
@@ -80,11 +80,10 @@ export async function POST(request: Request) {
     passwordExpiresAt.setHours(passwordExpiresAt.getHours() + 48);
 
     // Créer l'utilisateur dans tbl_users
-    // Prendre le premier rôle pour role_id (compatibilité avec l'ancien système)
     const userData: TblUsersInsert = {
       id: userId,
       email,
-      role_id: roleIds[0] || null,
+      role_id,
       statut: "actif",
       password_expires_at: passwordExpiresAt.toISOString(),
     };
@@ -101,12 +100,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // Créer les associations user_roles pour tous les rôles sélectionnés
-    if (roleIds.length > 0) {
-      const rolesData: UserRolesInsert[] = roleIds.map((roleId: string) => ({
+    // Créer l'association user_roles avec le rôle et tous les sites sélectionnés
+    // Si plusieurs sites sont sélectionnés, créer une entrée user_roles pour chaque site
+    if (siteIds.length > 0) {
+      const rolesData: UserRolesInsert[] = siteIds.map((siteId: string) => ({
         user_id: userId,
-        role_id: roleId,
-        site_id: site_id || null,
+        role_id,
+        site_id: siteId,
       }));
 
       const { error: roleError } = await supabaseAdmin
@@ -114,7 +114,21 @@ export async function POST(request: Request) {
         .insert(rolesData as never);
 
       if (roleError) {
-        console.error("Erreur attribution rôles:", roleError);
+        console.error("Erreur attribution rôles avec sites:", roleError);
+      }
+    } else {
+      // Si aucun site n'est sélectionné, créer une entrée user_roles sans site (rôle global)
+      const roleData: UserRolesInsert = {
+        user_id: userId,
+        role_id,
+        site_id: null,
+      };
+      const { error: roleError } = await supabaseAdmin
+        .from("user_roles")
+        .insert(roleData as never);
+
+      if (roleError) {
+        console.error("Erreur attribution rôle:", roleError);
         // Ne pas rollback, l'utilisateur peut être créé sans rôle attribué
       }
     }
@@ -134,8 +148,8 @@ export async function POST(request: Request) {
       entite_id: userId,
       details: {
         email,
-        role_ids: roleIds,
-        site_id,
+        role_id,
+        site_ids: siteIds,
       } as Json,
     };
     await supabaseAdmin.from("tbl_audit_log").insert(auditData as never);

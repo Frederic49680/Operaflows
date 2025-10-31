@@ -60,6 +60,13 @@ export default async function UsersManagementPage() {
     .select("*")
     .order("name");
 
+  // Récupérer tous les sites actifs pour le formulaire d'attribution
+  const { data: sites } = await supabase
+    .from("tbl_sites")
+    .select("site_id, site_code, site_label")
+    .eq("is_active", true)
+    .order("site_code", { ascending: true });
+
   // S'assurer que les données sont bien passées
   const pendingRequestsArray = Array.isArray(pendingRequests) ? pendingRequests : [];
   
@@ -68,6 +75,7 @@ export default async function UsersManagementPage() {
       users={users || []}
       pendingRequests={pendingRequestsArray}
       roles={roles || []}
+      sites={sites || []}
     />
   );
 }
