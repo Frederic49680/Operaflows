@@ -39,14 +39,19 @@ export default async function SafeHeader() {
     // Ignorer les erreurs silencieusement (utilisateur peut ne pas être dans tbl_users)
 
     // Récupérer les rôles de l'utilisateur
-    const { data: userRoles } = await supabase
-      .from("user_roles")
-      .select("roles(name, description)")
-      .eq("user_id", user.id)
-      .catch(() => ({ data: [] })); // Fallback si erreur
+    let userRoles: any[] = [];
+    try {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("roles(name, description)")
+        .eq("user_id", user.id);
+      userRoles = data || [];
+    } catch (e) {
+      // Ignorer l'erreur, userRoles reste []
+    }
 
     // Extraire les rôles
-    const roles = (userRoles?.data || userRoles || [])
+    const roles = userRoles
       .map((ur: any) => {
         const role = Array.isArray(ur.roles) ? ur.roles[0] : ur.roles;
         return role;
