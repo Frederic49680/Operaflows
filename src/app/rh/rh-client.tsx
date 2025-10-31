@@ -30,7 +30,7 @@ export default function RHPageClient({
   });
 
   const alertesUrgentes = alertes.filter(
-    (a) => a.statut_alerte === "expiree" || a.statut_restants <= 7
+    (a) => a.statut_alerte === "expiree" || (a.jours_restants !== null && a.jours_restants <= 7)
   );
 
   return (

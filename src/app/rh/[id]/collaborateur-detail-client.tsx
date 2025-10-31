@@ -335,7 +335,19 @@ function OngletCompetences({
   hasRHAccess,
 }: {
   habilitations: Habilitation[];
-  competences: any[];
+  competences: Array<{
+    id: string;
+    collaborateur_id: string;
+    competence_id: string;
+    niveau?: string | null;
+    date_obtention?: string | null;
+    date_expiration?: string | null;
+    statut: string;
+    competence?: {
+      id: string;
+      libelle: string;
+    } | null;
+  }>;
   hasRHAccess: boolean;
 }) {
   return (
