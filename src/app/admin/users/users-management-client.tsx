@@ -361,8 +361,8 @@ export default function UsersManagementClient({
 
         {/* Modal d'acceptation */}
         {showAcceptModal && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+            <div className="relative mx-auto p-6 border border-gray-200 w-96 shadow-xl rounded-lg bg-white max-h-[90vh] overflow-y-auto">
               <h3 className="text-lg font-bold text-secondary mb-4">
                 Attribuer un rôle à {showAcceptModal.nom} {showAcceptModal.prenom}
               </h3>
@@ -374,11 +374,18 @@ export default function UsersManagementClient({
                   <select
                     value={selectedRoleId}
                     onChange={(e) => setSelectedRoleId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900 text-sm"
+                    style={{
+                      color: '#111827',
+                    }}
                   >
-                    <option value="">Sélectionner un rôle</option>
+                    <option value="" style={{ color: '#6B7280' }}>Sélectionner un rôle</option>
                     {roles.map((role) => (
-                      <option key={role.id} value={role.id}>
+                      <option 
+                        key={role.id} 
+                        value={role.id}
+                        style={{ color: '#111827', backgroundColor: '#ffffff' }}
+                      >
                         {role.name}
                       </option>
                     ))}
@@ -392,7 +399,7 @@ export default function UsersManagementClient({
                     type="text"
                     value={selectedSiteId}
                     onChange={(e) => setSelectedSiteId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white text-gray-900"
                     placeholder="Ex: Site A, Site B"
                   />
                 </div>

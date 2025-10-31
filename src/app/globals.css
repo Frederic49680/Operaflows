@@ -46,3 +46,21 @@ body {
   @apply bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-dark transition-colors duration-200;
 }
 
+/* Amélioration de la lisibilité des selects */
+select {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}
+
+select option {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}
+
+select option:hover,
+select option:focus,
+select option:checked {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
