@@ -60,6 +60,11 @@ export interface SiteAvecResponsables extends Site {
     role_fonctionnel: string;
     date_debut: string;
     date_fin?: string | null;
+    collaborateur?: {
+      nom: string;
+      prenom: string;
+      email?: string;
+    } | null;
   }>;
 }
 

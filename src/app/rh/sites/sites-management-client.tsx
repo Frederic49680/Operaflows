@@ -13,7 +13,7 @@ interface SitesManagementClientProps {
 export default function SitesManagementClient({
   sites: initialSites,
 }: SitesManagementClientProps) {
-  const [sites, setSites] = useState(initialSites);
+  const [sites] = useState(initialSites);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSite, setSelectedSite] = useState<SiteAvecResponsables | null>(null);
   const [loading, setLoading] = useState(false);
