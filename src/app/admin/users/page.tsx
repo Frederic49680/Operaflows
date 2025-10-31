@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/supabase";
 import UsersManagementClient from "./users-management-client";
 
 export default async function UsersManagementPage() {
@@ -28,8 +30,26 @@ export default async function UsersManagementPage() {
     redirect("/unauthorized");
   }
 
+  // Utiliser le service role key pour bypasser RLS et récupérer tous les utilisateurs
+  // Car les politiques RLS peuvent bloquer les jointures complexes
+  const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? createClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
+        }
+      )
+    : null;
+
   // Récupérer les utilisateurs avec leurs rôles via user_roles
-  const { data: users } = await supabase
+  // Utiliser le client admin si disponible pour bypasser RLS
+  const clientToUse = supabaseAdmin || supabase;
+  
+  const { data: users, error: usersError } = await clientToUse
     .from("tbl_users")
     .select(`
       *,
@@ -40,6 +60,19 @@ export default async function UsersManagementPage() {
       collaborateurs(nom, prenom)
     `)
     .order("created_at", { ascending: false });
+
+  // Log pour debug en développement
+  if (process.env.NODE_ENV === "development") {
+    console.log("🔍 DEBUG Users:", {
+      usersCount: users?.length || 0,
+      usersError,
+      hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    });
+  }
+
+  if (usersError) {
+    console.error("❌ Erreur récupération utilisateurs:", usersError);
+  }
 
   // Récupérer les demandes en attente (en_attente et en_attente_validation_mail)
   // Utiliser le client admin pour bypasser RLS temporairement si nécessaire
