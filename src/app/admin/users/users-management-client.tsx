@@ -77,7 +77,7 @@ export default function UsersManagementClient({
           password,
           nom: showAcceptModal.nom,
           prenom: showAcceptModal.prenom,
-          role_id: selectedRoleId,
+          role_ids: selectedRoleIds, // Envoyer un tableau de rôles
           site_id: selectedSiteId,
         }),
       });
