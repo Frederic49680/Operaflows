@@ -422,14 +422,15 @@ ALTER TABLE public.competences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.collaborateurs_competences ENABLE ROW LEVEL SECURITY;
 
 -- Fonction helper pour vérifier si RH/Admin
-CREATE OR REPLACE FUNCTION public.is_rh_or_admin(user_id UUID)
+-- Note: Le paramètre est renommé p_user_id pour éviter l'ambiguïté avec ur.user_id
+CREATE OR REPLACE FUNCTION public.is_rh_or_admin(p_user_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
   RETURN EXISTS (
     SELECT 1 
     FROM public.user_roles ur
     INNER JOIN public.roles r ON ur.role_id = r.id
-    WHERE ur.user_id = user_id 
+    WHERE ur.user_id = p_user_id 
     AND (
       r.name = 'Administrateur' 
       OR r.name LIKE '%RH%'
