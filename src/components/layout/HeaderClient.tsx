@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClientSupabase } from "@/lib/supabase/client";
 import {
   LayoutDashboard,
   Users,
@@ -60,7 +60,7 @@ export default function HeaderClient({
   const router = useRouter();
 
   const handleLogout = async () => {
-    const supabase = createClient();
+    const supabase = createClientSupabase();
     await supabase.auth.signOut();
     router.push("/login");
     router.refresh();
