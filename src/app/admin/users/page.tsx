@@ -75,8 +75,8 @@ export default async function UsersManagementPage() {
   }
 
   // Récupérer les demandes en attente (en_attente et en_attente_validation_mail)
-  // Utiliser le client admin pour bypasser RLS temporairement si nécessaire
-  const { data: pendingRequests, error: requestsError } = await supabase
+  // Utiliser le client admin pour bypasser RLS si disponible
+  const { data: pendingRequests, error: requestsError } = await clientToUse
     .from("tbl_user_requests")
     .select("*")
     .in("statut", ["en_attente", "en_attente_validation_mail"])
@@ -88,13 +88,13 @@ export default async function UsersManagementPage() {
   }
 
   // Récupérer tous les rôles pour le formulaire d'attribution
-  const { data: roles } = await supabase
+  const { data: roles } = await clientToUse
     .from("roles")
     .select("*")
     .order("name");
 
   // Récupérer tous les sites actifs pour le formulaire d'attribution
-  const { data: sites } = await supabase
+  const { data: sites } = await clientToUse
     .from("tbl_sites")
     .select("site_id, site_code, site_label")
     .eq("is_active", true)
