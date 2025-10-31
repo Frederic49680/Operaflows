@@ -26,6 +26,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import Modal from "@/components/rh/Modal";
 import HabilitationForm from "@/components/rh/forms/HabilitationForm";
+import AbsenceForm from "@/components/rh/forms/AbsenceForm";
 
 interface CollaborateurDetailClientProps {
   collaborateur: Collaborateur;
@@ -180,7 +181,6 @@ export default function CollaborateurDetailClient({
               habilitations={habilitations}
               competences={competences}
               hasRHAccess={hasRHAccess}
-              collaborateurId={collaborateur.id}
               onAddHabilitation={() => {
                 setSelectedHabilitation(null);
                 setModalHabilitationOpen(true);
@@ -208,7 +208,6 @@ export default function CollaborateurDetailClient({
               absences={absences}
               formations={formations}
               canValidate={hasRHAccess || false}
-              collaborateurId={collaborateur.id}
               hasRHAccess={hasRHAccess}
               onAddAbsence={() => {
                 setSelectedAbsence(null);
@@ -408,7 +407,6 @@ function OngletCompetences({
   habilitations,
   competences,
   hasRHAccess,
-  collaborateurId,
   onAddHabilitation,
   onEditHabilitation,
 }: {
@@ -427,7 +425,6 @@ function OngletCompetences({
     } | null;
   }>;
   hasRHAccess: boolean;
-  collaborateurId: string;
   onAddHabilitation: () => void;
   onEditHabilitation: (hab: Habilitation) => void;
 }) {
@@ -765,7 +762,6 @@ function OngletAbsences({
   absences,
   formations,
   canValidate,
-  collaborateurId,
   hasRHAccess,
   onAddAbsence,
   onEditAbsence,
@@ -773,7 +769,6 @@ function OngletAbsences({
   absences: Absence[];
   formations: Formation[];
   canValidate: boolean;
-  collaborateurId: string;
   hasRHAccess: boolean;
   onAddAbsence: () => void;
   onEditAbsence: (abs: Absence) => void;
