@@ -434,6 +434,7 @@ CREATE POLICY "RH voit tous historiques" ON public.historique_validations_absenc
 -- ============================================
 -- 8. VUE : Liste des absences avec détails du catalogue
 -- ============================================
+DROP VIEW IF EXISTS public.v_absences_detail;
 CREATE OR REPLACE VIEW public.v_absences_detail AS
 SELECT 
   a.*,
