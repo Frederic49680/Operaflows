@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     // Vérifier que l'utilisateur peut créer une absence pour ce collaborateur
     const { data: collab } = await supabase
       .from("collaborateurs")
-      .select("user_id, responsable_id")
+      .select("user_id, responsable_id, responsable_activite_id")
       .eq("id", collaborateur_id)
       .maybeSingle();
 
@@ -105,14 +105,19 @@ export async function POST(request: Request) {
     
     // Vérifier si l'utilisateur est responsable de ce collaborateur
     let isResponsable = false;
-    if (collab.responsable_id) {
-      const { data: responsable } = await supabase
+    if (collab.responsable_id || collab.responsable_activite_id) {
+      // Récupérer le profil collaborateur de l'utilisateur actuel
+      const { data: monCollaborateur } = await supabase
         .from("collaborateurs")
-        .select("user_id")
-        .eq("id", collab.responsable_id)
+        .select("id")
+        .eq("user_id", user.id)
         .maybeSingle();
       
-      isResponsable = responsable?.user_id === user.id;
+      if (monCollaborateur) {
+        isResponsable = 
+          collab.responsable_id === monCollaborateur.id ||
+          collab.responsable_activite_id === monCollaborateur.id;
+      }
     }
 
     if (!hasRHAccess && !isOwner && !isResponsable) {
@@ -122,15 +127,42 @@ export async function POST(request: Request) {
       );
     }
 
+    // Si le collaborateur n'a pas de compte (user_id IS NULL) ET que c'est le N+1 qui crée la demande
+    // Alors on valide automatiquement au niveau N+1
+    const collaborateurSansCompte = !collab.user_id;
+    const statutInitial = absenceData.statut || "en_attente_validation_n1";
+    
+    let statutFinal = statutInitial;
+    let valideParN1 = null as string | null;
+    let dateValidationN1 = null as string | null;
+    
+    if (collaborateurSansCompte && isResponsable && statutInitial === "en_attente_validation_n1") {
+      // Le N+1 crée pour un collaborateur sans compte : validation automatique N+1
+      statutFinal = "validee_n1";
+      valideParN1 = user.id;
+      dateValidationN1 = new Date().toISOString();
+      // Le trigger SQL passera automatiquement en "en_attente_validation_rh"
+    }
+
+    const insertData: Record<string, unknown> = {
+      collaborateur_id,
+      ...absenceData,
+      created_by: user.id,
+      updated_by: user.id,
+      statut: statutFinal,
+    };
+
+    // Si validation automatique N+1, remplir les champs de validation
+    if (valideParN1 && dateValidationN1) {
+      insertData.valide_par_n1 = valideParN1;
+      insertData.date_validation_n1 = dateValidationN1;
+      insertData.valide_par = valideParN1; // Compatibilité avec ancien champ
+      insertData.date_validation = dateValidationN1; // Compatibilité
+    }
+
     const { data, error } = await supabase
       .from("absences")
-      .insert({
-        collaborateur_id,
-        ...absenceData,
-        created_by: user.id,
-        updated_by: user.id,
-        statut: absenceData.statut || "en_attente_validation_n1",
-      })
+      .insert(insertData)
       .select()
       .single();
 
