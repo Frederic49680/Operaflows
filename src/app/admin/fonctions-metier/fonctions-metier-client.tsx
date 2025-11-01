@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Save, X, CheckCircle, AlertTriangle } from "lucide-react";
+import { Plus, X, CheckCircle, AlertTriangle } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase/client";
 
 interface FonctionMetier {
@@ -196,7 +196,7 @@ export default function FonctionsMetierClient({
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [editingId, editValues]);
+  }, [editingId, editValues, handleUpdate, cancelEdit]);
 
   return (
     <>
@@ -224,7 +224,6 @@ export default function FonctionsMetierClient({
             setFormData({
               libelle: "",
               description: "",
-              ordre_affichage: (fonctions.filter(f => f.is_active).length || 0) + 1,
             });
           }}
           className="btn-primary flex items-center gap-2"
