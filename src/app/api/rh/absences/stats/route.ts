@@ -84,8 +84,8 @@ export async function GET(request: Request) {
       `);
 
     const categorieStats: Record<string, { total: number; jours: number }> = {};
-    absencesParCategorie?.forEach((abs) => {
-      const categorie = abs.catalogue_absence?.categorie || "autre";
+    absencesParCategorie?.forEach((abs: any) => {
+      const categorie = (abs.catalogue_absence as { categorie?: string } | null)?.categorie || "autre";
       if (!categorieStats[categorie]) {
         categorieStats[categorie] = { total: 0, jours: 0 };
       }
