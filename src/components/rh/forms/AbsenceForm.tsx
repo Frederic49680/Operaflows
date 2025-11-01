@@ -49,6 +49,34 @@ export default function AbsenceForm({
     commentaire: absence?.commentaire || "",
   });
 
+  // Si pas de catalogue, utiliser des valeurs par défaut (fallback)
+  const defaultCatalogue: CatalogueAbsence[] = catalogue.length > 0 ? catalogue : [
+    {
+      id: "",
+      code: "CP",
+      libelle: "Congés payés",
+      categorie: "legale" as const,
+      besoin_justificatif: false,
+      besoin_validation_n1: true,
+      besoin_validation_rh: true,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: "",
+      code: "RTT",
+      libelle: "RTT",
+      categorie: "legale" as const,
+      besoin_justificatif: false,
+      besoin_validation_n1: true,
+      besoin_validation_rh: true,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+  ];
+
   // Vérifier si le type sélectionné est "Autre"
   const selectedCatalogue = defaultCatalogue.find(cat => cat.id === formData.catalogue_absence_id);
   const isAutreType = selectedCatalogue?.code === "AUTRE" || selectedCatalogue?.libelle === "Autre";
@@ -102,34 +130,6 @@ export default function AbsenceForm({
       setLoading(false);
     }
   };
-
-  // Si pas de catalogue, utiliser des valeurs par défaut (fallback)
-  const defaultCatalogue: CatalogueAbsence[] = catalogue.length > 0 ? catalogue : [
-    {
-      id: "",
-      code: "CP",
-      libelle: "Congés payés",
-      categorie: "legale" as const,
-      besoin_justificatif: false,
-      besoin_validation_n1: true,
-      besoin_validation_rh: true,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: "",
-      code: "RTT",
-      libelle: "RTT",
-      categorie: "legale" as const,
-      besoin_justificatif: false,
-      besoin_validation_n1: true,
-      besoin_validation_rh: true,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
