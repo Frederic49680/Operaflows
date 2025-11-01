@@ -42,11 +42,12 @@ CREATE TABLE IF NOT EXISTS public.catalogue_absences (
   updated_by UUID REFERENCES auth.users(id)
 );
 
-CREATE INDEX idx_catalogue_absences_code ON public.catalogue_absences(code);
-CREATE INDEX idx_catalogue_absences_categorie ON public.catalogue_absences(categorie);
-CREATE INDEX idx_catalogue_absences_is_active ON public.catalogue_absences(is_active);
+CREATE INDEX IF NOT EXISTS idx_catalogue_absences_code ON public.catalogue_absences(code);
+CREATE INDEX IF NOT EXISTS idx_catalogue_absences_categorie ON public.catalogue_absences(categorie);
+CREATE INDEX IF NOT EXISTS idx_catalogue_absences_is_active ON public.catalogue_absences(is_active);
 
 -- Trigger pour updated_at
+DROP TRIGGER IF EXISTS trigger_update_catalogue_absences_updated_at ON public.catalogue_absences;
 CREATE TRIGGER trigger_update_catalogue_absences_updated_at
   BEFORE UPDATE ON public.catalogue_absences
   FOR EACH ROW
@@ -76,10 +77,10 @@ CREATE TABLE IF NOT EXISTS public.historique_validations_absences (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_historique_validations_absence_id ON public.historique_validations_absences(absence_id);
-CREATE INDEX idx_historique_validations_valide_par ON public.historique_validations_absences(valide_par);
-CREATE INDEX idx_historique_validations_date_action ON public.historique_validations_absences(date_action);
-CREATE INDEX idx_historique_validations_niveau ON public.historique_validations_absences(niveau_validation);
+CREATE INDEX IF NOT EXISTS idx_historique_validations_absence_id ON public.historique_validations_absences(absence_id);
+CREATE INDEX IF NOT EXISTS idx_historique_validations_valide_par ON public.historique_validations_absences(valide_par);
+CREATE INDEX IF NOT EXISTS idx_historique_validations_date_action ON public.historique_validations_absences(date_action);
+CREATE INDEX IF NOT EXISTS idx_historique_validations_niveau ON public.historique_validations_absences(niveau_validation);
 
 -- ============================================
 -- 3. MISE À JOUR : Table absences avec nouveaux statuts et champs
@@ -373,11 +374,13 @@ ON CONFLICT (code) DO NOTHING;
 ALTER TABLE public.catalogue_absences ENABLE ROW LEVEL SECURITY;
 
 -- Politique : Tous peuvent lire les absences actives
+DROP POLICY IF EXISTS "Tous peuvent lire catalogue actif" ON public.catalogue_absences;
 CREATE POLICY "Tous peuvent lire catalogue actif" ON public.catalogue_absences
   FOR SELECT
   USING (is_active = true);
 
 -- Politique : RH/Admin peuvent tout faire
+DROP POLICY IF EXISTS "RH peut gérer catalogue" ON public.catalogue_absences;
 CREATE POLICY "RH peut gérer catalogue" ON public.catalogue_absences
   FOR ALL
   USING (
@@ -393,6 +396,7 @@ CREATE POLICY "RH peut gérer catalogue" ON public.catalogue_absences
 ALTER TABLE public.historique_validations_absences ENABLE ROW LEVEL SECURITY;
 
 -- Politique : Collaborateur peut voir l'historique de ses absences
+DROP POLICY IF EXISTS "Collaborateur voit son historique" ON public.historique_validations_absences;
 CREATE POLICY "Collaborateur voit son historique" ON public.historique_validations_absences
   FOR SELECT
   USING (
@@ -405,6 +409,7 @@ CREATE POLICY "Collaborateur voit son historique" ON public.historique_validatio
   );
 
 -- Politique : RH/Admin et responsables peuvent voir tous les historiques
+DROP POLICY IF EXISTS "RH voit tous historiques" ON public.historique_validations_absences;
 CREATE POLICY "RH voit tous historiques" ON public.historique_validations_absences
   FOR SELECT
   USING (
