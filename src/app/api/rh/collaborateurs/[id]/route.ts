@@ -155,6 +155,21 @@ export async function PATCH(
       }
     }
 
+    // Si responsable_activite_id n'est pas fourni mais que site_id l'est (ou est modifié), déterminer automatiquement
+    if (updateData.site_id && typeof updateData.site_id === 'string') {
+      // Si responsable_activite_id n'est pas fourni explicitement, ou si site_id change
+      if (!('responsable_activite_id' in updateData) || updateData.responsable_activite_id === null) {
+        const { data: responsableData, error: responsableError } = await clientToUse
+          .rpc('get_responsable_activite_site', {
+            p_site_id: updateData.site_id
+          });
+        
+        if (!responsableError && responsableData) {
+          updateData.responsable_activite_id = responsableData;
+        }
+      }
+    }
+
     const { data, error } = await clientToUse
       .from("collaborateurs")
       .update(updateData)

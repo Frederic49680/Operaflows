@@ -71,10 +71,34 @@ export default async function RHPage() {
       
       const sitesMap = new Map((sitesData || []).map(s => [s.site_id, s]));
       
-      // Enrichir les collaborateurs avec les données de site
+      // Récupérer les responsables d'activité pour enrichir les collaborateurs
+      const responsablesIds = new Set(
+        collabsData
+          .map(c => c.responsable_activite_id)
+          .filter(Boolean) as string[]
+      );
+      
+      const responsablesMap = new Map();
+      if (responsablesIds.size > 0) {
+        const { data: responsablesData } = await clientToUse
+          .from("collaborateurs")
+          .select("id, nom, prenom")
+          .in("id", Array.from(responsablesIds));
+        
+        if (responsablesData) {
+          responsablesData.forEach(resp => {
+            responsablesMap.set(resp.id, resp);
+          });
+        }
+      }
+      
+      // Enrichir les collaborateurs avec les données de site et responsable
       collaborateurs = collabsData.map(collab => ({
         ...collab,
         site_detail: collab.site_id ? sitesMap.get(collab.site_id) : null,
+        responsable_activite: collab.responsable_activite_id 
+          ? responsablesMap.get(collab.responsable_activite_id) 
+          : null,
       }));
     }
   } else {

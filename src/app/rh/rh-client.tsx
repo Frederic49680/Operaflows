@@ -332,7 +332,9 @@ export default function RHPageClient({
                       </td>
                       {hasRHAccess && (
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {collab.responsable
+                          {collab.responsable_activite
+                            ? `${collab.responsable_activite.prenom} ${collab.responsable_activite.nom}`
+                            : collab.responsable
                             ? `${collab.responsable.prenom} ${collab.responsable.nom}`
                             : "-"}
                         </td>

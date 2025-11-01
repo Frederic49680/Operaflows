@@ -104,6 +104,18 @@ export async function POST(request: Request) {
       }
     });
 
+    // Si responsable_activite_id n'est pas fourni mais que site_id l'est, déterminer automatiquement
+    if (!collaborateurData.responsable_activite_id && collaborateurData.site_id) {
+      const { data: responsableData, error: responsableError } = await supabase
+        .rpc('get_responsable_activite_site', {
+          p_site_id: collaborateurData.site_id
+        });
+      
+      if (!responsableError && responsableData) {
+        collaborateurData.responsable_activite_id = responsableData;
+      }
+    }
+
     const { data, error } = await supabase
       .from("collaborateurs")
       .insert(collaborateurData)
