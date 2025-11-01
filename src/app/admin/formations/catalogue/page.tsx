@@ -37,9 +37,12 @@ export default async function CatalogueFormationsPage() {
   }
 
   // Formater les compétences
-  const formatted = (catalogue || []).map((item: any) => ({
+  const formatted = (catalogue || []).map((item: {
+    competences?: Array<{ competence?: { id: string; libelle: string; code?: string | null } }>;
+    [key: string]: unknown;
+  }) => ({
     ...item,
-    competences: (item.competences || []).map((c: any) => c.competence).filter(Boolean),
+    competences: (item.competences || []).map((c) => c.competence).filter(Boolean),
   }));
 
   // Récupérer les compétences disponibles pour les associer

@@ -49,9 +49,12 @@ export async function GET(request: Request) {
     }
 
     // Formater les compétences
-    const formatted = (data || []).map((item) => ({
+    const formatted = (data || []).map((item: {
+      competences?: Array<{ competence?: { id: string; libelle: string; code?: string | null } }>;
+      [key: string]: unknown;
+    }) => ({
       ...item,
-      competences: (item.competences || []).map((c: any) => c.competence).filter(Boolean),
+      competences: (item.competences || []).map((c) => c.competence).filter(Boolean),
     }));
 
     return NextResponse.json(formatted);

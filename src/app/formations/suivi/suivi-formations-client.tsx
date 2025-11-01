@@ -1,19 +1,46 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AlertTriangle, TrendingUp, CheckCircle, Calendar, DollarSign, BarChart3 } from "lucide-react";
+import { AlertTriangle, CheckCircle, DollarSign, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
+interface AlerteFormation {
+  id: string;
+  collaborateur_id: string;
+  collaborateur_nom: string;
+  collaborateur_prenom: string;
+  formation_libelle?: string | null;
+  catalogue_formation_nom?: string | null;
+  date_echeance_validite: string;
+  statut_alerte: string;
+  jours_restants: number | null;
+}
+
 interface SuiviFormationsClientProps {
-  initialAlertes: any[];
+  initialAlertes: AlerteFormation[];
   sites: Array<{ site_id: string; site_code: string; site_label: string }>;
 }
 
 export default function SuiviFormationsClient({
   initialAlertes,
-  sites,
 }: SuiviFormationsClientProps) {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<{
+    annee: number;
+    total_formations_terminees: number;
+    budget_consomme: number;
+    budget_previsionnel: number;
+    taux_conformite: number;
+    alertes_expirees: number;
+    alertes_imminentes: number;
+    alertes_proches: number;
+    repartition_categorie: Record<string, number>;
+    plan_previsionnel: {
+      total: number;
+      en_attente: number;
+      valide: number;
+    };
+    alertes_detail: AlerteFormation[];
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     annee: new Date().getFullYear().toString(),

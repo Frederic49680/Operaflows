@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Edit, X, CheckCircle, AlertTriangle } from "lucide-react";
+import { Plus, Edit, CheckCircle, AlertTriangle } from "lucide-react";
 import Modal from "@/components/rh/Modal";
 import type { CatalogueFormation } from "@/types/rh";
 
@@ -16,7 +16,7 @@ export default function CatalogueFormationsClient({
   availableCompetences,
 }: CatalogueFormationsClientProps) {
   const router = useRouter();
-  const [catalogue, setCatalogue] = useState<CatalogueFormation[]>(initialCatalogue);
+  const [catalogue] = useState<CatalogueFormation[]>(initialCatalogue);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -95,7 +95,7 @@ export default function CatalogueFormationsClient({
     setLoading(true);
 
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         nom: formData.nom.trim(),
         code_interne: formData.code_interne.trim() || null,
         description: formData.description.trim() || null,
@@ -162,9 +162,6 @@ export default function CatalogueFormationsClient({
     }
   };
 
-  const categoriesUniques = Array.from(
-    new Set(catalogue.filter(c => c.categorie).map(c => c.categorie))
-  ).sort();
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">

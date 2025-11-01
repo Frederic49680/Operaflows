@@ -48,10 +48,10 @@ export async function GET(
       );
     }
 
-    // Formater les compétences
+      // Formater les compétences
     const formatted = {
       ...data,
-      competences: (data.competences || []).map((c: any) => c.competence).filter(Boolean),
+      competences: (data.competences || []).map((c: { competence?: { id: string; libelle: string; code?: string | null } }) => c.competence).filter(Boolean),
     };
 
     return NextResponse.json(formatted);

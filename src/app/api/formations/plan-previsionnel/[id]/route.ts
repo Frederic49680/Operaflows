@@ -30,7 +30,7 @@ export async function PATCH(
     const body = await request.json();
 
     // Si validation ou refus, ajouter les infos de validation
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       ...body,
       updated_by: user.id,
     };
@@ -112,7 +112,7 @@ export async function POST(
     }
 
     // Récupérer les infos du catalogue si disponible
-    let formationData: any = {
+    const formationData: Record<string, unknown> = {
       collaborateur_id: planPrev.collaborateur_id,
       libelle: planPrev.catalogue_formation_id
         ? null // Sera rempli depuis le catalogue

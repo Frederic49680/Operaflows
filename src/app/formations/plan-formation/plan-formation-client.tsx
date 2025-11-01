@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Edit, Calendar, Users, Filter, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { Plus, Edit, Filter, CheckCircle, AlertTriangle } from "lucide-react";
 import Modal from "@/components/rh/Modal";
 import type { Formation } from "@/types/rh";
 
@@ -20,7 +20,7 @@ export default function PlanFormationClient({
   currentYear,
 }: PlanFormationClientProps) {
   const router = useRouter();
-  const [formations, setFormations] = useState(initialFormations);
+  const [formations] = useState(initialFormations);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -135,7 +135,7 @@ export default function PlanFormationClient({
     setLoading(true);
 
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         collaborateur_id: formData.collaborateur_id,
         libelle: formData.libelle.trim(),
         type_formation: formData.type_formation,
@@ -460,7 +460,7 @@ export default function PlanFormationClient({
               </label>
               <select
                 value={formData.type_formation}
-                onChange={(e) => setFormData({ ...formData, type_formation: e.target.value as any })}
+                onChange={(e) => setFormData({ ...formData, type_formation: e.target.value as "interne" | "externe" | "habilitation" | "certification" | "autre" })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="interne">Interne</option>
@@ -477,7 +477,7 @@ export default function PlanFormationClient({
               </label>
               <select
                 value={formData.statut}
-                onChange={(e) => setFormData({ ...formData, statut: e.target.value as any })}
+                onChange={(e) => setFormData({ ...formData, statut: e.target.value as "planifiee" | "en_cours" | "terminee" | "abandonnee" | "echec" | "reportee" | "annulee" })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="planifiee">Planifiée</option>
@@ -559,7 +559,7 @@ export default function PlanFormationClient({
               </label>
               <select
                 value={formData.priorite}
-                onChange={(e) => setFormData({ ...formData, priorite: e.target.value as any })}
+                onChange={(e) => setFormData({ ...formData, priorite: e.target.value as "haute" | "moyenne" | "basse" })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="basse">Basse</option>

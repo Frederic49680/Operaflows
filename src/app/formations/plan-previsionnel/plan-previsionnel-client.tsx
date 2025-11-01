@@ -2,10 +2,9 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Edit, CheckCircle, XCircle, AlertTriangle, Calendar, Users, TrendingUp, Filter } from "lucide-react";
+import { Plus, Edit, CheckCircle, XCircle, AlertTriangle, TrendingUp, Filter } from "lucide-react";
 import Modal from "@/components/rh/Modal";
 import type { PlanPrevisionnelFormation } from "@/types/rh";
-import { createClientSupabase } from "@/lib/supabase/client";
 
 interface PlanPrevisionnelClientProps {
   initialPlan: PlanPrevisionnelFormation[];
@@ -21,13 +20,12 @@ export default function PlanPrevisionnelClient({
   initialPlan,
   collaborateurs,
   catalogue,
-  sites,
   hasRHAccess,
   currentYear,
   nextYear,
 }: PlanPrevisionnelClientProps) {
   const router = useRouter();
-  const [plan, setPlan] = useState(initialPlan);
+  const [plan] = useState(initialPlan);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -129,7 +127,7 @@ export default function PlanPrevisionnelClient({
     setLoading(true);
 
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         collaborateur_id: formData.collaborateur_id,
         periode_annee: formData.periode_annee,
         priorite: formData.priorite,
@@ -249,7 +247,7 @@ export default function PlanPrevisionnelClient({
   };
 
   const categoriesUniques = Array.from(
-    new Set(catalogue.map(c => c.categorie).filter(Boolean))
+    new Set(catalogue.map(c => c.categorie).filter((cat): cat is string => Boolean(cat)))
   ).sort();
 
   return (
@@ -634,7 +632,7 @@ export default function PlanPrevisionnelClient({
               </label>
               <select
                 value={formData.priorite}
-                onChange={(e) => setFormData({ ...formData, priorite: e.target.value as any })}
+                onChange={(e) => setFormData({ ...formData, priorite: e.target.value as "haute" | "moyenne" | "basse" })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="basse">Basse</option>
