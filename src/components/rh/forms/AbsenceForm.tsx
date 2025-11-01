@@ -101,8 +101,30 @@ export default function AbsenceForm({
 
   // Si pas de catalogue, utiliser des valeurs par défaut (fallback)
   const defaultCatalogue: CatalogueAbsence[] = catalogue.length > 0 ? catalogue : [
-    { id: "", code: "CP", libelle: "Congés payés", categorie: "legale" },
-    { id: "", code: "RTT", libelle: "RTT", categorie: "legale" },
+    {
+      id: "",
+      code: "CP",
+      libelle: "Congés payés",
+      categorie: "legale" as const,
+      besoin_justificatif: false,
+      besoin_validation_n1: true,
+      besoin_validation_rh: true,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      id: "",
+      code: "RTT",
+      libelle: "RTT",
+      categorie: "legale" as const,
+      besoin_justificatif: false,
+      besoin_validation_n1: true,
+      besoin_validation_rh: true,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
   ];
 
   return (
