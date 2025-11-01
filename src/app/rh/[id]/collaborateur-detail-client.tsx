@@ -341,6 +341,316 @@ export default function CollaborateurDetailClient({
           }}
         />
       </Modal>
+
+      {/* Modal Édition Collaborateur */}
+      <Modal
+        isOpen={modalEditOpen}
+        onClose={() => {
+          setModalEditOpen(false);
+          setError(null);
+          setSuccess(null);
+        }}
+        title="Modifier le collaborateur"
+        size="lg"
+      >
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setError(null);
+            setSuccess(null);
+            setLoading(true);
+
+            try {
+              const formData = new FormData(e.currentTarget);
+              const updateData: Record<string, unknown> = {};
+
+              // Récupérer toutes les valeurs du formulaire
+              const nom = formData.get("nom") as string;
+              const prenom = formData.get("prenom") as string;
+              const email = formData.get("email") as string;
+              const telephone = formData.get("telephone") as string;
+              const fonction_metier = formData.get("fonction_metier") as string;
+              const site_id = formData.get("site_id") as string;
+              const type_contrat = formData.get("type_contrat") as string;
+              const responsable_activite_id = formData.get("responsable_activite_id") as string;
+              const user_id = formData.get("user_id") as string;
+              const date_embauche = formData.get("date_embauche") as string;
+              const date_fin_contrat = formData.get("date_fin_contrat") as string;
+              const statut = formData.get("statut") as string;
+              const commentaire = formData.get("commentaire") as string;
+
+              // Validation
+              if (!nom || !prenom || !email) {
+                throw new Error("Nom, prénom et email sont obligatoires");
+              }
+
+              // Préparer les données
+              updateData.nom = nom.trim();
+              updateData.prenom = prenom.trim();
+              updateData.email = email.trim();
+              updateData.telephone = telephone.trim() || null;
+              updateData.fonction_metier = fonction_metier.trim() || null;
+              updateData.site_id = site_id || null;
+              updateData.type_contrat = type_contrat || "CDI";
+              updateData.responsable_activite_id = responsable_activite_id || null;
+              updateData.user_id = user_id || null;
+              updateData.date_embauche = date_embauche || null;
+              updateData.date_fin_contrat = date_fin_contrat || null;
+              updateData.statut = statut || "actif";
+              updateData.commentaire = commentaire.trim() || null;
+
+              // Nettoyer les valeurs vides
+              Object.keys(updateData).forEach((key) => {
+                if (updateData[key] === "") {
+                  updateData[key] = null;
+                }
+              });
+
+              // Envoyer la requête PATCH
+              const response = await fetch(`/api/rh/collaborateurs/${collaborateur.id}`, {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(updateData),
+              });
+
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Erreur lors de la mise à jour");
+              }
+
+              setSuccess("Collaborateur mis à jour avec succès");
+              setTimeout(() => {
+                setModalEditOpen(false);
+                refreshData();
+              }, 1500);
+            } catch (err) {
+              setError(err instanceof Error ? err.message : "Erreur lors de la mise à jour");
+            } finally {
+              setLoading(false);
+            }
+          }}
+          className="space-y-4"
+        >
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+              {success}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Nom *
+              </label>
+              <input
+                type="text"
+                name="nom"
+                defaultValue={collaborateur.nom}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Prénom *
+              </label>
+              <input
+                type="text"
+                name="prenom"
+                defaultValue={collaborateur.prenom}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email *
+              </label>
+              <input
+                type="email"
+                name="email"
+                defaultValue={collaborateur.email}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Téléphone
+              </label>
+              <input
+                type="tel"
+                name="telephone"
+                defaultValue={collaborateur.telephone || ""}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Fonction métier
+              </label>
+              <input
+                type="text"
+                name="fonction_metier"
+                defaultValue={collaborateur.fonction_metier || ""}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Site principal
+              </label>
+              <select
+                name="site_id"
+                defaultValue={collaborateur.site_id || ""}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              >
+                <option value="">Sélectionner un site</option>
+                {sites.map((site) => (
+                  <option key={site.site_id} value={site.site_id}>
+                    {site.site_code} - {site.site_label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Type de contrat
+              </label>
+              <select
+                name="type_contrat"
+                defaultValue={collaborateur.type_contrat || "CDI"}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              >
+                <option value="CDI">CDI</option>
+                <option value="CDD">CDD</option>
+                <option value="Interim">Intérim</option>
+                <option value="Apprenti">Apprenti</option>
+                <option value="Stagiaire">Stagiaire</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Responsable d'activité
+              </label>
+              <select
+                name="responsable_activite_id"
+                defaultValue={collaborateur.responsable_activite_id || ""}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              >
+                <option value="">Auto (selon le site)</option>
+                {responsables.map((resp) => (
+                  <option key={resp.id} value={resp.id}>
+                    {resp.prenom} {resp.nom}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Compte utilisateur associé
+              </label>
+              <select
+                name="user_id"
+                defaultValue={collaborateur.user_id || ""}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              >
+                <option value="">Aucun</option>
+                {availableUsers.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.email}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Statut
+              </label>
+              <select
+                name="statut"
+                defaultValue={collaborateur.statut || "actif"}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              >
+                <option value="actif">Actif</option>
+                <option value="inactif">Inactif</option>
+                <option value="suspendu">Suspendu</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date d'embauche
+              </label>
+              <input
+                type="date"
+                name="date_embauche"
+                defaultValue={
+                  collaborateur.date_embauche
+                    ? new Date(collaborateur.date_embauche).toISOString().split("T")[0]
+                    : ""
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date de fin de contrat
+              </label>
+              <input
+                type="date"
+                name="date_fin_contrat"
+                defaultValue={
+                  collaborateur.date_fin_contrat
+                    ? new Date(collaborateur.date_fin_contrat).toISOString().split("T")[0]
+                    : ""
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Commentaire
+            </label>
+            <textarea
+              name="commentaire"
+              defaultValue={collaborateur.commentaire || ""}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+            />
+          </div>
+
+          <div className="flex items-center gap-4 pt-4 border-t">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Edit className="h-5 w-5" />
+              {loading ? "Enregistrement..." : "Enregistrer les modifications"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setModalEditOpen(false);
+                setError(null);
+                setSuccess(null);
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            >
+              Annuler
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
