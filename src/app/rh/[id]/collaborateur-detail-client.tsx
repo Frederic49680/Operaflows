@@ -1640,16 +1640,37 @@ function OngletAbsences({
     }
   };
 
-  const handleValidate = async (id: string, statut: "validee" | "refusee") => {
+  const handleValidate = async (
+    id: string, 
+    statut: "validee_n1" | "refusee_n1" | "validee_rh" | "refusee_rh",
+    niveau: "n1" | "rh" = "n1"
+  ) => {
     try {
       const { createClientSupabase } = await import("@/lib/supabase/client");
       const supabase = createClientSupabase();
+      
+      const updateData: Record<string, unknown> = {
+        statut,
+      };
+      
+      // Mettre à jour les champs selon le niveau de validation
+      if (niveau === "n1") {
+        updateData.valide_par_n1 = (await supabase.auth.getUser()).data.user?.id;
+        updateData.date_validation_n1 = new Date().toISOString();
+        if (statut === "refusee_n1") {
+          updateData.motif_refus_n1 = prompt("Motif du refus (optionnel):") || null;
+        }
+      } else {
+        updateData.valide_par_rh = (await supabase.auth.getUser()).data.user?.id;
+        updateData.date_validation_rh = new Date().toISOString();
+        if (statut === "refusee_rh") {
+          updateData.motif_refus_rh = prompt("Motif du refus (optionnel):") || null;
+        }
+      }
+      
       const { error } = await supabase
         .from("absences")
-        .update({
-          statut,
-          date_validation: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq("id", id);
       
       if (error) throw error;
@@ -1712,19 +1733,39 @@ function OngletAbsences({
                   </div>
                   {(hasRHAccess || canValidate) && (
                     <div className="flex items-center gap-2">
-                      {abs.statut === "en_attente" && canValidate && (
+                      {/* Actions N+1 : Validation des absences en attente de validation N+1 */}
+                      {(abs.statut === "en_attente_validation_n1") && canValidate && (
                         <>
                           <button
-                            onClick={() => handleValidate(abs.id, "validee")}
+                            onClick={() => handleValidate(abs.id, "validee_n1", "n1")}
                             className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Valider"
+                            title="Valider (N+1)"
                           >
                             <CheckCircle className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => handleValidate(abs.id, "refusee")}
+                            onClick={() => handleValidate(abs.id, "refusee_n1", "n1")}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Refuser"
+                            title="Refuser (N+1)"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
+                      {/* Actions RH : Validation des absences en attente de validation RH */}
+                      {(abs.statut === "en_attente_validation_rh") && hasRHAccess && (
+                        <>
+                          <button
+                            onClick={() => handleValidate(abs.id, "validee_rh", "rh")}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Valider (RH)"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleValidate(abs.id, "refusee_rh", "rh")}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Refuser (RH)"
                           >
                             <XCircle className="h-4 w-4" />
                           </button>
@@ -1776,14 +1817,32 @@ function OngletAbsences({
                       <dd className="mt-1">
                         <span
                           className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full ${
-                            abs.statut === "validee"
+                            abs.statut === "validee_rh" || abs.statut === "appliquee"
                               ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200"
-                              : abs.statut === "refusee"
+                              : abs.statut === "validee_n1"
+                              ? "bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-200"
+                              : abs.statut === "refusee_n1" || abs.statut === "refusee_rh"
                               ? "bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200"
+                              : abs.statut === "annulee"
+                              ? "bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border border-gray-200"
                               : "bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200"
                           }`}
                         >
-                          {abs.statut === "validee" ? "Validée" : abs.statut === "refusee" ? "Refusée" : "En attente"}
+                          {abs.statut === "validee_rh" || abs.statut === "appliquee"
+                            ? "Validée RH"
+                            : abs.statut === "validee_n1"
+                            ? "Validée N+1"
+                            : abs.statut === "en_attente_validation_rh"
+                            ? "En attente RH"
+                            : abs.statut === "en_attente_validation_n1"
+                            ? "En attente N+1"
+                            : abs.statut === "refusee_n1"
+                            ? "Refusée N+1"
+                            : abs.statut === "refusee_rh"
+                            ? "Refusée RH"
+                            : abs.statut === "annulee"
+                            ? "Annulée"
+                            : "En attente"}
                         </span>
                       </dd>
                     </div>
