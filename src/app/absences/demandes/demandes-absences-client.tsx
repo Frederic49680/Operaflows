@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Calendar, Clock, CheckCircle, AlertCircle, FileText } from "lucide-react";
+import { Plus, Calendar, Clock, CheckCircle, AlertCircle, FileText, X } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import AbsenceForm from "@/components/rh/forms/AbsenceForm";
@@ -286,14 +286,29 @@ export default function DemandesAbsencesClient({
       {/* Modal Formulaire */}
       {modalOpen && selectedCollaborateurId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <AbsenceForm
-              collaborateurId={selectedCollaborateurId}
-              catalogue={catalogue}
-              absence={selectedAbsence}
-              onClose={handleCloseModal}
-              onSuccess={handleCloseModal}
-            />
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {selectedAbsence ? "Modifier l'absence" : "Nouvelle demande d'absence"}
+              </h2>
+              <button
+                onClick={handleCloseModal}
+                className="p-2 hover:bg-white/50 rounded-lg transition-all duration-200 hover:scale-110"
+              >
+                <X className="h-5 w-5 text-gray-500 hover:text-gray-700" />
+              </button>
+            </div>
+            {/* Contenu scrollable */}
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
+              <AbsenceForm
+                collaborateurId={selectedCollaborateurId}
+                catalogue={catalogue}
+                absence={selectedAbsence}
+                onClose={handleCloseModal}
+                onSuccess={handleCloseModal}
+              />
+            </div>
           </div>
         </div>
       )}
