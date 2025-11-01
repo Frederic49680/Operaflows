@@ -79,14 +79,15 @@ CREATE POLICY "Responsables can read their team" ON public.collaborateurs
   );
 
 -- Les responsables peuvent créer des membres dans leur équipe
+-- Note: Simplifié pour éviter les jointures récursives avec collaborateurs
+-- On vérifie uniquement via tbl_site_responsables qui n'a pas de récursion
 CREATE POLICY "Responsables can insert team members" ON public.collaborateurs
   FOR INSERT WITH CHECK (
-    -- Si un site_id est fourni, vérifier que le responsable gère ce site
+    -- Si un site_id est fourni, vérifier que le responsable gère ce site via tbl_site_responsables
     site_id IS NULL OR EXISTS (
       SELECT 1 FROM public.tbl_site_responsables tsr
-      INNER JOIN public.collaborateurs c_resp ON tsr.collaborateur_id = c_resp.id
       WHERE tsr.site_id = site_id
-      AND c_resp.user_id = auth.uid()
+      AND tsr.collaborateur_id = public.get_collaborateur_id_from_user(auth.uid())
       AND tsr.role_fonctionnel = 'Responsable d''activité'
       AND tsr.is_active = true
       AND (tsr.date_fin IS NULL OR tsr.date_fin >= CURRENT_DATE)
