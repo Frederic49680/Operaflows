@@ -111,14 +111,6 @@ export default function SitesManagementClient({
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">
-            Gestion des Sites
-          </h1>
-          <p className="text-lg text-secondary">
-            Gérez les sites et leurs responsables d&apos;activité
-          </p>
-        </div>
         {/* Message de succès */}
         {success && (
           <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
