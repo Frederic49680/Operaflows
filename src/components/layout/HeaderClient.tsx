@@ -17,6 +17,11 @@ import {
   Calendar,
   BarChart3,
   MapPin,
+  XCircle,
+  CheckCircle,
+  Clock,
+  FileText,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import Logo from "./Logo";
