@@ -107,7 +107,7 @@ export default async function Header() {
     ? [
         {
           label: "Administration",
-          icon: Settings,
+          iconName: "Settings",
           submenu: [
             {
               label: "Utilisateurs",
@@ -120,6 +120,42 @@ export default async function Header() {
             {
               label: "Journal d'audit",
               href: "/admin/audit",
+            },
+            {
+              label: "Catalogue Absences",
+              href: "/admin/absences",
+            },
+          ],
+        },
+      ]
+    : [];
+
+  // Menu RH avec sous-menu pour les absences
+  const rhItems = hasRHAccess
+    ? [
+        {
+          label: "RH",
+          iconName: "Users",
+          submenu: [
+            {
+              label: "Collaborateurs",
+              href: "/rh",
+            },
+            {
+              label: "Référentiel Sites",
+              href: "/rh/sites",
+            },
+            {
+              label: "Mes Demandes",
+              href: "/absences/demandes",
+            },
+            {
+              label: "Validations",
+              href: "/absences/validation",
+            },
+            {
+              label: "Suivi Absences",
+              href: "/absences/suivi",
             },
           ],
         },
@@ -135,6 +171,7 @@ export default async function Header() {
         avatar: null,
       }}
       menuItems={menuItems}
+      rhItems={rhItems}
       adminItems={adminItems}
       isAdmin={isAdmin}
     />

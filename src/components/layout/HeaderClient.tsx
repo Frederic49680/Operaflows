@@ -46,6 +46,11 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   BarChart3,
   Settings,
   MapPin,
+  XCircle,
+  CheckCircle,
+  Clock,
+  FileText,
+  Eye,
 };
 
 interface HeaderClientProps {
