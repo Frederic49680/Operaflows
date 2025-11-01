@@ -27,23 +27,27 @@ CREATE OR REPLACE FUNCTION public.is_responsable_of(p_responsable_user_id UUID, 
 RETURNS BOOLEAN AS $$
 DECLARE
     v_responsable_collab_id UUID;
+    v_responsable_id UUID;
+    v_responsable_activite_id UUID;
 BEGIN
-    -- Obtenir le collaborateur_id du responsable
+    -- Obtenir le collaborateur_id du responsable (SECURITY DEFINER contourne RLS)
     v_responsable_collab_id := public.get_collaborateur_id_from_user(p_responsable_user_id);
     
     IF v_responsable_collab_id IS NULL THEN
         RETURN FALSE;
     END IF;
     
-    -- Vérifier si le collaborateur a ce responsable
-    RETURN EXISTS (
-        SELECT 1
-        FROM public.collaborateurs
-        WHERE id = p_collaborateur_id
-        AND (
-            responsable_id = v_responsable_collab_id
-            OR responsable_activite_id = v_responsable_collab_id
-        )
+    -- Lire directement les colonnes responsable_id et responsable_activite_id du collaborateur
+    -- SECURITY DEFINER permet de contourner RLS pour cette requête
+    SELECT responsable_id, responsable_activite_id 
+    INTO v_responsable_id, v_responsable_activite_id
+    FROM public.collaborateurs
+    WHERE id = p_collaborateur_id;
+    
+    -- Vérifier si le responsable correspond
+    RETURN (
+        v_responsable_id = v_responsable_collab_id 
+        OR v_responsable_activite_id = v_responsable_collab_id
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
