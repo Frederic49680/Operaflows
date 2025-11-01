@@ -7,7 +7,6 @@ import {
   Briefcase,
   Calendar,
   BarChart3,
-  Settings,
 } from "lucide-react";
 
 export default async function Header() {

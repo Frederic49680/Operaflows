@@ -64,13 +64,8 @@ export async function GET(request: Request) {
       paramIndex++;
     }
 
-    const { data: stats, error: statsError } = await supabase.rpc('execute_sql', {
-      query,
-      params
-    }).catch(() => {
-      // Fallback : utiliser des requêtes Supabase standard si RPC n'est pas disponible
-      return { data: null, error: null };
-    });
+    // Note: execute_sql RPC n'est pas disponible par défaut dans Supabase
+    // On utilise des requêtes Supabase standard à la place
 
     // Fallback : requêtes Supabase standard
     let absencesQuery = supabase

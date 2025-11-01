@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Calendar, Clock, CheckCircle, XCircle, AlertCircle, FileText, Eye } from "lucide-react";
+import { Plus, Calendar, Clock, CheckCircle, AlertCircle, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import AbsenceForm from "@/components/rh/forms/AbsenceForm";
@@ -18,7 +18,7 @@ export default function DemandesAbsencesClient({
   catalogue,
   collaborateurId,
 }: DemandesAbsencesClientProps) {
-  const [absences, setAbsences] = useState(initialAbsences);
+  const [absences] = useState(initialAbsences);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedAbsence, setSelectedAbsence] = useState<Absence | null>(null);
 

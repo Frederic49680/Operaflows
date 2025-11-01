@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Calendar, TrendingUp, Users, Clock, Filter, Download } from "lucide-react";
+import { Calendar, TrendingUp, Clock, Filter, Download } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -14,9 +14,8 @@ export default function SuiviAbsencesClient({
   initialAbsences,
   sites,
 }: SuiviAbsencesClientProps) {
-  const [absences, setAbsences] = useState(initialAbsences);
+  const [absences] = useState(initialAbsences);
   const [stats, setStats] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     date_debut: "",
     date_fin: "",
@@ -26,10 +25,10 @@ export default function SuiviAbsencesClient({
 
   useEffect(() => {
     fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const fetchStats = async () => {
-    setLoading(true);
     try {
       const params = new URLSearchParams();
       if (filters.date_debut) params.append("date_debut", filters.date_debut);

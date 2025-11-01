@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { X, Loader2 } from "lucide-react";
 import CollaborateurDetailClient from "@/app/rh/[id]/collaborateur-detail-client";
 import type {
@@ -62,26 +62,7 @@ export default function CollaborateurDetailModal({
     hasRHAccess: boolean;
   } | null>(null);
 
-  useEffect(() => {
-    if (isOpen && collaborateurId) {
-      fetchCollaborateurDetail();
-    } else {
-      // Reset quand le modal se ferme
-      setData(null);
-      setError(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, collaborateurId]);
-
-  useEffect(() => {
-    // Enregistrer la fonction de refresh pour qu'elle puisse être appelée depuis l'enfant
-    refreshModalDataCallback = fetchCollaborateurDetail;
-    return () => {
-      refreshModalDataCallback = null;
-    };
-  }, [collaborateurId]);
-
-  const fetchCollaborateurDetail = async () => {
+  const fetchCollaborateurDetail = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -99,7 +80,25 @@ export default function CollaborateurDetailModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [collaborateurId]);
+
+  useEffect(() => {
+    if (isOpen && collaborateurId) {
+      fetchCollaborateurDetail();
+    } else {
+      // Reset quand le modal se ferme
+      setData(null);
+      setError(null);
+    }
+  }, [isOpen, collaborateurId, fetchCollaborateurDetail]);
+
+  useEffect(() => {
+    // Enregistrer la fonction de refresh pour qu'elle puisse être appelée depuis l'enfant
+    refreshModalDataCallback = fetchCollaborateurDetail;
+    return () => {
+      refreshModalDataCallback = null;
+    };
+  }, [fetchCollaborateurDetail]);
 
   // Gérer la fermeture avec rafraîchissement
   const handleClose = () => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, X, Check, AlertCircle } from "lucide-react";
+import { Plus, Edit, X, Check, AlertCircle } from "lucide-react";
 import type { CatalogueAbsence } from "@/types/rh";
 
 interface CatalogueAbsencesClientProps {
@@ -17,13 +17,26 @@ export default function CatalogueAbsencesClient({
   const [success, setSuccess] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CatalogueAbsence | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    code: string;
+    libelle: string;
+    description: string;
+    categorie: "exceptionnelle" | "legale" | "autorisee" | "conges" | "non_remuneree";
+    duree_max_jours: number | null;
+    duree_min_jours: number | null;
+    besoin_justificatif: boolean;
+    besoin_validation_n1: boolean;
+    besoin_validation_rh: boolean;
+    motif_complementaire: string;
+    conditions_particulieres: string;
+    is_active: boolean;
+  }>({
     code: "",
     libelle: "",
     description: "",
-    categorie: "legale" as const,
-    duree_max_jours: null as number | null,
-    duree_min_jours: null as number | null,
+    categorie: "legale",
+    duree_max_jours: null,
+    duree_min_jours: null,
     besoin_justificatif: false,
     besoin_validation_n1: true,
     besoin_validation_rh: true,
@@ -356,7 +369,7 @@ export default function CatalogueAbsencesClient({
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      categorie: e.target.value as typeof formData.categorie,
+                      categorie: e.target.value as "exceptionnelle" | "legale" | "autorisee" | "conges" | "non_remuneree",
                     })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"

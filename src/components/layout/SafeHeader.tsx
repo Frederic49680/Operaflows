@@ -172,15 +172,6 @@ export default async function SafeHeader() {
         ]
       : [];
     
-    // Menu Absences pour tous (pas seulement RH)
-    const absencesItems = [
-      {
-        label: "Mes Demandes",
-        href: "/absences/demandes",
-        iconName: "Calendar",
-        visible: true,
-      },
-    ];
 
     // Menu admin
     const adminItems = isAdmin
