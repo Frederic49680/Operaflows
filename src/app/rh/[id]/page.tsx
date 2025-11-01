@@ -1,5 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/supabase";
 import { isRHOrAdmin } from "@/lib/auth/rh-check";
 import CollaborateurDetailClient from "./collaborateur-detail-client";
 
@@ -23,17 +25,33 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
   // Vérifier les droits
   const hasRHAccess = await isRHOrAdmin(user.id);
 
+  // Utiliser le service role key pour bypasser RLS si disponible (comme pour la page admin)
+  const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? createClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
+        }
+      )
+    : null;
+
+  const clientToUse = supabaseAdmin || supabase;
+
   // Récupérer le collaborateur
   // Utiliser maybeSingle() pour gérer le cas où le collaborateur n'existe pas ou n'est pas accessible
-  const { data: collaborateur, error: collabError } = await supabase
-    .from("collaborateurs")
-    .select(`
-      *,
-      responsable:collaborateurs!collaborateurs_responsable_id_fkey(id, nom, prenom, email),
-      user:user_id(id, email)
-    `)
-    .eq("id", id)
-    .maybeSingle();
+  const { data: collaborateur, error: collabError } = await clientToUse
+      .from("collaborateurs")
+      .select(`
+        *,
+        responsable:collaborateurs!collaborateurs_responsable_id_fkey(id, nom, prenom, email),
+        user:user_id(id, email)
+      `)
+      .eq("id", id)
+      .maybeSingle();
 
   // Log de debug en développement
   if (process.env.NODE_ENV === "development" && collabError) {

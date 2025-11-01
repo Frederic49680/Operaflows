@@ -56,6 +56,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 3. Supprimer les anciennes politiques
 -- ============================================
 DROP POLICY IF EXISTS "Users can read own collaborateur profile" ON public.collaborateurs;
+DROP POLICY IF EXISTS "RH/Admin can read all collaborateurs" ON public.collaborateurs;
 DROP POLICY IF EXISTS "RH/Admin can manage all collaborateurs" ON public.collaborateurs;
 DROP POLICY IF EXISTS "Responsables can read their team" ON public.collaborateurs;
 DROP POLICY IF EXISTS "Responsables can insert team members" ON public.collaborateurs;
@@ -68,7 +69,11 @@ DROP POLICY IF EXISTS "Responsables can insert team members" ON public.collabora
 CREATE POLICY "Users can read own collaborateur profile" ON public.collaborateurs
   FOR SELECT USING (user_id = auth.uid());
 
--- Les RH/Admin peuvent tout gérer
+-- Les RH/Admin peuvent lire tous les collaborateurs (politique explicite FOR SELECT)
+CREATE POLICY "RH/Admin can read all collaborateurs" ON public.collaborateurs
+  FOR SELECT USING (public.is_rh_or_admin(auth.uid()));
+
+-- Les RH/Admin peuvent gérer (INSERT, UPDATE, DELETE) tous les collaborateurs
 CREATE POLICY "RH/Admin can manage all collaborateurs" ON public.collaborateurs
   FOR ALL USING (public.is_rh_or_admin(auth.uid()));
 
