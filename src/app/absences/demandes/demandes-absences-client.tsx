@@ -12,7 +12,8 @@ interface DemandesAbsencesClientProps {
   catalogue: CatalogueAbsence[];
   collaborateurId: string | null;
   canValidate?: boolean;
-  equipeSansCompte?: Array<{ id: string; nom: string; prenom: string; email: string }>;
+  hasRHAccess?: boolean;
+  collaborateursDisponibles?: Array<{ id: string; nom: string; prenom: string; email: string; user_id: string | null }>;
 }
 
 export default function DemandesAbsencesClient({
@@ -20,7 +21,8 @@ export default function DemandesAbsencesClient({
   catalogue,
   collaborateurId,
   canValidate = false,
-  equipeSansCompte = [],
+  hasRHAccess = false,
+  collaborateursDisponibles = [],
 }: DemandesAbsencesClientProps) {
   const [absences] = useState(initialAbsences);
   const [modalOpen, setModalOpen] = useState(false);
@@ -85,7 +87,7 @@ export default function DemandesAbsencesClient({
     };
   };
 
-  if (!collaborateurId && equipeSansCompte.length === 0) {
+  if (!collaborateurId && collaborateursDisponibles.length === 0 && !hasRHAccess) {
     return (
       <div className="bg-amber-50 border-l-4 border-amber-400 text-amber-700 p-4 rounded-r-lg">
         <div className="flex items-center gap-2">
@@ -101,7 +103,7 @@ export default function DemandesAbsencesClient({
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        {canValidate && equipeSansCompte.length > 0 && (
+        {(hasRHAccess || (canValidate && collaborateursDisponibles.length > 0)) && (
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-gray-700">
               Créer pour :
@@ -109,14 +111,17 @@ export default function DemandesAbsencesClient({
             <select
               value={selectedCollaborateurId || ""}
               onChange={(e) => setSelectedCollaborateurId(e.target.value || collaborateurId)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm min-w-[300px]"
             >
-              <option value={collaborateurId || ""}>
-                Moi-même ({collaborateurId ? "Mon compte" : "Pas de compte"})
-              </option>
-              {equipeSansCompte.map((c) => (
+              {collaborateurId && (
+                <option value={collaborateurId}>
+                  Moi-même - {collaborateurId ? "Mon compte" : "Pas de compte"}
+                </option>
+              )}
+              {collaborateursDisponibles.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.prenom} {c.nom} (sans compte)
+                  {c.prenom} {c.nom} {c.user_id ? "(avec compte)" : "(sans compte)"}
+                  {hasRHAccess && " - Validation auto"}
                 </option>
               ))}
             </select>
@@ -125,10 +130,13 @@ export default function DemandesAbsencesClient({
         <button
           onClick={() => handleOpenModal()}
           className="btn-primary flex items-center gap-2"
-          disabled={!selectedCollaborateurId}
+          disabled={!selectedCollaborateurId && !hasRHAccess}
         >
           <Plus className="h-4 w-4" />
           Nouvelle demande
+          {hasRHAccess && selectedCollaborateurId && selectedCollaborateurId !== collaborateurId && (
+            <span className="text-xs opacity-75 ml-1">(auto-validée)</span>
+          )}
         </button>
       </div>
 

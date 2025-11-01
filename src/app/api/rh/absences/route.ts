@@ -127,16 +127,31 @@ export async function POST(request: Request) {
       );
     }
 
-    // Si le collaborateur n'a pas de compte (user_id IS NULL) ET que c'est le N+1 qui crée la demande
-    // Alors on valide automatiquement au niveau N+1
+    // Logique de validation automatique selon le créateur
     const collaborateurSansCompte = !collab.user_id;
     const statutInitial = absenceData.statut || "en_attente_validation_n1";
     
     let statutFinal = statutInitial;
     let valideParN1 = null as string | null;
     let dateValidationN1 = null as string | null;
+    let valideParRH = null as string | null;
+    let dateValidationRH = null as string | null;
     
-    if (collaborateurSansCompte && isResponsable && statutInitial === "en_attente_validation_n1") {
+    // Cas 1 : Admin crée pour un tiers → validation automatique complète (N+1 et RH)
+    if (hasRHAccess && !isOwner && statutInitial === "en_attente_validation_n1") {
+      // L'admin crée pour quelqu'un d'autre : tout est validé automatiquement
+      statutFinal = "validee_rh"; // Validation complète
+      valideParN1 = user.id;
+      dateValidationN1 = new Date().toISOString();
+      valideParRH = user.id;
+      dateValidationRH = new Date().toISOString();
+      // Impact planification activé automatiquement
+      if (absenceData.impact_planif === undefined || absenceData.impact_planif === null) {
+        absenceData.impact_planif = true;
+      }
+    }
+    // Cas 2 : N+1 crée pour un collaborateur sans compte → validation automatique N+1 uniquement
+    else if (collaborateurSansCompte && isResponsable && !hasRHAccess && statutInitial === "en_attente_validation_n1") {
       // Le N+1 crée pour un collaborateur sans compte : validation automatique N+1
       statutFinal = "validee_n1";
       valideParN1 = user.id;
@@ -158,6 +173,14 @@ export async function POST(request: Request) {
       insertData.date_validation_n1 = dateValidationN1;
       insertData.valide_par = valideParN1; // Compatibilité avec ancien champ
       insertData.date_validation = dateValidationN1; // Compatibilité
+    }
+
+    // Si validation automatique RH (cas admin), remplir les champs de validation RH
+    if (valideParRH && dateValidationRH) {
+      insertData.valide_par_rh = valideParRH;
+      insertData.date_validation_rh = dateValidationRH;
+      insertData.valide_par = valideParRH; // Compatibilité avec ancien champ
+      insertData.date_validation = dateValidationRH; // Compatibilité
     }
 
     const { data, error } = await supabase
