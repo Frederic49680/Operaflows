@@ -1,7 +1,7 @@
 // Types pour le Module 2 : RH Collaborateurs
 
 export type TypeContrat = 'CDI' | 'CDD' | 'Interim' | 'Apprenti' | 'Stage' | 'Autre';
-export type StatutCollaborateur = 'actif' | 'inactif' | 'suspendu' | 'archivé';
+export type StatutCollaborateur = 'actif' | 'inactif' | 'suspendu' | 'archivé' | 'A renouveller';
 export type TypeAbsence = 'conges_payes' | 'rtt' | 'repos_site' | 'maladie' | 'accident_travail' | 'absence_autorisee' | 'formation' | 'habilitation' | 'deplacement_externe' | 'autre';
 export type StatutAbsence = 'en_attente' | 'validee' | 'refusee' | 'annulee';
 export type TypeFormation = 'interne' | 'externe' | 'habilitation' | 'certification' | 'autre';

@@ -616,8 +616,10 @@ export default function CollaborateurDetailClient({
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
               >
                 <option value="actif">Actif</option>
+                <option value="A renouveller">A renouveller</option>
                 <option value="inactif">Inactif</option>
                 <option value="suspendu">Suspendu</option>
+                <option value="archivé">Archivé</option>
               </select>
             </div>
             </div>
@@ -873,9 +875,13 @@ function OngletGeneral({ collaborateur }: { collaborateur: Collaborateur }) {
                     className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full ${
                       collaborateur.statut === "actif"
                         ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200"
+                        : collaborateur.statut === "A renouveller"
+                        ? "bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border border-orange-200"
                         : collaborateur.statut === "inactif"
                         ? "bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border border-gray-200"
-                        : "bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200"
+                        : collaborateur.statut === "suspendu"
+                        ? "bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200"
+                        : "bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200"
                     }`}
                   >
                     {collaborateur.statut}

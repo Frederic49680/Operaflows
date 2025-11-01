@@ -307,6 +307,8 @@ export default function RHPageClient({
                               ? "bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer"
                               : collab.statut === "actif"
                               ? "bg-green-100 text-green-800"
+                              : collab.statut === "A renouveller"
+                              ? "bg-orange-100 text-orange-800 border border-orange-200"
                               : collab.statut === "inactif"
                               ? "bg-gray-100 text-gray-800"
                               : collab.statut === "suspendu"
