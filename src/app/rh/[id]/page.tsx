@@ -51,15 +51,17 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
 
   // Si le collaborateur existe, récupérer les données liées séparément si nécessaire
   let responsable = null;
+  let responsableUserId: string | null = null;
   let userData = null;
   
   if (collaborateur && collaborateur.responsable_id) {
     const { data: respData } = await clientToUse
       .from("collaborateurs")
-      .select("id, nom, prenom, email")
+      .select("id, nom, prenom, email, user_id")
       .eq("id", collaborateur.responsable_id)
       .maybeSingle();
     responsable = respData;
+    responsableUserId = respData?.user_id || null;
   }
   
   if (collaborateur && collaborateur.user_id) {
@@ -106,7 +108,6 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
     // Si l'utilisateur n'est pas RH/Admin et que ce n'est pas son propre profil,
     // vérifier s'il est responsable
     if (collaborateurEnrichi.responsable_id) {
-      const responsableUserId = responsable?.user_id || null;
       if (responsableUserId !== user.id) {
         // Aussi vérifier responsable_activite_id si disponible
         if (collaborateurEnrichi.responsable_activite_id) {
