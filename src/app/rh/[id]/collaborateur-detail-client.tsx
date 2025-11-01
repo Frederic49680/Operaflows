@@ -572,14 +572,43 @@ export default function CollaborateurDetailClient({
                 Fonction métier
               </label>
               <div className="relative">
-                <input
-                  type="text"
+                <select
                   name="fonction_metier"
                   defaultValue={collaborateur.fonction_metier || ""}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
-                  placeholder="Ex: Conducteur de travaux"
-                />
-                <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                >
+                  <option value="">Sélectionner une fonction</option>
+                  <option value="Conducteur de travaux">Conducteur de travaux</option>
+                  <option value="Chef de chantier">Chef de chantier</option>
+                  <option value="Chef d'équipe">Chef d'équipe</option>
+                  <option value="Technicien">Technicien</option>
+                  <option value="Électricien">Électricien</option>
+                  <option value="Électricien qualifié">Électricien qualifié</option>
+                  <option value="Monteur">Monteur</option>
+                  <option value="Câbleur">Câbleur</option>
+                  <option value="Soudeur">Soudeur</option>
+                  <option value="Chaudronnier">Chaudronnier</option>
+                  <option value="Mécanicien">Mécanicien</option>
+                  <option value="Automaticien">Automaticien</option>
+                  <option value="Dessinateur projeteur">Dessinateur projeteur</option>
+                  <option value="Ingénieur">Ingénieur</option>
+                  <option value="Ingénieur études">Ingénieur études</option>
+                  <option value="Ingénieur méthode">Ingénieur méthode</option>
+                  <option value="Ingénieur qualité">Ingénieur qualité</option>
+                  <option value="Chargé d'affaires">Chargé d'affaires</option>
+                  <option value="Assistant administratif">Assistant administratif</option>
+                  <option value="Comptable">Comptable</option>
+                  <option value="Responsable RH">Responsable RH</option>
+                  <option value="Responsable HSE">Responsable HSE</option>
+                  <option value="Responsable maintenance">Responsable maintenance</option>
+                  <option value="Responsable production">Responsable production</option>
+                  <option value="Responsable logistique">Responsable logistique</option>
+                  <option value="Magasinier">Magasinier</option>
+                  <option value="Manutentionnaire">Manutentionnaire</option>
+                  <option value="Agent de sécurité">Agent de sécurité</option>
+                  <option value="Autre">Autre</option>
+                </select>
+                <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
               </div>
             </div>
             <div className="relative">
