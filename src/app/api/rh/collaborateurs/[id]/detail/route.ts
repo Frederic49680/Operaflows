@@ -144,7 +144,7 @@ export async function GET(request: Request, { params }: RouteContext) {
     ]);
 
     // Récupérer les données pour le formulaire d'édition
-    const [sitesResult, responsablesResult, usersResult] = await Promise.all([
+    const [sitesResult, responsablesResult, usersResult, fonctionsResult] = await Promise.all([
       clientToUse
         .from("tbl_sites")
         .select("site_id, site_code, site_label")
@@ -160,6 +160,12 @@ export async function GET(request: Request, { params }: RouteContext) {
         .select("id, email")
         .eq("statut", "actif")
         .order("email", { ascending: true }),
+      clientToUse
+        .from("tbl_fonctions_metier")
+        .select("id, libelle")
+        .eq("is_active", true)
+        .order("ordre_affichage", { ascending: true })
+        .order("libelle", { ascending: true }),
     ]);
 
     return NextResponse.json({
@@ -177,6 +183,7 @@ export async function GET(request: Request, { params }: RouteContext) {
       sites: sitesResult.data || [],
       responsables: responsablesResult.data || [],
       availableUsers: usersResult.data || [],
+      fonctions: fonctionsResult.data || [],
       hasRHAccess,
     });
   } catch (error) {

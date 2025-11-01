@@ -23,7 +23,7 @@ export default function FonctionsMetierClient({
   fonctions: initialFonctions,
 }: FonctionsMetierClientProps) {
   const router = useRouter();
-  const [fonctions, setFonctions] = useState(initialFonctions);
+  const [fonctions] = useState(initialFonctions);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedFonction, setSelectedFonction] = useState<FonctionMetier | null>(null);
   const [loading, setLoading] = useState(false);
@@ -54,16 +54,14 @@ export default function FonctionsMetierClient({
 
     try {
       const supabase = createClientSupabase();
-      const { data, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from("tbl_fonctions_metier")
         .insert({
           libelle: formData.libelle.trim(),
           description: formData.description.trim() || null,
           ordre_affichage: formData.ordre_affichage || 0,
           is_active: true,
-        })
-        .select()
-        .single();
+        });
 
       if (insertError) throw insertError;
 
@@ -146,37 +144,6 @@ export default function FonctionsMetierClient({
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de la modification");
-    } finally {
-      setLoading(false);
-      setTimeout(() => {
-        setSuccess(null);
-        setError(null);
-      }, 3000);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer définitivement cette fonction métier ? Cette action est irréversible.")) {
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      const supabase = createClientSupabase();
-      const { error: deleteError } = await supabase
-        .from("tbl_fonctions_metier")
-        .delete()
-        .eq("id", id);
-
-      if (deleteError) throw deleteError;
-
-      setSuccess("Fonction métier supprimée avec succès");
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la suppression");
     } finally {
       setLoading(false);
       setTimeout(() => {

@@ -59,6 +59,7 @@ export default function CollaborateurDetailModal({
     sites: Array<{ site_id: string; site_code: string; site_label: string }>;
     responsables: Array<{ id: string; nom: string; prenom: string }>;
     availableUsers: Array<{ id: string; email: string }>;
+    fonctions: Array<{ id: string; libelle: string }>;
     hasRHAccess: boolean;
   } | null>(null);
 
@@ -165,6 +166,7 @@ export default function CollaborateurDetailModal({
                 sites={data.sites}
                 responsables={data.responsables}
                 availableUsers={data.availableUsers}
+                fonctions={data.fonctions}
                 isInModal={true}
               />
             </div>
