@@ -10,7 +10,6 @@ interface PlanPrevisionnelClientProps {
   initialPlan: PlanPrevisionnelFormation[];
   collaborateurs: Array<{ id: string; nom: string; prenom: string; email: string }>;
   catalogue: Array<{ id: string; nom: string; code_interne?: string | null; categorie?: string | null; cout_unitaire?: number | null }>;
-  sites: Array<{ site_id: string; site_code: string; site_label: string }>;
   hasRHAccess: boolean;
   currentYear: number;
   nextYear: number;
