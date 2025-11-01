@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/supabase";
 import { isRHOrAdmin } from "@/lib/auth/rh-check";
 
 interface RouteContext {
@@ -82,6 +84,23 @@ export async function PATCH(
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
+    // Utiliser le service role key pour bypasser RLS (comme dans les pages admin)
+    // Cela garantit que la mise à jour fonctionne même si RLS est restrictif
+    const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
+      ? createClient<Database>(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY,
+          {
+            auth: {
+              autoRefreshToken: false,
+              persistSession: false,
+            },
+          }
+        )
+      : null;
+
+    const clientToUse = supabaseAdmin || supabase;
+
     const body = await request.json();
 
     // Log de debug en développement
@@ -89,6 +108,7 @@ export async function PATCH(
       console.log("🔍 DEBUG API PATCH - Données reçues:", body);
       console.log("🔍 DEBUG API PATCH - ID collaborateur:", id);
       console.log("🔍 DEBUG API PATCH - User ID:", user.id);
+      console.log("🔍 DEBUG API PATCH - Utilise service role:", !!supabaseAdmin);
     }
 
     // Définir uniquement les colonnes qui existent dans la table collaborateurs
@@ -124,7 +144,7 @@ export async function PATCH(
 
     // Si site_id est renseigné, récupérer le libellé du site pour remplir le champ site (deprecated)
     if (updateData.site_id && typeof updateData.site_id === 'string') {
-      const { data: siteData } = await supabase
+      const { data: siteData } = await clientToUse
         .from("tbl_sites")
         .select("site_code, site_label")
         .eq("site_id", updateData.site_id)
@@ -135,7 +155,7 @@ export async function PATCH(
       }
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await clientToUse
       .from("collaborateurs")
       .update(updateData)
       .eq("id", id)
