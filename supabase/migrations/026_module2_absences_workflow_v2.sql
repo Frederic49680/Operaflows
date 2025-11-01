@@ -121,7 +121,7 @@ ADD COLUMN IF NOT EXISTS motif_refus_rh TEXT;
 
 -- Ajouter champ pour le calcul automatique des jours ouvrés
 ALTER TABLE public.absences
-ADD COLUMN IF NOT EXISTS jours_ouvres DECIMAL(5, 2); -- Calcul automatique (hors week-end et jours fériés)
+ADD COLUMN IF NOT EXISTS jours_ouvres DECIMAL(5, 2), -- Calcul automatique (hors week-end et jours fériés)
 ADD COLUMN IF NOT EXISTS jours_ouvrables DECIMAL(5, 2); -- Calcul automatique (hors dimanche et jours fériés)
 
 -- Ajouter champ pour forcer la validation RH (cas exceptionnel)
