@@ -40,8 +40,12 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
 
   // Vérifier que l'utilisateur peut voir ce collaborateur
   if (!hasRHAccess && collaborateur.user_id !== user.id) {
-    // Vérifier si l'utilisateur est responsable de ce collaborateur
+    // Si l'utilisateur n'est pas RH/Admin et que ce n'est pas son propre profil,
+    // vérifier s'il est responsable via une fonction helper pour éviter la récursion RLS
+    // On utilise responsable_id directement depuis les données déjà récupérées
     if (collaborateur.responsable_id) {
+      // Vérifier via une requête simple qui utilise RLS (mais avec les nouvelles politiques simplifiées)
+      // Ou utiliser une fonction helper si disponible
       const { data: responsable } = await supabase
         .from("collaborateurs")
         .select("user_id")
@@ -49,10 +53,35 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
         .maybeSingle();
       
       if (responsable?.user_id !== user.id) {
+        // Aussi vérifier responsable_activite_id si disponible
+        if (collaborateur.responsable_activite_id) {
+          const { data: respActivite } = await supabase
+            .from("collaborateurs")
+            .select("user_id")
+            .eq("id", collaborateur.responsable_activite_id)
+            .maybeSingle();
+          
+          if (respActivite?.user_id !== user.id) {
+            redirect("/unauthorized");
+          }
+        } else {
+          redirect("/unauthorized");
+        }
+      }
+    } else if (!collaborateur.responsable_activite_id) {
+      // Aucun responsable trouvé, pas autorisé
+      redirect("/unauthorized");
+    } else {
+      // Vérifier responsable_activite_id
+      const { data: respActivite } = await supabase
+        .from("collaborateurs")
+        .select("user_id")
+        .eq("id", collaborateur.responsable_activite_id)
+        .maybeSingle();
+      
+      if (respActivite?.user_id !== user.id) {
         redirect("/unauthorized");
       }
-    } else {
-      redirect("/unauthorized");
     }
   }
 
