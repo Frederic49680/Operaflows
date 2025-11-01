@@ -46,6 +46,7 @@ export async function GET(
         site:tbl_sites!tbl_affaires_site_id_fkey(site_id, site_code, site_label),
         bpu:tbl_affaires_bpu(*),
         depenses:tbl_affaires_depenses(*),
+        lots:tbl_affaires_lots(*),
         pre_planif:tbl_affaires_pre_planif(*),
         documents:tbl_affaires_documents(*)
       `)
@@ -115,7 +116,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { bpu, depenses, ...affaireData } = body;
+    const { bpu, depenses, lots, ...affaireData } = body;
 
     const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
       ? createClient<Database>(
@@ -194,6 +195,29 @@ export async function PATCH(
         await clientToUse
           .from("tbl_affaires_depenses")
           .insert(depensesData);
+      }
+    }
+
+    // Mettre à jour les lots si fournis
+    if (lots !== undefined && Array.isArray(lots)) {
+      // Supprimer les anciens lots
+      await clientToUse
+        .from("tbl_affaires_lots")
+        .delete()
+        .eq("affaire_id", id);
+
+      // Insérer les nouveaux lots
+      if (lots.length > 0) {
+        const lotsData = lots.map((lot: Record<string, unknown>) => ({
+          ...lot,
+          affaire_id: id,
+          created_by: user.id,
+          updated_by: user.id,
+        }));
+
+        await clientToUse
+          .from("tbl_affaires_lots")
+          .insert(lotsData);
       }
     }
 

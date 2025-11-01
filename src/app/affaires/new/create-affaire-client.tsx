@@ -33,13 +33,25 @@ interface Depense {
   fournisseur?: string;
 }
 
+interface Lot {
+  id: string;
+  numero_lot: string;
+  libelle_lot: string;
+  description?: string;
+  pourcentage_total: number;
+  est_jalon_gantt: boolean;
+  date_debut_previsionnelle?: string;
+  date_fin_previsionnelle?: string;
+  ordre_affichage?: number;
+}
+
 export default function CreateAffaireClient({
   sites,
   collaborateurs,
 }: CreateAffaireClientProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"general" | "bpu" | "depenses">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "bpu" | "depenses" | "lots">("general");
 
   // État du formulaire
   const [formData, setFormData] = useState({
@@ -60,6 +72,7 @@ export default function CreateAffaireClient({
 
   const [bpu, setBpu] = useState<LigneBPU[]>([]);
   const [depenses, setDepenses] = useState<Depense[]>([]);
+  const [lots, setLots] = useState<Lot[]>([]);
 
   // Gérer les changements du formulaire
   const handleChange = (
@@ -119,6 +132,33 @@ export default function CreateAffaireClient({
     );
   };
 
+  // Gérer les lots
+  const addLot = () => {
+    setLots([
+      ...lots,
+      {
+        id: Date.now().toString(),
+        numero_lot: `Lot ${lots.length + 1}`,
+        libelle_lot: "",
+        pourcentage_total: 0,
+        est_jalon_gantt: true,
+      },
+    ]);
+  };
+
+  const removeLot = (id: string) => {
+    setLots(lots.filter((l) => l.id !== id));
+  };
+
+  const updateLot = (id: string, field: keyof Lot, value: string | number | boolean) => {
+    setLots(
+      lots.map((l) => (l.id === id ? { ...l, [field]: value } : l))
+    );
+  };
+
+  // Calculer le total des pourcentages
+  const totalPourcentage = lots.reduce((sum, l) => sum + l.pourcentage_total, 0);
+
   // Soumettre le formulaire
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,6 +178,17 @@ export default function CreateAffaireClient({
       // Ajouter dépenses si nécessaire
       if (formData.type_valorisation === "dépense" || formData.type_valorisation === "mixte") {
         payload.depenses = depenses.map(({ id, ...rest }) => rest);
+      }
+
+      // Ajouter les lots
+      if (lots.length > 0) {
+        // Vérifier que le total ne dépasse pas 100%
+        if (totalPourcentage > 100) {
+          alert(`Le total des pourcentages des lots ne peut pas dépasser 100% (actuellement: ${totalPourcentage.toFixed(2)}%)`);
+          setLoading(false);
+          return;
+        }
+        payload.lots = lots.map(({ id, ...rest }) => rest);
       }
 
       const response = await fetch("/api/affaires", {
@@ -219,6 +270,17 @@ export default function CreateAffaireClient({
                   Dépenses ({depenses.length})
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => setActiveTab("lots")}
+                className={`px-4 py-2 text-sm font-medium border-b-2 ${
+                  activeTab === "lots"
+                    ? "border-primary text-primary"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Lots / Jalons ({lots.length})
+              </button>
             </nav>
           </div>
 

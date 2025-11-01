@@ -102,7 +102,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { bpu, depenses, ...affaireData } = body;
+    const { bpu, depenses, lots, ...affaireData } = body;
 
     // Générer un numéro automatique si non fourni
     if (!affaireData.numero) {
@@ -183,6 +183,24 @@ export async function POST(request: Request) {
 
       if (depError) {
         console.error("Erreur création dépenses:", depError);
+      }
+    }
+
+    // Créer les lots si fournis
+    if (affaire && lots && Array.isArray(lots) && lots.length > 0) {
+      const lotsData = lots.map((lot: Record<string, unknown>) => ({
+        ...lot,
+        affaire_id: affaire.id,
+        created_by: user.id,
+        updated_by: user.id,
+      }));
+
+      const { error: lotsError } = await clientToUse
+        .from("tbl_affaires_lots")
+        .insert(lotsData);
+
+      if (lotsError) {
+        console.error("Erreur création lots:", lotsError);
       }
     }
 

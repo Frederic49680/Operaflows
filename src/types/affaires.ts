@@ -41,6 +41,7 @@ export interface Affaire {
   site?: { site_id: string; site_code: string; site_label: string } | null;
   bpu?: LigneBPU[];
   depenses?: Depense[];
+  lots?: LotAffaire[];
   pre_planif?: PrePlanif | null;
   documents?: DocumentAffaire[];
 }
@@ -115,5 +116,23 @@ export interface DocumentAffaire {
   description?: string | null;
   uploaded_by?: string | null;
   created_at: string;
+}
+
+export interface LotAffaire {
+  id: string;
+  affaire_id: string;
+  numero_lot: string;
+  libelle_lot: string;
+  description?: string | null;
+  pourcentage_total: number;
+  montant_alloue?: number | null;
+  est_jalon_gantt: boolean;
+  date_debut_previsionnelle?: string | null;
+  date_fin_previsionnelle?: string | null;
+  ordre_affichage?: number | null;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
 }
 

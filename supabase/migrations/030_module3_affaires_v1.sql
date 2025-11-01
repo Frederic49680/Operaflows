@@ -196,7 +196,147 @@ CREATE TRIGGER trigger_update_pre_planif_updated_at
     EXECUTE FUNCTION update_collaborateurs_updated_at();
 
 -- ============================================================================
--- 5️⃣ TABLE: tbl_affaires_documents (Documents liés aux affaires)
+-- 5️⃣ TABLE: tbl_affaires_lots (Découpage financier par lot / jalon)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS public.tbl_affaires_lots (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    affaire_id UUID NOT NULL REFERENCES public.tbl_affaires(id) ON DELETE CASCADE,
+    
+    -- Identification du lot
+    numero_lot VARCHAR(50) NOT NULL, -- Ex: "Lot 1", "Lot A", "Jalon 1"
+    libelle_lot VARCHAR(255) NOT NULL,
+    description TEXT,
+    
+    -- Découpage financier
+    pourcentage_total DECIMAL(5, 2) NOT NULL CHECK (pourcentage_total > 0 AND pourcentage_total <= 100),
+    montant_alloue DECIMAL(15, 2), -- Montant calculé automatiquement selon le pourcentage
+    
+    -- Jalon pour Gantt
+    est_jalon_gantt BOOLEAN DEFAULT true, -- Indique si ce lot sert de jalon pour le Gantt
+    
+    -- Dates (optionnelles pour le lot)
+    date_debut_previsionnelle DATE,
+    date_fin_previsionnelle DATE,
+    
+    -- Ordre d'affichage
+    ordre_affichage INTEGER,
+    
+    -- Métadonnées
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by UUID REFERENCES auth.users(id),
+    updated_by UUID REFERENCES auth.users(id),
+    
+    -- Contrainte: le total des pourcentages ne doit pas dépasser 100%
+    CONSTRAINT chk_dates_lot CHECK (date_fin_previsionnelle IS NULL OR date_debut_previsionnelle IS NULL OR date_fin_previsionnelle >= date_debut_previsionnelle)
+);
+
+CREATE INDEX IF NOT EXISTS idx_lots_affaire_id ON public.tbl_affaires_lots(affaire_id);
+CREATE INDEX IF NOT EXISTS idx_lots_jalon ON public.tbl_affaires_lots(affaire_id, est_jalon_gantt) WHERE est_jalon_gantt = true;
+
+-- Trigger updated_at
+DROP TRIGGER IF EXISTS trigger_update_lots_updated_at ON public.tbl_affaires_lots;
+CREATE TRIGGER trigger_update_lots_updated_at
+    BEFORE UPDATE ON public.tbl_affaires_lots
+    FOR EACH ROW
+    EXECUTE FUNCTION update_collaborateurs_updated_at();
+
+-- Fonction pour calculer automatiquement le montant alloué au lot
+CREATE OR REPLACE FUNCTION calculate_lot_montant_alloue()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_montant_total DECIMAL(15, 2);
+BEGIN
+    -- Récupérer le montant total de l'affaire
+    SELECT montant_total INTO v_montant_total
+    FROM public.tbl_affaires
+    WHERE id = NEW.affaire_id;
+    
+    -- Calculer le montant alloué selon le pourcentage
+    IF v_montant_total IS NOT NULL THEN
+        NEW.montant_alloue := v_montant_total * (NEW.pourcentage_total / 100);
+    ELSE
+        NEW.montant_alloue := NULL;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger pour calculer automatiquement le montant alloué
+DROP TRIGGER IF EXISTS trigger_calculate_lot_montant ON public.tbl_affaires_lots;
+CREATE TRIGGER trigger_calculate_lot_montant
+    BEFORE INSERT OR UPDATE ON public.tbl_affaires_lots
+    FOR EACH ROW
+    EXECUTE FUNCTION calculate_lot_montant_alloue();
+
+-- Fonction pour vérifier que la somme des pourcentages ne dépasse pas 100%
+CREATE OR REPLACE FUNCTION check_lots_percentage_total()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_total_percentage DECIMAL(5, 2);
+    v_affaire_id UUID;
+BEGIN
+    -- Déterminer l'ID de l'affaire concernée
+    IF TG_OP = 'DELETE' THEN
+        v_affaire_id := OLD.affaire_id;
+    ELSE
+        v_affaire_id := NEW.affaire_id;
+    END IF;
+    
+    -- Calculer le total des pourcentages pour cette affaire
+    SELECT COALESCE(SUM(pourcentage_total), 0) INTO v_total_percentage
+    FROM public.tbl_affaires_lots
+    WHERE affaire_id = v_affaire_id;
+    
+    -- Si on est en INSERT ou UPDATE, ajouter le nouveau pourcentage
+    IF TG_OP IN ('INSERT', 'UPDATE') THEN
+        IF TG_OP = 'UPDATE' THEN
+            -- En UPDATE, retirer l'ancien pourcentage
+            v_total_percentage := v_total_percentage - COALESCE(OLD.pourcentage_total, 0);
+        END IF;
+        v_total_percentage := v_total_percentage + NEW.pourcentage_total;
+    END IF;
+    
+    -- Vérifier que le total ne dépasse pas 100%
+    IF v_total_percentage > 100 THEN
+        RAISE EXCEPTION 'Le total des pourcentages des lots ne peut pas dépasser 100%%. Total actuel: %%%', v_total_percentage;
+    END IF;
+    
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger pour vérifier la somme des pourcentages
+DROP TRIGGER IF EXISTS trigger_check_lots_percentage ON public.tbl_affaires_lots;
+CREATE TRIGGER trigger_check_lots_percentage
+    BEFORE INSERT OR UPDATE OR DELETE ON public.tbl_affaires_lots
+    FOR EACH ROW
+    EXECUTE FUNCTION check_lots_percentage_total();
+
+-- Trigger pour recalculer les montants alloués quand le montant total de l'affaire change
+CREATE OR REPLACE FUNCTION recalculate_lots_montants()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Recalculer tous les montants alloués des lots de cette affaire
+    UPDATE public.tbl_affaires_lots
+    SET montant_alloue = NEW.montant_total * (pourcentage_total / 100),
+        updated_at = NOW()
+    WHERE affaire_id = NEW.id AND NEW.montant_total IS NOT NULL;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trigger_recalculate_lots_on_affaire_montant_change ON public.tbl_affaires;
+CREATE TRIGGER trigger_recalculate_lots_on_affaire_montant_change
+    AFTER UPDATE OF montant_total ON public.tbl_affaires
+    FOR EACH ROW
+    WHEN (OLD.montant_total IS DISTINCT FROM NEW.montant_total)
+    EXECUTE FUNCTION recalculate_lots_montants();
+
+-- ============================================================================
+-- 6️⃣ TABLE: tbl_affaires_documents (Documents liés aux affaires)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS public.tbl_affaires_documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -218,7 +358,7 @@ CREATE INDEX IF NOT EXISTS idx_documents_affaire_id ON public.tbl_affaires_docum
 CREATE INDEX IF NOT EXISTS idx_documents_type ON public.tbl_affaires_documents(type_document);
 
 -- ============================================================================
--- 6️⃣ FONCTIONS UTILITAIRES
+-- 7️⃣ FONCTIONS UTILITAIRES
 -- ============================================================================
 
 -- Fonction pour calculer le montant total d'une affaire
@@ -292,7 +432,7 @@ CREATE TRIGGER trigger_update_montant_on_depense_change
     EXECUTE FUNCTION update_affaire_montant_total();
 
 -- ============================================================================
--- 7️⃣ VUES UTILES
+-- 8️⃣ VUES UTILES
 -- ============================================================================
 
 -- Vue pour le tableau de bord des affaires
@@ -331,7 +471,7 @@ LEFT JOIN public.tbl_sites s ON s.site_id = a.site_id
 LEFT JOIN public.collaborateurs c ON c.id = a.charge_affaires_id;
 
 -- ============================================================================
--- 8️⃣ ROW LEVEL SECURITY (RLS)
+-- 9️⃣ ROW LEVEL SECURITY (RLS)
 -- ============================================================================
 
 -- RLS pour tbl_affaires
@@ -407,6 +547,19 @@ CREATE POLICY "Même règles que les affaires parentes pour pré-planif"
         )
     );
 
+-- RLS pour tbl_affaires_lots
+ALTER TABLE public.tbl_affaires_lots ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Même règles que les affaires parentes pour lots" ON public.tbl_affaires_lots;
+CREATE POLICY "Même règles que les affaires parentes pour lots"
+    ON public.tbl_affaires_lots FOR ALL
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.tbl_affaires a
+            WHERE a.id = affaire_id
+        )
+    );
+
 -- RLS pour tbl_affaires_documents
 ALTER TABLE public.tbl_affaires_documents ENABLE ROW LEVEL SECURITY;
 
@@ -421,14 +574,17 @@ CREATE POLICY "Même règles que les affaires parentes pour documents"
     );
 
 -- ============================================================================
--- 9️⃣ COMMENTAIRES
+-- 🔟 COMMENTAIRES
 -- ============================================================================
 
 COMMENT ON TABLE public.tbl_affaires IS 'Gestion des affaires et projets';
 COMMENT ON TABLE public.tbl_affaires_bpu IS 'Bordereau de Prix Unitaires par affaire';
 COMMENT ON TABLE public.tbl_affaires_depenses IS 'Dépenses et coûts associés aux affaires';
 COMMENT ON TABLE public.tbl_affaires_pre_planif IS 'Rapport de pré-planification pour analyse des besoins';
+COMMENT ON TABLE public.tbl_affaires_lots IS 'Découpage financier par lot / jalon pour le Gantt';
 COMMENT ON TABLE public.tbl_affaires_documents IS 'Documents liés aux affaires (devis, factures, rapports)';
 COMMENT ON COLUMN public.tbl_affaires.type_valorisation IS 'Type de valorisation: BPU (Bordereau Prix Unitaires), forfait, dépense, ou mixte';
 COMMENT ON COLUMN public.tbl_affaires.statut IS 'Cycle de vie de l''affaire: cree → pre_planifie → planifie → en_cours → suspendu → en_cloture → termine → archive';
+COMMENT ON COLUMN public.tbl_affaires_lots.pourcentage_total IS 'Pourcentage du montant total de l''affaire alloué à ce lot (0-100%)';
+COMMENT ON COLUMN public.tbl_affaires_lots.est_jalon_gantt IS 'Indique si ce lot sert de jalon dans le Gantt (module Planification)';
 

@@ -45,6 +45,7 @@ export default async function AffaireDetailPage({ params }: PageProps) {
       site:tbl_sites!tbl_affaires_site_id_fkey(site_id, site_code, site_label),
       bpu:tbl_affaires_bpu(*),
       depenses:tbl_affaires_depenses(*),
+      lots:tbl_affaires_lots(*),
       pre_planif:tbl_affaires_pre_planif(*),
       documents:tbl_affaires_documents(*)
     `)

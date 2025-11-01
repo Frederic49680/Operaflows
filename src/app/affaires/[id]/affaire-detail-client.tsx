@@ -18,7 +18,7 @@ export default function AffaireDetailClient({
   collaborateurs,
 }: AffaireDetailClientProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"general" | "valorisation" | "preplanif" | "documents">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "valorisation" | "lots" | "preplanif" | "documents">("general");
   const [isEditing, setIsEditing] = useState(false);
   const [affaire, setAffaire] = useState(initialAffaire);
   const [loading, setLoading] = useState(false);
@@ -170,6 +170,16 @@ export default function AffaireDetailClient({
               }`}
             >
               Valorisation
+            </button>
+            <button
+              onClick={() => setActiveTab("lots")}
+              className={`px-4 py-2 text-sm font-medium border-b-2 whitespace-nowrap ${
+                activeTab === "lots"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Lots / Jalons ({affaire.lots?.length || 0})
             </button>
             <button
               onClick={() => setActiveTab("preplanif")}
