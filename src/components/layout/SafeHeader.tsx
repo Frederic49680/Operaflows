@@ -192,6 +192,14 @@ export default async function SafeHeader() {
                 label: "Journal d'audit",
                 href: "/admin/audit",
               },
+              {
+                label: "Catalogue Absences",
+                href: "/admin/absences",
+              },
+              {
+                label: "Fonctions Métier",
+                href: "/admin/fonctions-metier",
+              },
             ],
           },
         ]

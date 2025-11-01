@@ -124,6 +124,10 @@ export default async function Header() {
               label: "Catalogue Absences",
               href: "/admin/absences",
             },
+            {
+              label: "Fonctions Métier",
+              href: "/admin/fonctions-metier",
+            },
           ],
         },
       ]

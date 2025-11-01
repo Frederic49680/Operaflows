@@ -141,8 +141,8 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
     }
   }
 
-  // Récupérer les données nécessaires pour le formulaire d'édition (sites, responsables, utilisateurs)
-  const [sitesResult, responsablesResult, usersResult] = await Promise.all([
+  // Récupérer les données nécessaires pour le formulaire d'édition (sites, responsables, utilisateurs, fonctions métier)
+  const [sitesResult, responsablesResult, usersResult, fonctionsResult] = await Promise.all([
     clientToUse
       .from("tbl_sites")
       .select("site_id, site_code, site_label")
@@ -158,11 +158,18 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
       .select("id, email")
       .eq("statut", "actif")
       .order("email", { ascending: true }),
+    clientToUse
+      .from("tbl_fonctions_metier")
+      .select("id, libelle")
+      .eq("is_active", true)
+      .order("ordre_affichage", { ascending: true })
+      .order("libelle", { ascending: true }),
   ]);
 
   const sites = sitesResult.data || [];
   const responsables = responsablesResult.data || [];
   const availableUsers = usersResult.data || [];
+  const fonctions = fonctionsResult.data || [];
 
   // Récupérer le catalogue des absences
   const { data: catalogue } = await clientToUse
@@ -235,6 +242,7 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
       sites={sites}
       responsables={responsables}
       availableUsers={availableUsers}
+      fonctions={fonctions}
       catalogue={catalogue || []}
     />
   );

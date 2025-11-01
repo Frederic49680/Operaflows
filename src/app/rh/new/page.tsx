@@ -40,8 +40,8 @@ export default async function CreateCollaborateurPage() {
 
   const clientToUse = supabaseAdmin || supabase;
 
-  // Récupérer les responsables, utilisateurs et sites disponibles pour le formulaire
-  const [responsables, users, sitesResult] = await Promise.all([
+  // Récupérer les responsables, utilisateurs, sites et fonctions métier disponibles pour le formulaire
+  const [responsables, users, sitesResult, fonctionsResult] = await Promise.all([
     supabase
       .from("collaborateurs")
       .select("id, nom, prenom")
@@ -58,6 +58,12 @@ export default async function CreateCollaborateurPage() {
       .select("site_id, site_code, site_label")
       .eq("is_active", true)
       .order("site_code", { ascending: true }),
+    supabase
+      .from("tbl_fonctions_metier")
+      .select("id, libelle")
+      .eq("is_active", true)
+      .order("ordre_affichage", { ascending: true })
+      .order("libelle", { ascending: true }),
   ]);
 
   // Logs de debug en développement
@@ -84,12 +90,14 @@ export default async function CreateCollaborateurPage() {
   }
 
   const sites = sitesResult.data || [];
+  const fonctions = fonctionsResult.data || [];
 
   return (
     <CreateCollaborateurClient
       responsables={responsables.data || []}
       availableUsers={users.data || []}
       sites={sites}
+      fonctions={fonctions}
     />
   );
 }
