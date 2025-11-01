@@ -47,22 +47,22 @@ export default function Modal({
 
       {/* Modal */}
       <div
-        className={`relative bg-white rounded-xl shadow-2xl ${sizeClasses[size]} w-full max-h-[90vh] overflow-hidden flex flex-col z-50`}
+        className={`relative bg-white rounded-2xl shadow-2xl ${sizeClasses[size]} w-full max-h-[90vh] overflow-hidden flex flex-col z-50 border border-gray-100`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+        {/* Header avec gradient */}
+        <div className="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-white/50 rounded-lg transition-all duration-200 hover:scale-110"
           >
-            <X className="h-5 w-5 text-gray-500" />
+            <X className="h-5 w-5 text-gray-500 hover:text-gray-700" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50" onClick={(e) => e.stopPropagation()}>
           {children}
         </div>
       </div>

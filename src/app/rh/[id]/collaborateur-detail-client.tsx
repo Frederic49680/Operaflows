@@ -13,6 +13,14 @@ import {
   Edit,
   Plus,
   Trash2,
+  CheckCircle,
+  AlertTriangle,
+  Mail,
+  Phone,
+  Briefcase,
+  MapPin,
+  Calendar as CalendarIcon,
+  FileText,
 } from "lucide-react";
 import type {
   Collaborateur,
@@ -351,7 +359,7 @@ export default function CollaborateurDetailClient({
           setSuccess(null);
         }}
         title="Modifier le collaborateur"
-        size="lg"
+        size="xl"
       >
         <form
           onSubmit={async (e) => {
@@ -406,6 +414,12 @@ export default function CollaborateurDetailClient({
                 }
               });
 
+              // Log de debug en développement
+              if (process.env.NODE_ENV === "development") {
+                console.log("🔍 DEBUG - Données à envoyer:", updateData);
+                console.log("🔍 DEBUG - ID collaborateur:", collaborateur.id);
+              }
+
               // Envoyer la requête PATCH
               const response = await fetch(`/api/rh/collaborateurs/${collaborateur.id}`, {
                 method: "PATCH",
@@ -415,14 +429,27 @@ export default function CollaborateurDetailClient({
                 body: JSON.stringify(updateData),
               });
 
+              const responseData = await response.json();
+
               if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Erreur lors de la mise à jour");
+                console.error("❌ Erreur API:", responseData);
+                throw new Error(
+                  responseData.error || 
+                  responseData.details || 
+                  `Erreur ${response.status}: ${response.statusText}`
+                );
+              }
+
+              // Log de succès en développement
+              if (process.env.NODE_ENV === "development") {
+                console.log("✅ Succès - Collaborateur mis à jour:", responseData);
               }
 
               setSuccess("Collaborateur mis à jour avec succès");
               setTimeout(() => {
                 setModalEditOpen(false);
+                setError(null);
+                setSuccess(null);
                 refreshData();
               }, 1500);
             } catch (err) {
@@ -431,103 +458,147 @@ export default function CollaborateurDetailClient({
               setLoading(false);
             }
           }}
-          className="space-y-4"
+          className="space-y-6"
         >
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-              {error}
+            <div className="bg-red-50 border-l-4 border-red-400 text-red-700 px-4 py-3 rounded-r-lg flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+              <span className="font-medium">{error}</span>
             </div>
           )}
           {success && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
-              {success}
+            <div className="bg-green-50 border-l-4 border-green-400 text-green-700 px-4 py-3 rounded-r-lg flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 flex-shrink-0" />
+              <span className="font-medium">{success}</span>
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+          {/* Section Informations personnelles */}
+          <div className="space-y-4">
+            <div className="border-b border-gray-200 pb-2">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <User className="h-5 w-5 text-primary" />
+                Informations personnelles
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Nom *
               </label>
-              <input
-                type="text"
-                name="nom"
-                defaultValue={collaborateur.nom}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  name="nom"
+                  defaultValue={collaborateur.nom}
+                  required
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
+                  placeholder="Nom de famille"
+                />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Prénom *
               </label>
-              <input
-                type="text"
-                name="prenom"
-                defaultValue={collaborateur.prenom}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  name="prenom"
+                  defaultValue={collaborateur.prenom}
+                  required
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
+                  placeholder="Prénom"
+                />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email *
               </label>
-              <input
-                type="email"
-                name="email"
-                defaultValue={collaborateur.email}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
-              />
+              <div className="relative">
+                <input
+                  type="email"
+                  name="email"
+                  defaultValue={collaborateur.email}
+                  required
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
+                  placeholder="email@exemple.com"
+                />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Téléphone
               </label>
-              <input
-                type="tel"
-                name="telephone"
-                defaultValue={collaborateur.telephone || ""}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
-              />
+              <div className="relative">
+                <input
+                  type="tel"
+                  name="telephone"
+                  defaultValue={collaborateur.telephone || ""}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
+                  placeholder="06 12 34 56 78"
+                />
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+          </div>
+
+          {/* Section Informations professionnelles */}
+          <div className="space-y-4">
+            <div className="border-b border-gray-200 pb-2">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Briefcase className="h-5 w-5 text-primary" />
+                Informations professionnelles
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Fonction métier
               </label>
-              <input
-                type="text"
-                name="fonction_metier"
-                defaultValue={collaborateur.fonction_metier || ""}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  name="fonction_metier"
+                  defaultValue={collaborateur.fonction_metier || ""}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
+                  placeholder="Ex: Conducteur de travaux"
+                />
+                <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Site principal
               </label>
-              <select
-                name="site_id"
-                defaultValue={collaborateur.site_id || ""}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
-              >
-                <option value="">Sélectionner un site</option>
-                {sites.map((site) => (
-                  <option key={site.site_id} value={site.site_id}>
-                    {site.site_code} - {site.site_label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  name="site_id"
+                  defaultValue={collaborateur.site_id || ""}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all appearance-none"
+                >
+                  <option value="">Sélectionner un site</option>
+                  {sites.map((site) => (
+                    <option key={site.site_id} value={site.site_id}>
+                      {site.site_code} - {site.site_label}
+                    </option>
+                  ))}
+                </select>
+                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+              </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Type de contrat
               </label>
               <select
                 name="type_contrat"
                 defaultValue={collaborateur.type_contrat || "CDI"}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
               >
                 <option value="CDI">CDI</option>
                 <option value="CDD">CDD</option>
@@ -537,13 +608,13 @@ export default function CollaborateurDetailClient({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Responsable d'activité
               </label>
               <select
                 name="responsable_activite_id"
                 defaultValue={collaborateur.responsable_activite_id || ""}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
               >
                 <option value="">Auto (selon le site)</option>
                 {responsables.map((resp) => (
@@ -554,13 +625,13 @@ export default function CollaborateurDetailClient({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Compte utilisateur associé
               </label>
               <select
                 name="user_id"
                 defaultValue={collaborateur.user_id || ""}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
               >
                 <option value="">Aucun</option>
                 {availableUsers.map((user) => (
@@ -571,72 +642,93 @@ export default function CollaborateurDetailClient({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Statut
               </label>
               <select
                 name="statut"
                 defaultValue={collaborateur.statut || "actif"}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
               >
                 <option value="actif">Actif</option>
                 <option value="inactif">Inactif</option>
                 <option value="suspendu">Suspendu</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            </div>
+          </div>
+
+          {/* Section Dates */}
+          <div className="space-y-4">
+            <div className="border-b border-gray-200 pb-2">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <CalendarIcon className="h-5 w-5 text-primary" />
+                Dates importantes
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Date d'embauche
               </label>
-              <input
-                type="date"
-                name="date_embauche"
-                defaultValue={
-                  collaborateur.date_embauche
-                    ? new Date(collaborateur.date_embauche).toISOString().split("T")[0]
-                    : ""
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
-              />
+              <div className="relative">
+                <input
+                  type="date"
+                  name="date_embauche"
+                  defaultValue={
+                    collaborateur.date_embauche
+                      ? new Date(collaborateur.date_embauche).toISOString().split("T")[0]
+                      : ""
+                  }
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
+                />
+                <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Date de fin de contrat
               </label>
-              <input
-                type="date"
-                name="date_fin_contrat"
-                defaultValue={
-                  collaborateur.date_fin_contrat
-                    ? new Date(collaborateur.date_fin_contrat).toISOString().split("T")[0]
-                    : ""
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+              <div className="relative">
+                <input
+                  type="date"
+                  name="date_fin_contrat"
+                  defaultValue={
+                    collaborateur.date_fin_contrat
+                      ? new Date(collaborateur.date_fin_contrat).toISOString().split("T")[0]
+                      : ""
+                  }
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
+                />
+                <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+            </div>
+          </div>
+
+          {/* Section Commentaire */}
+          <div className="space-y-4">
+            <div className="border-b border-gray-200 pb-2">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                Notes et commentaires
+              </h3>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Commentaire
+              </label>
+              <textarea
+                name="commentaire"
+                defaultValue={collaborateur.commentaire || ""}
+                rows={4}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all resize-none"
+                placeholder="Notes supplémentaires sur ce collaborateur..."
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Commentaire
-            </label>
-            <textarea
-              name="commentaire"
-              defaultValue={collaborateur.commentaire || ""}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
-            />
-          </div>
-
-          <div className="flex items-center gap-4 pt-4 border-t">
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Edit className="h-5 w-5" />
-              {loading ? "Enregistrement..." : "Enregistrer les modifications"}
-            </button>
+          <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
             <button
               type="button"
               onClick={() => {
@@ -644,9 +736,26 @@ export default function CollaborateurDetailClient({
                 setError(null);
                 setSuccess(null);
               }}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-all duration-200"
             >
               Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-white rounded-lg font-semibold flex items-center gap-2 hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Enregistrement...
+                </>
+              ) : (
+                <>
+                  <Edit className="h-5 w-5" />
+                  Enregistrer les modifications
+                </>
+              )}
             </button>
           </div>
         </form>

@@ -84,6 +84,13 @@ export async function PATCH(
 
     const body = await request.json();
 
+    // Log de debug en développement
+    if (process.env.NODE_ENV === "development") {
+      console.log("🔍 DEBUG API PATCH - Données reçues:", body);
+      console.log("🔍 DEBUG API PATCH - ID collaborateur:", id);
+      console.log("🔍 DEBUG API PATCH - User ID:", user.id);
+    }
+
     // Définir uniquement les colonnes qui existent dans la table collaborateurs
     const allowedFields = [
       'nom', 'prenom', 'email', 'telephone', 
@@ -109,6 +116,11 @@ export async function PATCH(
         }
       }
     });
+
+    // Log de debug après nettoyage
+    if (process.env.NODE_ENV === "development") {
+      console.log("🔍 DEBUG API PATCH - Données nettoyées:", updateData);
+    }
 
     // Si site_id est renseigné, récupérer le libellé du site pour remplir le champ site (deprecated)
     if (updateData.site_id && typeof updateData.site_id === 'string') {
