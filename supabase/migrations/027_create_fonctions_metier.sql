@@ -79,57 +79,27 @@ CREATE POLICY "Tous peuvent lire fonctions métier actives" ON public.tbl_foncti
 DROP POLICY IF EXISTS "Admins peuvent lire toutes fonctions métier" ON public.tbl_fonctions_metier;
 CREATE POLICY "Admins peuvent lire toutes fonctions métier" ON public.tbl_fonctions_metier
   FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1
-      FROM public.user_roles ur
-      JOIN public.roles r ON ur.role_id = r.id
-      WHERE ur.user_id = auth.uid()
-        AND r.name = 'Administrateur'
-    )
-  );
+  USING (public.is_admin(auth.uid()));
 
 -- Seuls les admins peuvent créer des fonctions métier
 DROP POLICY IF EXISTS "Admins peuvent créer fonctions métier" ON public.tbl_fonctions_metier;
 CREATE POLICY "Admins peuvent créer fonctions métier" ON public.tbl_fonctions_metier
   FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1
-      FROM public.user_roles ur
-      JOIN public.roles r ON ur.role_id = r.id
-      WHERE ur.user_id = auth.uid()
-        AND r.name = 'Administrateur'
-    )
-  );
+  WITH CHECK (public.is_admin(auth.uid()));
 
 -- Seuls les admins peuvent modifier des fonctions métier
+-- Utiliser la fonction helper is_admin pour éviter la récursion
 DROP POLICY IF EXISTS "Admins peuvent modifier fonctions métier" ON public.tbl_fonctions_metier;
 CREATE POLICY "Admins peuvent modifier fonctions métier" ON public.tbl_fonctions_metier
   FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1
-      FROM public.user_roles ur
-      JOIN public.roles r ON ur.role_id = r.id
-      WHERE ur.user_id = auth.uid()
-        AND r.name = 'Administrateur'
-    )
-  );
+  USING (public.is_admin(auth.uid()))
+  WITH CHECK (public.is_admin(auth.uid()));
 
 -- Seuls les admins peuvent supprimer (désactiver) des fonctions métier
 DROP POLICY IF EXISTS "Admins peuvent supprimer fonctions métier" ON public.tbl_fonctions_metier;
 CREATE POLICY "Admins peuvent supprimer fonctions métier" ON public.tbl_fonctions_metier
   FOR DELETE
-  USING (
-    EXISTS (
-      SELECT 1
-      FROM public.user_roles ur
-      JOIN public.roles r ON ur.role_id = r.id
-      WHERE ur.user_id = auth.uid()
-        AND r.name = 'Administrateur'
-    )
-  );
+  USING (public.is_admin(auth.uid()));
 
 -- Insérer les fonctions métier initiales
 INSERT INTO public.tbl_fonctions_metier (libelle, ordre_affichage, is_active) VALUES

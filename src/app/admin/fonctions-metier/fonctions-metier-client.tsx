@@ -221,21 +221,30 @@ export default function FonctionsMetierClient({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Statut
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                  Actions
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {fonctions.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
                     Aucune fonction métier enregistrée
                   </td>
                 </tr>
               ) : (
                 fonctions.map((fonction) => (
-                  <tr key={fonction.id} className="hover:bg-gray-50">
+                  <tr 
+                    key={fonction.id} 
+                    className={`hover:bg-gray-50 ${editingId === fonction.id ? 'bg-blue-50' : 'cursor-pointer'}`}
+                    onClick={(e) => {
+                      // Ne pas déclencher si on clique sur le statut ou si on est déjà en édition
+                      if (editingId === fonction.id) return;
+                      const target = e.target as HTMLElement;
+                      if (target.closest('.statut-badge') || target.closest('input') || target.closest('textarea')) {
+                        return;
+                      }
+                      startEdit(fonction);
+                    }}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {editingId === fonction.id && editValues ? (
                         <input
@@ -289,57 +298,48 @@ export default function FonctionsMetierClient({
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          fonction.is_active
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {fonction.is_active ? "Actif" : "Inactif"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       {editingId === fonction.id ? (
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center gap-2">
                           <button
-                            onClick={() => handleUpdate(fonction.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUpdate(fonction.id);
+                            }}
                             disabled={loading}
-                            className="text-green-600 hover:text-green-800 disabled:opacity-50"
+                            className="text-green-600 hover:text-green-800 disabled:opacity-50 flex items-center gap-1 px-2 py-1 rounded"
                             title="Enregistrer"
                           >
                             <Save className="h-4 w-4" />
+                            <span className="text-xs">Enregistrer</span>
                           </button>
                           <button
-                            onClick={cancelEdit}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              cancelEdit();
+                            }}
                             disabled={loading}
-                            className="text-gray-600 hover:text-gray-800 disabled:opacity-50"
+                            className="text-gray-600 hover:text-gray-800 disabled:opacity-50 flex items-center gap-1 px-2 py-1 rounded"
                             title="Annuler"
                           >
                             <X className="h-4 w-4" />
+                            <span className="text-xs">Annuler</span>
                           </button>
                         </div>
                       ) : (
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => startEdit(fonction)}
-                            className="text-primary hover:text-primary-dark"
-                            title="Modifier"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleToggleActive(fonction.id, fonction.is_active)}
-                            className={`${
-                              fonction.is_active
-                                ? "text-amber-600 hover:text-amber-800"
-                                : "text-green-600 hover:text-green-800"
-                            }`}
-                            title={fonction.is_active ? "Désactiver" : "Activer"}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleActive(fonction.id, fonction.is_active);
+                          }}
+                          className={`statut-badge inline-flex px-2 py-1 text-xs font-semibold rounded-full cursor-pointer transition-all hover:scale-105 ${
+                            fonction.is_active
+                              ? "bg-green-100 text-green-800 hover:bg-green-200"
+                              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          }`}
+                          title={`Cliquer pour ${fonction.is_active ? "désactiver" : "activer"}`}
+                        >
+                          {fonction.is_active ? "Actif" : "Inactif"}
+                        </span>
                       )}
                     </td>
                   </tr>
