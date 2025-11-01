@@ -79,6 +79,7 @@ export default function CollaborateurDetailClient({
   sites,
   responsables,
   availableUsers,
+  isInModal = false,
 }: CollaborateurDetailClientProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("general");
@@ -96,7 +97,15 @@ export default function CollaborateurDetailClient({
   const [success, setSuccess] = useState<string | null>(null);
 
   const refreshData = () => {
-    router.refresh();
+    if (isInModal) {
+      // Dans un modal, on recharge les données via l'API
+      // La fonction refreshCollaborateurDetail est appelée depuis le modal
+      import("@/components/rh/CollaborateurDetailModal").then((module) => {
+        module.refreshCollaborateurDetail();
+      });
+    } else {
+      router.refresh();
+    }
   };
 
   const tabs = [
