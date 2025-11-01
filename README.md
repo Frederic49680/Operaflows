@@ -101,10 +101,26 @@ Charte graphique OperaFlow :
 
 1. ✅ **Authentification / Rôles / Permissions** - COMPLET
    - Connexion sécurisée, gestion des utilisateurs, gestion des rôles, journal d'audit
-2. **RH Collaborateurs** - À venir
+
+2. ✅ **RH Collaborateurs** - COMPLET
+   - Gestion des collaborateurs (identité, contrat, affectation)
+   - Suivi des habilitations et compétences avec alertes d'échéances
+   - Dosimétrie et RTR (suivi radiologique)
+   - Visites médicales périodiques
+   - Absences avec workflow de validation
+   - Formations
+   - Sites et Responsables d'activité
+   - Modal détail collaborateur avec design de cartes
+   - Statut automatique "A renouveller" pour contrats intérim (≤15 jours)
+
 3. **Affaires** - À venir
+   - Création, suivi, valorisation (BPU / forfait / dépense), rapport pré-planif
+
 4. **Planification & Suivi** - À venir
+   - Gantt interactif, suivi terrain, valorisation horaire, synchronisation RH
+
 5. **KPI & Alertes globales** - À venir
+   - Tableaux de bord, performance, alertes intelligentes, reporting
 
 ## 🚢 Déploiement
 
