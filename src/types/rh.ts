@@ -46,7 +46,8 @@ export interface Collaborateur {
   updated_by?: string | null;
   
   // Relations
-  responsable?: Collaborateur | null;
+  responsable?: Collaborateur | null; // Deprecated: utiliser responsable_activite
+  responsable_activite?: { id: string; nom: string; prenom: string } | null;
   user?: { id: string; email: string } | null;
   site_detail?: { site_code: string; site_label: string } | null;
 }
