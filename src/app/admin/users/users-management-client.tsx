@@ -364,38 +364,46 @@ export default function UsersManagementClient({
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
-                    <tr key={user.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {(() => {
-                          const userRoles = user.user_roles || [];
-                          if (userRoles.length === 0) return "Non attribué";
-                          const firstRole = userRoles[0];
-                          const role = Array.isArray(firstRole?.roles) 
-                            ? firstRole.roles[0] 
-                            : firstRole?.roles;
-                          return role?.name || "Non attribué";
-                        })()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(user.statut)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {user.derniere_connexion
-                          ? new Date(user.derniere_connexion).toLocaleDateString("fr-FR")
-                          : "Jamais"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a
-                          href={`/profile`}
-                          className="text-primary hover:text-primary-dark"
-                        >
-                          Voir
-                        </a>
+                  {users && users.length > 0 ? (
+                    users.map((user) => (
+                      <tr key={user.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {(() => {
+                            const userRoles = user.user_roles || [];
+                            if (userRoles.length === 0) return "Non attribué";
+                            const firstRole = userRoles[0];
+                            const role = Array.isArray(firstRole?.roles) 
+                              ? firstRole.roles[0] 
+                              : firstRole?.roles;
+                            return role?.name || "Non attribué";
+                          })()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getStatusBadge(user.statut)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {user.derniere_connexion
+                            ? new Date(user.derniere_connexion).toLocaleDateString("fr-FR")
+                            : "Jamais"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <a
+                            href={`/profile`}
+                            className="text-primary hover:text-primary-dark"
+                          >
+                            Voir
+                          </a>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                        Aucun utilisateur enregistré
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>

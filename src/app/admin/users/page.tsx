@@ -49,7 +49,8 @@ export default async function UsersManagementPage() {
   // Utiliser le client admin si disponible pour bypasser RLS
   const clientToUse = supabaseAdmin || supabase;
   
-  const { data: users, error: usersError } = await clientToUse
+  // Essayer d'abord avec les relations
+  let { data: users, error: usersError } = await clientToUse
     .from("tbl_users")
     .select(`
       *,
@@ -60,6 +61,23 @@ export default async function UsersManagementPage() {
       collaborateurs(nom, prenom)
     `)
     .order("created_at", { ascending: false });
+
+  // Si erreur de jointure, essayer sans relations pour voir si c'est un problème RLS
+  if (usersError || !users || users.length === 0) {
+    console.log("⚠️ Tentative sans relations:", usersError);
+    const { data: usersSimple, error: usersSimpleError } = await clientToUse
+      .from("tbl_users")
+      .select("*")
+      .order("created_at", { ascending: false });
+    
+    if (!usersSimpleError && usersSimple) {
+      // Si on récupère les données sans relations, c'est un problème de jointure
+      users = usersSimple.map((u: any) => ({ ...u, user_roles: [], collaborateurs: null }));
+      console.log("✅ Utilisateurs récupérés sans relations:", users.length);
+    } else {
+      console.error("❌ Erreur même sans relations:", usersSimpleError);
+    }
+  }
 
   // Log pour debug en développement
   if (process.env.NODE_ENV === "development") {
