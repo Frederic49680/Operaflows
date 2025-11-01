@@ -24,48 +24,7 @@ export async function GET(request: Request) {
     const dateFin = searchParams.get("date_fin");
     const siteId = searchParams.get("site_id");
 
-    // Requêtes SQL pour les statistiques
-    let query = `
-      SELECT 
-        COUNT(*) FILTER (WHERE statut = 'en_attente_validation_n1') as en_attente_n1,
-        COUNT(*) FILTER (WHERE statut = 'validee_n1') as validees_n1,
-        COUNT(*) FILTER (WHERE statut = 'refusee_n1') as refusees_n1,
-        COUNT(*) FILTER (WHERE statut = 'en_attente_validation_rh') as en_attente_rh,
-        COUNT(*) FILTER (WHERE statut = 'validee_rh' OR statut = 'appliquee') as validees_rh,
-        COUNT(*) FILTER (WHERE statut = 'refusee_rh') as refusees_rh,
-        COUNT(*) FILTER (WHERE statut = 'annulee') as annulees,
-        SUM(duree_jours) FILTER (WHERE statut IN ('validee_rh', 'appliquee')) as total_jours_valides,
-        COUNT(DISTINCT collaborateur_id) FILTER (WHERE statut IN ('validee_rh', 'appliquee')) as collaborateurs_absents,
-        COUNT(*) as total_absences
-      FROM public.absences
-      WHERE 1=1
-    `;
-
-    const params: string[] = [];
-    let paramIndex = 1;
-
-    if (dateDebut) {
-      query += ` AND date_debut >= $${paramIndex}`;
-      params.push(dateDebut);
-      paramIndex++;
-    }
-
-    if (dateFin) {
-      query += ` AND date_fin <= $${paramIndex}`;
-      params.push(dateFin);
-      paramIndex++;
-    }
-
-    if (siteId) {
-      query += ` AND collaborateur_id IN (
-        SELECT id FROM public.collaborateurs WHERE site_id = $${paramIndex}
-      )`;
-      params.push(siteId);
-      paramIndex++;
-    }
-
-    // Note: execute_sql RPC n'est pas disponible par défaut dans Supabase
-    // On utilise des requêtes Supabase standard à la place
+    // Note: On utilise des requêtes Supabase standard pour calculer les statistiques
 
     // Fallback : requêtes Supabase standard
     let absencesQuery = supabase

@@ -42,8 +42,6 @@ export default function SuiviAbsencesClient({
       }
     } catch (err) {
       console.error("Erreur récupération stats:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
