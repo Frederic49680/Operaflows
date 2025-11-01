@@ -64,7 +64,7 @@ export async function GET(request: Request) {
 
     // Répartition par catégorie
     const repartitionCategorie: Record<string, number> = {};
-    repartition?.forEach((r: any) => {
+    repartition?.forEach((r: { catalogue_formation?: { categorie?: string | null } | null }) => {
       const cat = r.catalogue_formation?.categorie || "Autre";
       repartitionCategorie[cat] = (repartitionCategorie[cat] || 0) + 1;
     });
