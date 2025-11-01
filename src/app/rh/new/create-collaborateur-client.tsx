@@ -120,11 +120,12 @@ export default function CreateCollaborateurClient({
 
   return (
     <div className="min-h-screen bg-background p-8">
-      <div className="max-w-4xl mx-auto">
-        <Link
-          href="/rh"
-          className="inline-flex items-center gap-2 text-primary hover:text-primary-dark mb-6"
-        >
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <Link
+            href="/rh"
+            className="inline-flex items-center gap-2 text-primary hover:text-primary-dark mb-4"
+          >
           <ChevronLeft className="h-5 w-5" />
           Retour à la liste
         </Link>

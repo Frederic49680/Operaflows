@@ -4,13 +4,13 @@
 
 :root {
   --foreground-rgb: 30, 41, 59;
-  --background-rgb: 224, 242, 254; /* Bleu léger (sky-50) */
+  --background-rgb: 249, 250, 251; /* Fond gris très clair (gray-50) pour meilleure lisibilité */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 30, 41, 59;
-    --background-rgb: 224, 242, 254; /* Bleu léger (sky-50) */
+    --background-rgb: 249, 250, 251; /* Fond gris très clair (gray-50) pour meilleure lisibilité */
   }
 }
 

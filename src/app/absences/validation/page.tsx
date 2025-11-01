@@ -69,12 +69,13 @@ export default async function ValidationAbsencesPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Validation des Absences
-        </h1>
-        <p className="text-gray-600">
+    <div className="min-h-screen bg-background p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-primary mb-2">
+            Validation des Absences
+          </h1>
+          <p className="text-lg text-secondary">
           Validez ou refusez les demandes d&apos;absence en attente
         </p>
       </div>
@@ -85,6 +86,7 @@ export default async function ValidationAbsencesPage() {
         canValidateN1={canValidate}
         canValidateRH={hasRHAccess}
       />
+      </div>
     </div>
   );
 }

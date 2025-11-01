@@ -88,12 +88,13 @@ export default async function DemandesAbsencesPage() {
     .order("code", { ascending: true });
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Mes Demandes d&apos;Absence
-        </h1>
-        <p className="text-gray-600">
+    <div className="min-h-screen bg-background p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-primary mb-2">
+            Mes Demandes d&apos;Absence
+          </h1>
+          <p className="text-lg text-secondary">
           Consultez et créez vos demandes d&apos;absence
           {hasRHAccess && (
             <span className="ml-2 text-sm text-primary">
@@ -116,6 +117,7 @@ export default async function DemandesAbsencesPage() {
         hasRHAccess={hasRHAccess}
         collaborateursDisponibles={collaborateursDisponibles}
       />
+      </div>
     </div>
   );
 }
