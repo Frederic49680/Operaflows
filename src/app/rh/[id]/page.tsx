@@ -24,7 +24,8 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
   const hasRHAccess = await isRHOrAdmin(user.id);
 
   // Récupérer le collaborateur
-  const { data: collaborateur } = await supabase
+  // Utiliser maybeSingle() pour gérer le cas où le collaborateur n'existe pas ou n'est pas accessible
+  const { data: collaborateur, error: collabError } = await supabase
     .from("collaborateurs")
     .select(`
       *,
@@ -34,7 +35,20 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
     .eq("id", id)
     .maybeSingle();
 
+  // Log de debug en développement
+  if (process.env.NODE_ENV === "development" && collabError) {
+    console.error("❌ Erreur récupération collaborateur:", collabError);
+    console.error("Code:", collabError.code);
+    console.error("Message:", collabError.message);
+    console.error("Details:", collabError.details);
+    console.error("Hint:", collabError.hint);
+  }
+
   if (!collaborateur) {
+    // Si l'erreur est liée à RLS, rediriger vers unauthorized plutôt que notFound
+    if (collabError?.code === "42501" || collabError?.message?.includes("policy")) {
+      redirect("/unauthorized");
+    }
     notFound();
   }
 
