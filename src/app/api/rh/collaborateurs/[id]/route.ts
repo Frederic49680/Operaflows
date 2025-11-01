@@ -27,15 +27,14 @@ export async function GET(
     let query = supabase
       .from("collaborateurs")
       .select("*")
-      .eq("id", id)
-      .maybeSingle();
+      .eq("id", id);
 
     if (!hasRHAccess) {
       // Les non-RH voient seulement leur propre fiche
       query = query.eq("user_id", user.id);
     }
 
-    const { data, error } = await query;
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
       console.error("Erreur récupération collaborateur:", error);
