@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Edit, Trash2, Users, AlertTriangle, CheckCircle } from "lucide-react";
+import { Plus, Users, AlertTriangle, CheckCircle } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase/client";
 import Modal from "@/components/rh/Modal";
 import type { SiteAvecResponsables } from "@/types/sites";
@@ -93,20 +93,35 @@ export default function SitesManagementClient({
     }
   };
 
-  const handleDelete = async (siteId: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir désactiver ce site ?")) return;
+  const handleToggleStatus = async (siteId: string, newStatus: boolean) => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
 
     try {
       const supabase = createClientSupabase();
       const { error } = await supabase
         .from("tbl_sites")
-        .update({ is_active: false })
+        .update({ is_active: newStatus })
         .eq("site_id", siteId);
 
       if (error) throw error;
-      window.location.reload();
+      
+      // Mettre à jour localement
+      setSites(sites.map(s => 
+        s.site_id === siteId ? { ...s, is_active: newStatus } : s
+      ));
+      
+      setSuccess(`Site ${newStatus ? "activé" : "désactivé"} avec succès`);
+      setTimeout(() => {
+        setSuccess(null);
+        router.refresh();
+      }, 1500);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erreur lors de la désactivation");
+      console.error("Erreur changement statut:", err);
+      setError(err instanceof Error ? err.message : "Erreur lors du changement de statut");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -170,15 +185,12 @@ export default function SitesManagementClient({
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Statut
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                    Actions
-                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {sites.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                       Aucun site enregistré
                     </td>
                   </tr>
@@ -196,73 +208,52 @@ export default function SitesManagementClient({
                           ? sites.find(s => s.site_id === site.parent_site_id)?.site_label || "-"
                           : "-"}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        <div className="flex items-center gap-2">
-                          {site.responsables_actifs.length === 0 ? (
-                            <span className="flex items-center gap-1 text-amber-600">
-                              <AlertTriangle className="h-4 w-4" />
-                              Aucun responsable
-                            </span>
-                          ) : (
-                            <div className="space-y-1 flex-1">
-                              {site.responsables_actifs.map((resp, idx) => (
-                                <div key={idx} className="flex items-center gap-2">
-                                  <Users className="h-4 w-4 text-gray-400" />
-                                  <span>
-                                    {resp.collaborateur?.prenom} {resp.collaborateur?.nom}
-                                    {resp.role_fonctionnel !== "Responsable d'activité" && (
-                                      <span className="text-gray-500 ml-1">
-                                        ({resp.role_fonctionnel})
-                                      </span>
-                                    )}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          <button
-                            onClick={() => {
-                              setSiteForResponsables(site);
-                              setModalResponsablesOpen(true);
-                            }}
-                            className="text-primary hover:text-primary-dark text-xs underline"
-                            title="Gérer les responsables"
-                          >
-                            {site.responsables_actifs.length === 0 ? "Ajouter" : "Gérer"}
-                          </button>
-                        </div>
+                      <td 
+                        className="px-6 py-4 text-sm text-gray-900 cursor-pointer hover:bg-gray-100 transition-colors"
+                        onClick={() => {
+                          setSiteForResponsables(site);
+                          setModalResponsablesOpen(true);
+                        }}
+                        title="Cliquer pour gérer les responsables"
+                      >
+                        {site.responsables_actifs.length === 0 ? (
+                          <span className="flex items-center gap-1 text-amber-600">
+                            <AlertTriangle className="h-4 w-4" />
+                            Aucun responsable
+                          </span>
+                        ) : (
+                          <div className="space-y-1">
+                            {site.responsables_actifs.map((resp, idx) => (
+                              <div key={idx} className="flex items-center gap-2">
+                                <Users className="h-4 w-4 text-gray-400" />
+                                <span>
+                                  {resp.collaborateur?.prenom} {resp.collaborateur?.nom}
+                                  {resp.role_fonctionnel !== "Responsable d'activité" && (
+                                    <span className="text-gray-500 ml-1">
+                                      ({resp.role_fonctionnel})
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleStatus(site.site_id, !site.is_active);
+                          }}
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full cursor-pointer transition-all hover:scale-105 ${
                             site.is_active
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-800"
+                              ? "bg-green-100 text-green-800 hover:bg-green-200"
+                              : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                           }`}
+                          title={`Cliquer pour ${site.is_active ? "désactiver" : "activer"} le site`}
                         >
                           {site.is_active ? "Actif" : "Inactif"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => {
-                              setSelectedSite(site);
-                              setModalOpen(true);
-                            }}
-                            className="text-primary hover:text-primary-dark"
-                            title="Modifier"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(site.site_id)}
-                            className="text-red-600 hover:text-red-800"
-                            title="Désactiver"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
+                        </button>
                       </td>
                     </tr>
                   ))
