@@ -480,7 +480,7 @@ export default function HeaderClient({
           onClick={() => {
             setUserMenuOpen(false);
             setAdminMenuOpen(false);
-            setRhMenuOpen(false);
+            setRhMenuOpen({});
           }}
         />
       )}
