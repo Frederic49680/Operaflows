@@ -49,8 +49,16 @@ export default async function UsersManagementPage() {
   // Utiliser le client admin si disponible pour bypasser RLS
   const clientToUse = supabaseAdmin || supabase;
   
+  // Type pour les utilisateurs avec relations
+  type UserWithRelations = Database["public"]["Tables"]["tbl_users"]["Row"] & {
+    user_roles?: Array<{
+      roles?: { name: string; description: string | null } | null;
+      site_id?: string | null;
+    }> | null;
+    collaborateurs?: { nom: string; prenom: string } | null;
+  };
+  
   // Essayer d'abord avec les relations
-  let users;
   const { data: usersWithRelations, error: usersError } = await clientToUse
     .from("tbl_users")
     .select(`
@@ -63,7 +71,7 @@ export default async function UsersManagementPage() {
     `)
     .order("created_at", { ascending: false });
 
-  users = usersWithRelations;
+  let users: UserWithRelations[] | null = usersWithRelations;
 
   // Si erreur de jointure, essayer sans relations pour voir si c'est un problème RLS
   if (usersError || !users || users.length === 0) {
@@ -75,14 +83,15 @@ export default async function UsersManagementPage() {
     
     if (!usersSimpleError && usersSimple) {
       // Si on récupère les données sans relations, c'est un problème de jointure
-      users = usersSimple.map((u: Record<string, unknown>) => ({ 
+      users = usersSimple.map((u) => ({ 
         ...u, 
         user_roles: [], 
         collaborateurs: null 
-      } as typeof users[0]));
+      })) as UserWithRelations[];
       console.log("✅ Utilisateurs récupérés sans relations:", users.length);
     } else {
       console.error("❌ Erreur même sans relations:", usersSimpleError);
+      users = [];
     }
   }
 
