@@ -3,7 +3,18 @@
 export type TypeContrat = 'CDI' | 'CDD' | 'Interim' | 'Apprenti' | 'Stage' | 'Autre';
 export type StatutCollaborateur = 'actif' | 'inactif' | 'suspendu' | 'archivé' | 'A renouveller';
 export type TypeAbsence = 'conges_payes' | 'rtt' | 'repos_site' | 'maladie' | 'accident_travail' | 'absence_autorisee' | 'formation' | 'habilitation' | 'deplacement_externe' | 'autre';
-export type StatutAbsence = 'en_attente' | 'validee' | 'refusee' | 'annulee';
+export type StatutAbsence = 
+  | 'en_attente_validation_n1'  // Étape 1 : En attente validation N+1
+  | 'validee_n1'                // Étape 2 : Validée par N+1
+  | 'refusee_n1'                // Refusée par N+1
+  | 'en_attente_validation_rh'  // Étape 3 : En attente validation RH
+  | 'validee_rh'                // Étape 4 : Validée par RH (impacte planification)
+  | 'refusee_rh'                // Refusée par RH
+  | 'annulee'                   // Annulée par le collaborateur
+  | 'appliquee';                // Étape 5 : Appliquée dans le plan de charge
+
+// Anciens statuts (dépréciés, gardés pour compatibilité)
+export type StatutAbsenceLegacy = 'en_attente' | 'validee' | 'refusee' | 'annulee';
 export type TypeFormation = 'interne' | 'externe' | 'habilitation' | 'certification' | 'autre';
 export type StatutFormation = 'planifiee' | 'en_cours' | 'terminee' | 'abandonnee' | 'echec';
 export type TypeVisiteMedicale = 'embauche' | 'periodique' | 'reprise' | 'inaptitude' | 'autre';
