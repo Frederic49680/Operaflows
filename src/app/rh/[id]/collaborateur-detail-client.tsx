@@ -123,17 +123,6 @@ export default function CollaborateurDetailClient({
               <h1 className="text-4xl font-bold text-primary mb-2">
                 {collaborateur.prenom} {collaborateur.nom}
               </h1>
-              <div className="flex items-center gap-4 text-secondary">
-                <span>{collaborateur.email}</span>
-                {collaborateur.telephone && (
-                  <span>{collaborateur.telephone}</span>
-                )}
-                {collaborateur.fonction_metier && (
-                  <span className="text-gray-500">
-                    {collaborateur.fonction_metier}
-                  </span>
-                )}
-              </div>
             </div>
             {hasRHAccess && (
               <button
@@ -145,31 +134,6 @@ export default function CollaborateurDetailClient({
               </button>
             )}
           </div>
-        </div>
-
-        {/* Badges statut */}
-        <div className="flex items-center gap-4 mb-6">
-          <span
-            className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
-              collaborateur.statut === "actif"
-                ? "bg-green-100 text-green-800"
-                : collaborateur.statut === "inactif"
-                ? "bg-gray-100 text-gray-800"
-                : collaborateur.statut === "suspendu"
-                ? "bg-yellow-100 text-yellow-800"
-                : "bg-red-100 text-red-800"
-            }`}
-          >
-            {collaborateur.statut}
-          </span>
-          {collaborateur.type_contrat && (
-            <span className="text-sm text-gray-600">
-              {collaborateur.type_contrat}
-            </span>
-          )}
-          {collaborateur.site && (
-            <span className="text-sm text-gray-600">{collaborateur.site}</span>
-          )}
         </div>
 
         {/* Onglets */}
