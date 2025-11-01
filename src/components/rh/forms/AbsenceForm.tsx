@@ -149,7 +149,7 @@ export default function AbsenceForm({
             <option value="">-- Sélectionner un type --</option>
             {defaultCatalogue.map((cat) => (
               <option key={cat.id} value={cat.id}>
-                {cat.libelle} ({cat.code})
+                {cat.libelle}
               </option>
             ))}
           </select>
