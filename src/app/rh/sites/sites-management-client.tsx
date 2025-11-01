@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Edit, Trash2, Users, AlertTriangle, CheckCircle } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase/client";
@@ -18,6 +18,8 @@ export default function SitesManagementClient({
   const [sites, setSites] = useState(initialSites);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSite, setSelectedSite] = useState<SiteAvecResponsables | null>(null);
+  const [modalResponsablesOpen, setModalResponsablesOpen] = useState(false);
+  const [siteForResponsables, setSiteForResponsables] = useState<SiteAvecResponsables | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -195,28 +197,40 @@ export default function SitesManagementClient({
                           : "-"}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
-                        {site.responsables_actifs.length === 0 ? (
-                          <span className="flex items-center gap-1 text-amber-600">
-                            <AlertTriangle className="h-4 w-4" />
-                            Aucun responsable
-                          </span>
-                        ) : (
-                          <div className="space-y-1">
-                            {site.responsables_actifs.map((resp, idx) => (
-                              <div key={idx} className="flex items-center gap-2">
-                                <Users className="h-4 w-4 text-gray-400" />
-                                <span>
-                                  {resp.collaborateur?.prenom} {resp.collaborateur?.nom}
-                                  {resp.role_fonctionnel !== "Responsable d'activité" && (
-                                    <span className="text-gray-500 ml-1">
-                                      ({resp.role_fonctionnel})
-                                    </span>
-                                  )}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {site.responsables_actifs.length === 0 ? (
+                            <span className="flex items-center gap-1 text-amber-600">
+                              <AlertTriangle className="h-4 w-4" />
+                              Aucun responsable
+                            </span>
+                          ) : (
+                            <div className="space-y-1 flex-1">
+                              {site.responsables_actifs.map((resp, idx) => (
+                                <div key={idx} className="flex items-center gap-2">
+                                  <Users className="h-4 w-4 text-gray-400" />
+                                  <span>
+                                    {resp.collaborateur?.prenom} {resp.collaborateur?.nom}
+                                    {resp.role_fonctionnel !== "Responsable d'activité" && (
+                                      <span className="text-gray-500 ml-1">
+                                        ({resp.role_fonctionnel})
+                                      </span>
+                                    )}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          <button
+                            onClick={() => {
+                              setSiteForResponsables(site);
+                              setModalResponsablesOpen(true);
+                            }}
+                            className="text-primary hover:text-primary-dark text-xs underline"
+                            title="Gérer les responsables"
+                          >
+                            {site.responsables_actifs.length === 0 ? "Ajouter" : "Gérer"}
+                          </button>
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -285,6 +299,30 @@ export default function SitesManagementClient({
           success={success}
         />
       </Modal>
+
+      {/* Modal gestion responsables */}
+      {siteForResponsables && (
+        <Modal
+          isOpen={modalResponsablesOpen}
+          onClose={() => {
+            setModalResponsablesOpen(false);
+            setSiteForResponsables(null);
+          }}
+          title={`Gérer les responsables - ${siteForResponsables.site_code}`}
+          size="lg"
+        >
+          <ResponsablesManagement
+            site={siteForResponsables}
+            onSuccess={() => {
+              router.refresh();
+              setTimeout(() => {
+                setModalResponsablesOpen(false);
+                setSiteForResponsables(null);
+              }, 1000);
+            }}
+          />
+        </Modal>
+      )}
     </div>
   );
 }
@@ -416,6 +454,233 @@ function SiteForm({
         </button>
       </div>
     </form>
+  );
+}
+
+// Composant gestion des responsables d'activité
+function ResponsablesManagement({
+  site,
+  onSuccess,
+}: {
+  site: SiteAvecResponsables;
+  onSuccess: () => void;
+}) {
+  const [collaborateurs, setCollaborateurs] = useState<Array<{ id: string; nom: string; prenom: string }>>([]);
+  const [selectedCollaborateurId, setSelectedCollaborateurId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [loadingList, setLoadingList] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  // Charger les collaborateurs disponibles
+  useEffect(() => {
+    const loadCollaborateurs = async () => {
+      try {
+        const supabase = createClientSupabase();
+        const { data, error: fetchError } = await supabase
+          .from("collaborateurs")
+          .select("id, nom, prenom")
+          .eq("statut", "actif")
+          .order("nom", { ascending: true });
+
+        if (fetchError) throw fetchError;
+        setCollaborateurs(data || []);
+      } catch (err) {
+        console.error("Erreur chargement collaborateurs:", err);
+        setError("Erreur lors du chargement des collaborateurs");
+      } finally {
+        setLoadingList(false);
+      }
+    };
+
+    loadCollaborateurs();
+  }, []);
+
+  const handleAddResponsable = async () => {
+    if (!selectedCollaborateurId) {
+      setError("Veuillez sélectionner un collaborateur");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const supabase = createClientSupabase();
+      
+      // Vérifier si le collaborateur est déjà responsable de ce site
+      const { data: existing } = await supabase
+        .from("tbl_site_responsables")
+        .select("*")
+        .eq("site_id", site.site_id)
+        .eq("collaborateur_id", selectedCollaborateurId)
+        .eq("role_fonctionnel", "Responsable d'activité")
+        .maybeSingle();
+
+      if (existing) {
+        // Si existe mais inactif, le réactiver
+        if (!existing.is_active || (existing.date_fin && new Date(existing.date_fin) < new Date())) {
+          const { error: updateError } = await supabase
+            .from("tbl_site_responsables")
+            .update({
+              is_active: true,
+              date_fin: null,
+              date_debut: new Date().toISOString().split('T')[0],
+            })
+            .eq("site_id", site.site_id)
+            .eq("collaborateur_id", selectedCollaborateurId)
+            .eq("role_fonctionnel", "Responsable d'activité");
+
+          if (updateError) throw updateError;
+        } else {
+          setError("Ce collaborateur est déjà responsable de ce site");
+          setLoading(false);
+          return;
+        }
+      } else {
+        // Créer nouvelle association
+        const { error: insertError } = await supabase
+          .from("tbl_site_responsables")
+          .insert({
+            site_id: site.site_id,
+            collaborateur_id: selectedCollaborateurId,
+            role_fonctionnel: "Responsable d'activité",
+            date_debut: new Date().toISOString().split('T')[0],
+            is_active: true,
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      setSuccess("Responsable ajouté avec succès");
+      setSelectedCollaborateurId("");
+      setTimeout(() => {
+        onSuccess();
+      }, 1000);
+    } catch (err) {
+      console.error("Erreur ajout responsable:", err);
+      setError(err instanceof Error ? err.message : "Erreur lors de l'ajout");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveResponsable = async (collaborateurId: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir retirer ce responsable ?")) return;
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const supabase = createClientSupabase();
+      
+      // Désactiver plutôt que supprimer
+      const { error: updateError } = await supabase
+        .from("tbl_site_responsables")
+        .update({
+          is_active: false,
+          date_fin: new Date().toISOString().split('T')[0],
+        })
+        .eq("site_id", site.site_id)
+        .eq("collaborateur_id", collaborateurId)
+        .eq("role_fonctionnel", "Responsable d'activité");
+
+      if (updateError) throw updateError;
+
+      setSuccess("Responsable retiré avec succès");
+      setTimeout(() => {
+        onSuccess();
+      }, 1000);
+    } catch (err) {
+      console.error("Erreur suppression responsable:", err);
+      setError(err instanceof Error ? err.message : "Erreur lors de la suppression");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filtrer les collaborateurs déjà responsables
+  const disponibles = collaborateurs.filter(
+    (collab) => !site.responsables_actifs.some((r) => r.collaborateur_id === collab.id)
+  );
+
+  return (
+    <div className="space-y-4">
+      {success && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+          <CheckCircle className="h-4 w-4" />
+          {success}
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4" />
+          {error}
+        </div>
+      )}
+
+      {/* Liste des responsables actuels */}
+      <div>
+        <h3 className="text-sm font-medium text-gray-700 mb-2">Responsables actuels</h3>
+        {site.responsables_actifs.length === 0 ? (
+          <p className="text-sm text-gray-500">Aucun responsable assigné</p>
+        ) : (
+          <div className="space-y-2">
+            {site.responsables_actifs.map((resp) => (
+              <div
+                key={resp.collaborateur_id}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-900">
+                    {resp.collaborateur?.prenom} {resp.collaborateur?.nom}
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleRemoveResponsable(resp.collaborateur_id)}
+                  disabled={loading}
+                  className="text-red-600 hover:text-red-800 text-xs underline disabled:opacity-50"
+                >
+                  Retirer
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Ajouter un responsable */}
+      <div className="pt-4 border-t">
+        <h3 className="text-sm font-medium text-gray-700 mb-2">Ajouter un responsable</h3>
+        <div className="flex gap-2">
+          <select
+            value={selectedCollaborateurId}
+            onChange={(e) => setSelectedCollaborateurId(e.target.value)}
+            disabled={loading || loadingList || disponibles.length === 0}
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 disabled:opacity-50"
+          >
+            <option value="">
+              {loadingList ? "Chargement..." : disponibles.length === 0 ? "Aucun collaborateur disponible" : "Sélectionner un collaborateur"}
+            </option>
+            {disponibles.map((collab) => (
+              <option key={collab.id} value={collab.id}>
+                {collab.prenom} {collab.nom}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={handleAddResponsable}
+            disabled={loading || !selectedCollaborateurId || disponibles.length === 0}
+            className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? "Ajout..." : "Ajouter"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
