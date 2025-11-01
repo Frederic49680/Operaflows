@@ -135,17 +135,16 @@ export default function SitesManagementClient({
           </div>
         )}
 
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-4xl font-bold text-primary mb-2">
-                Référentiel Sites
-              </h1>
-              <p className="text-lg text-secondary">
-                Gestion des sites d'activité et de leurs responsables
-              </p>
-            </div>
-            <button
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-4xl font-bold text-primary mb-2">
+              Gestion des Sites
+            </h1>
+            <p className="text-lg text-secondary">
+              Gérez les sites et leurs responsables d&apos;activité
+            </p>
+          </div>
+          <button
               onClick={() => {
                 setSelectedSite(null);
                 setModalOpen(true);
