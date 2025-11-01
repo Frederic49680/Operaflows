@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, Plus, AlertTriangle, Calendar, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Plus, AlertTriangle, Calendar, Users, X, CalendarIcon } from "lucide-react";
 import type { Collaborateur, AlerteEcheance } from "@/types/rh";
+import Modal from "@/components/rh/Modal";
 
 interface RHPageClientProps {
   collaborateurs: Collaborateur[];
@@ -16,7 +18,14 @@ export default function RHPageClient({
   alertes,
   hasRHAccess,
 }: RHPageClientProps) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [modalInactifOpen, setModalInactifOpen] = useState(false);
+  const [selectedCollaborateur, setSelectedCollaborateur] = useState<Collaborateur | null>(null);
+  const [dateFinContrat, setDateFinContrat] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const filteredCollaborateurs = collaborateurs.filter((collab) => {
     const searchLower = searchTerm.toLowerCase();
@@ -32,6 +41,63 @@ export default function RHPageClient({
   const alertesUrgentes = alertes.filter(
     (a) => a.statut_alerte === "expiree" || (a.jours_restants !== null && a.jours_restants <= 7)
   );
+
+  const handleStatutClick = (e: React.MouseEvent, collab: Collaborateur) => {
+    e.stopPropagation(); // Empêcher le clic sur la ligne
+    if (hasRHAccess && collab.statut === "actif") {
+      setSelectedCollaborateur(collab);
+      setDateFinContrat("");
+      setModalInactifOpen(true);
+      setError(null);
+      setSuccess(null);
+    }
+  };
+
+  const handleDesactiver = async () => {
+    if (!selectedCollaborateur || !dateFinContrat) {
+      setError("Veuillez renseigner une date de fin de contrat");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/rh/collaborateurs/${selectedCollaborateur.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          statut: "inactif",
+          date_fin_contrat: dateFinContrat,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erreur lors de la désactivation");
+      }
+
+      setSuccess("Collaborateur désactivé avec succès");
+      setTimeout(() => {
+        setModalInactifOpen(false);
+        setSelectedCollaborateur(null);
+        setDateFinContrat("");
+        setSuccess(null);
+        router.refresh();
+      }, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors de la désactivation");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRowClick = (collabId: string) => {
+    router.push(`/rh/${collabId}`);
+  };
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -198,21 +264,22 @@ export default function RHPageClient({
                       Responsable
                     </th>
                   )}
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredCollaborateurs.length === 0 ? (
                   <tr>
-                    <td colSpan={hasRHAccess ? 7 : 6} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={hasRHAccess ? 6 : 5} className="px-6 py-8 text-center text-gray-500">
                       {searchTerm ? "Aucun résultat trouvé" : "Aucun collaborateur"}
                     </td>
                   </tr>
                 ) : (
                   filteredCollaborateurs.map((collab) => (
-                    <tr key={collab.id} className="hover:bg-gray-50">
+                    <tr 
+                      key={collab.id} 
+                      className="hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => handleRowClick(collab.id)}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
@@ -234,8 +301,11 @@ export default function RHPageClient({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            collab.statut === "actif"
+                          onClick={(e) => handleStatutClick(e, collab)}
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full transition-all ${
+                            collab.statut === "actif" && hasRHAccess
+                              ? "bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer"
+                              : collab.statut === "actif"
                               ? "bg-green-100 text-green-800"
                               : collab.statut === "inactif"
                               ? "bg-gray-100 text-gray-800"
@@ -254,14 +324,6 @@ export default function RHPageClient({
                             : "-"}
                         </td>
                       )}
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link
-                          href={`/rh/${collab.id}`}
-                          className="text-primary hover:text-primary-dark"
-                        >
-                          Voir
-                        </Link>
-                      </td>
                     </tr>
                   ))
                 )}
@@ -270,6 +332,98 @@ export default function RHPageClient({
           </div>
         </div>
       </div>
+
+      {/* Modal Désactivation */}
+      <Modal
+        isOpen={modalInactifOpen}
+        onClose={() => {
+          setModalInactifOpen(false);
+          setSelectedCollaborateur(null);
+          setDateFinContrat("");
+          setError(null);
+          setSuccess(null);
+        }}
+        title="Désactiver le collaborateur"
+      >
+        <div className="space-y-4">
+          {selectedCollaborateur && (
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600 mb-1">Collaborateur</p>
+              <p className="font-medium text-gray-900">
+                {selectedCollaborateur.prenom} {selectedCollaborateur.nom}
+              </p>
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-400 text-red-700 px-4 py-3 rounded-r-lg flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+              <span className="font-medium">{error}</span>
+            </div>
+          )}
+
+          {success && (
+            <div className="bg-green-50 border-l-4 border-green-400 text-green-700 px-4 py-3 rounded-r-lg flex items-center gap-2">
+              <Calendar className="h-5 w-5 flex-shrink-0" />
+              <span className="font-medium">{success}</span>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Date de fin de contrat <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                type="date"
+                value={dateFinContrat}
+                onChange={(e) => setDateFinContrat(e.target.value)}
+                required
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900 transition-all"
+                min={new Date().toISOString().split("T")[0]}
+              />
+              <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              Le collaborateur passera en statut "inactif" à cette date
+            </p>
+          </div>
+
+          <div className="flex items-center justify-end gap-4 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={() => {
+                setModalInactifOpen(false);
+                setSelectedCollaborateur(null);
+                setDateFinContrat("");
+                setError(null);
+                setSuccess(null);
+              }}
+              className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-all duration-200"
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              onClick={handleDesactiver}
+              disabled={loading || !dateFinContrat}
+              className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-semibold flex items-center gap-2 hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Désactivation...
+                </>
+              ) : (
+                <>
+                  <X className="h-5 w-5" />
+                  Désactiver
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
