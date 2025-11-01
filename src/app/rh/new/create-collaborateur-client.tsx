@@ -48,6 +48,7 @@ export default function CreateCollaborateurClient({
       const supabase = createClientSupabase();
 
       // Préparer les données
+      // Note: La table utilise date_embauche et date_fin_contrat, pas date_entree et date_sortie
       const collaborateurData: Record<string, unknown> = {
         nom: formData.nom.trim(),
         prenom: formData.prenom.trim(),
@@ -60,11 +61,18 @@ export default function CreateCollaborateurClient({
         responsable_id: formData.responsable_id || null, // Deprecated: gardé pour compatibilité
         responsable_activite_id: formData.responsable_activite_id || null, // Nouveau
         user_id: formData.user_id || null,
-        date_entree: formData.date_entree || null,
-        date_sortie: formData.date_sortie || null,
+        date_embauche: formData.date_entree || null, // Mapping vers date_embauche
+        date_fin_contrat: formData.date_sortie || null, // Mapping vers date_fin_contrat
         statut: formData.statut,
         commentaire: formData.commentaire.trim() || null,
       };
+
+      // Nettoyer les champs vides pour éviter les erreurs de validation
+      Object.keys(collaborateurData).forEach((key) => {
+        if (collaborateurData[key] === "" || collaborateurData[key] === undefined) {
+          collaborateurData[key] = null;
+        }
+      });
 
       const { data, error: insertError } = await supabase
         .from("collaborateurs")

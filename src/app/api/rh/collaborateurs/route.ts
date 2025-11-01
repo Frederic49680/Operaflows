@@ -75,20 +75,31 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
+    // Nettoyer les données : supprimer les champs undefined/vides et mapper les noms de colonnes si nécessaire
+    const collaborateurData: Record<string, unknown> = {
+      ...body,
+      created_by: user.id,
+      updated_by: user.id,
+    };
+
+    // Nettoyer les champs vides
+    Object.keys(collaborateurData).forEach((key) => {
+      if (collaborateurData[key] === "" || collaborateurData[key] === undefined) {
+        delete collaborateurData[key];
+      }
+    });
+
     const { data, error } = await supabase
       .from("collaborateurs")
-      .insert({
-        ...body,
-        created_by: user.id,
-        updated_by: user.id,
-      })
+      .insert(collaborateurData)
       .select()
       .single();
 
     if (error) {
       console.error("Erreur création collaborateur:", error);
+      console.error("Données envoyées:", JSON.stringify(collaborateurData, null, 2));
       return NextResponse.json(
-        { error: error.message },
+        { error: error.message, details: error.details, hint: error.hint },
         { status: 400 }
       );
     }
