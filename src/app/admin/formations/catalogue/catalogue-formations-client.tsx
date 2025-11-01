@@ -356,7 +356,7 @@ export default function CatalogueFormationsClient({
               </label>
               <select
                 value={formData.type_formation}
-                onChange={(e) => setFormData({ ...formData, type_formation: e.target.value as any })}
+                onChange={(e) => setFormData({ ...formData, type_formation: e.target.value as "obligatoire" | "facultative" | "reglementaire" | "" })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="">Sélectionner...</option>

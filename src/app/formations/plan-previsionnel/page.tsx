@@ -50,19 +50,12 @@ export default async function PlanPrevisionnelPage() {
     .eq("is_active", true)
     .order("nom", { ascending: true });
 
-  // Récupérer les sites pour les filtres
-  const { data: sites } = await supabase
-    .from("tbl_sites")
-    .select("site_id, site_code, site_label")
-    .eq("is_active", true)
-    .order("site_code", { ascending: true });
 
   return (
     <PlanPrevisionnelClient
       initialPlan={planPrevisionnel || []}
       collaborateurs={collaborateurs || []}
       catalogue={catalogue || []}
-      sites={sites || []}
       hasRHAccess={hasRHAccess}
       currentYear={currentYear}
       nextYear={nextYear}
