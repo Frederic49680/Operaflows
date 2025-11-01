@@ -118,13 +118,16 @@ export default function CollaborateurDetailClient({
               </div>
             </div>
             {hasRHAccess && (
-              <Link
-                href={`/rh/${collaborateur.id}/edit`}
+              <button
+                onClick={() => {
+                  // TODO: Implémenter l'édition du collaborateur (modal ou page dédiée)
+                  alert("Fonctionnalité d'édition en cours de développement");
+                }}
                 className="btn-primary flex items-center gap-2"
               >
                 <Edit className="h-5 w-5" />
                 Modifier
-              </Link>
+              </button>
             )}
           </div>
         </div>
