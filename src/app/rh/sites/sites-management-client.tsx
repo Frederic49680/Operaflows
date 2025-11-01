@@ -143,10 +143,9 @@ export default function SitesManagementClient({
               }}
               className="btn-primary flex items-center gap-2"
             >
-              <Plus className="h-5 w-5" />
-              Ajouter un site
-            </button>
-          </div>
+            <Plus className="h-5 w-5" />
+            Ajouter un site
+          </button>
         </div>
 
         <div className="card">
