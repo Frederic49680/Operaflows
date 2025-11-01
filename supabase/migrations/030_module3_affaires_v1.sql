@@ -50,14 +50,15 @@ CREATE TABLE IF NOT EXISTS public.tbl_affaires (
     CONSTRAINT chk_dates_affaire CHECK (date_fin IS NULL OR date_debut IS NULL OR date_fin >= date_debut)
 );
 
-CREATE INDEX idx_affaires_numero ON public.tbl_affaires(numero);
-CREATE INDEX idx_affaires_statut ON public.tbl_affaires(statut);
-CREATE INDEX idx_affaires_site_id ON public.tbl_affaires(site_id);
-CREATE INDEX idx_affaires_charge_affaires ON public.tbl_affaires(charge_affaires_id);
-CREATE INDEX idx_affaires_client ON public.tbl_affaires(client);
-CREATE INDEX idx_affaires_dates ON public.tbl_affaires(date_debut, date_fin);
+CREATE INDEX IF NOT EXISTS idx_affaires_numero ON public.tbl_affaires(numero);
+CREATE INDEX IF NOT EXISTS idx_affaires_statut ON public.tbl_affaires(statut);
+CREATE INDEX IF NOT EXISTS idx_affaires_site_id ON public.tbl_affaires(site_id);
+CREATE INDEX IF NOT EXISTS idx_affaires_charge_affaires ON public.tbl_affaires(charge_affaires_id);
+CREATE INDEX IF NOT EXISTS idx_affaires_client ON public.tbl_affaires(client);
+CREATE INDEX IF NOT EXISTS idx_affaires_dates ON public.tbl_affaires(date_debut, date_fin);
 
 -- Trigger updated_at
+DROP TRIGGER IF EXISTS trigger_update_affaires_updated_at ON public.tbl_affaires;
 CREATE TRIGGER trigger_update_affaires_updated_at
     BEFORE UPDATE ON public.tbl_affaires
     FOR EACH ROW
@@ -92,10 +93,11 @@ CREATE TABLE IF NOT EXISTS public.tbl_affaires_bpu (
     updated_by UUID REFERENCES auth.users(id)
 );
 
-CREATE INDEX idx_bpu_affaire_id ON public.tbl_affaires_bpu(affaire_id);
-CREATE INDEX idx_bpu_code ON public.tbl_affaires_bpu(code_bpu);
+CREATE INDEX IF NOT EXISTS idx_bpu_affaire_id ON public.tbl_affaires_bpu(affaire_id);
+CREATE INDEX IF NOT EXISTS idx_bpu_code ON public.tbl_affaires_bpu(code_bpu);
 
 -- Trigger updated_at
+DROP TRIGGER IF EXISTS trigger_update_bpu_updated_at ON public.tbl_affaires_bpu;
 CREATE TRIGGER trigger_update_bpu_updated_at
     BEFORE UPDATE ON public.tbl_affaires_bpu
     FOR EACH ROW
@@ -134,11 +136,12 @@ CREATE TABLE IF NOT EXISTS public.tbl_affaires_depenses (
     updated_by UUID REFERENCES auth.users(id)
 );
 
-CREATE INDEX idx_depenses_affaire_id ON public.tbl_affaires_depenses(affaire_id);
-CREATE INDEX idx_depenses_date ON public.tbl_affaires_depenses(date_depense);
-CREATE INDEX idx_depenses_categorie ON public.tbl_affaires_depenses(categorie);
+CREATE INDEX IF NOT EXISTS idx_depenses_affaire_id ON public.tbl_affaires_depenses(affaire_id);
+CREATE INDEX IF NOT EXISTS idx_depenses_date ON public.tbl_affaires_depenses(date_depense);
+CREATE INDEX IF NOT EXISTS idx_depenses_categorie ON public.tbl_affaires_depenses(categorie);
 
 -- Trigger updated_at
+DROP TRIGGER IF EXISTS trigger_update_depenses_updated_at ON public.tbl_affaires_depenses;
 CREATE TRIGGER trigger_update_depenses_updated_at
     BEFORE UPDATE ON public.tbl_affaires_depenses
     FOR EACH ROW
@@ -183,9 +186,10 @@ CREATE TABLE IF NOT EXISTS public.tbl_affaires_pre_planif (
     updated_by UUID REFERENCES auth.users(id)
 );
 
-CREATE INDEX idx_pre_planif_affaire_id ON public.tbl_affaires_pre_planif(affaire_id);
+CREATE INDEX IF NOT EXISTS idx_pre_planif_affaire_id ON public.tbl_affaires_pre_planif(affaire_id);
 
 -- Trigger updated_at
+DROP TRIGGER IF EXISTS trigger_update_pre_planif_updated_at ON public.tbl_affaires_pre_planif;
 CREATE TRIGGER trigger_update_pre_planif_updated_at
     BEFORE UPDATE ON public.tbl_affaires_pre_planif
     FOR EACH ROW
@@ -210,8 +214,8 @@ CREATE TABLE IF NOT EXISTS public.tbl_affaires_documents (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_documents_affaire_id ON public.tbl_affaires_documents(affaire_id);
-CREATE INDEX idx_documents_type ON public.tbl_affaires_documents(type_document);
+CREATE INDEX IF NOT EXISTS idx_documents_affaire_id ON public.tbl_affaires_documents(affaire_id);
+CREATE INDEX IF NOT EXISTS idx_documents_type ON public.tbl_affaires_documents(type_document);
 
 -- ============================================================================
 -- 6️⃣ FONCTIONS UTILITAIRES
@@ -275,11 +279,13 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Triggers pour mettre à jour automatiquement le montant total
+DROP TRIGGER IF EXISTS trigger_update_montant_on_bpu_change ON public.tbl_affaires_bpu;
 CREATE TRIGGER trigger_update_montant_on_bpu_change
     AFTER INSERT OR UPDATE OR DELETE ON public.tbl_affaires_bpu
     FOR EACH ROW
     EXECUTE FUNCTION update_affaire_montant_total();
 
+DROP TRIGGER IF EXISTS trigger_update_montant_on_depense_change ON public.tbl_affaires_depenses;
 CREATE TRIGGER trigger_update_montant_on_depense_change
     AFTER INSERT OR UPDATE OR DELETE ON public.tbl_affaires_depenses
     FOR EACH ROW
@@ -331,10 +337,12 @@ LEFT JOIN public.collaborateurs c ON c.id = a.charge_affaires_id;
 -- RLS pour tbl_affaires
 ALTER TABLE public.tbl_affaires ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Tous les utilisateurs authentifiés peuvent voir les affaires" ON public.tbl_affaires;
 CREATE POLICY "Tous les utilisateurs authentifiés peuvent voir les affaires"
     ON public.tbl_affaires FOR SELECT
     USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Chargé d'affaires et RH/Admin peuvent créer des affaires" ON public.tbl_affaires;
 CREATE POLICY "Chargé d'affaires et RH/Admin peuvent créer des affaires"
     ON public.tbl_affaires FOR INSERT
     WITH CHECK (
@@ -348,6 +356,7 @@ CREATE POLICY "Chargé d'affaires et RH/Admin peuvent créer des affaires"
         )
     );
 
+DROP POLICY IF EXISTS "Chargé d'affaires et RH/Admin peuvent modifier les affaires" ON public.tbl_affaires;
 CREATE POLICY "Chargé d'affaires et RH/Admin peuvent modifier les affaires"
     ON public.tbl_affaires FOR UPDATE
     USING (
@@ -362,6 +371,7 @@ CREATE POLICY "Chargé d'affaires et RH/Admin peuvent modifier les affaires"
 -- RLS pour tbl_affaires_bpu
 ALTER TABLE public.tbl_affaires_bpu ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Même règles que les affaires parentes" ON public.tbl_affaires_bpu;
 CREATE POLICY "Même règles que les affaires parentes"
     ON public.tbl_affaires_bpu FOR ALL
     USING (
@@ -374,6 +384,7 @@ CREATE POLICY "Même règles que les affaires parentes"
 -- RLS pour tbl_affaires_depenses
 ALTER TABLE public.tbl_affaires_depenses ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Même règles que les affaires parentes pour dépenses" ON public.tbl_affaires_depenses;
 CREATE POLICY "Même règles que les affaires parentes pour dépenses"
     ON public.tbl_affaires_depenses FOR ALL
     USING (
@@ -386,6 +397,7 @@ CREATE POLICY "Même règles que les affaires parentes pour dépenses"
 -- RLS pour tbl_affaires_pre_planif
 ALTER TABLE public.tbl_affaires_pre_planif ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Même règles que les affaires parentes pour pré-planif" ON public.tbl_affaires_pre_planif;
 CREATE POLICY "Même règles que les affaires parentes pour pré-planif"
     ON public.tbl_affaires_pre_planif FOR ALL
     USING (
@@ -398,6 +410,7 @@ CREATE POLICY "Même règles que les affaires parentes pour pré-planif"
 -- RLS pour tbl_affaires_documents
 ALTER TABLE public.tbl_affaires_documents ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Même règles que les affaires parentes pour documents" ON public.tbl_affaires_documents;
 CREATE POLICY "Même règles que les affaires parentes pour documents"
     ON public.tbl_affaires_documents FOR ALL
     USING (
