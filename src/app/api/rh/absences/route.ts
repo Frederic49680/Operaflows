@@ -129,7 +129,7 @@ export async function POST(request: Request) {
         ...absenceData,
         created_by: user.id,
         updated_by: user.id,
-        statut: absenceData.statut || "en_attente",
+        statut: absenceData.statut || "en_attente_validation_n1",
       })
       .select()
       .single();

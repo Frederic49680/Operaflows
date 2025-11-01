@@ -39,7 +39,7 @@ export default function AbsenceForm({
       ? new Date(absence.date_fin).toISOString().split("T")[0]
       : "",
     heures_absences: absence?.heures_absences || null,
-    statut: absence?.statut || "en_attente",
+    statut: absence?.statut || "en_attente_validation_n1",
     impact_planif: absence?.impact_planif ?? true,
     synchro_outlook: absence?.synchro_outlook ?? false,
     commentaire: absence?.commentaire || "",
@@ -192,9 +192,13 @@ export default function AbsenceForm({
             onChange={(e) => setFormData({ ...formData, statut: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
           >
-            <option value="en_attente">En attente</option>
-            <option value="validee">Validée</option>
-            <option value="refusee">Refusée</option>
+            <option value="en_attente_validation_n1">En attente validation N+1</option>
+            <option value="validee_n1">Validée N+1</option>
+            <option value="refusee_n1">Refusée N+1</option>
+            <option value="en_attente_validation_rh">En attente validation RH</option>
+            <option value="validee_rh">Validée RH</option>
+            <option value="refusee_rh">Refusée RH</option>
+            <option value="annulee">Annulée</option>
             <option value="annulee">Annulée</option>
           </select>
         </div>
