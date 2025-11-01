@@ -125,6 +125,10 @@ export default async function Header() {
               href: "/admin/absences",
             },
             {
+              label: "Référentiel Sites",
+              href: "/rh/sites",
+            },
+            {
               label: "Fonctions Métier",
               href: "/admin/fonctions-metier",
             },

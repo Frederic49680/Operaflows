@@ -197,6 +197,10 @@ export default async function SafeHeader() {
                 href: "/admin/absences",
               },
               {
+                label: "Référentiel Sites",
+                href: "/rh/sites",
+              },
+              {
                 label: "Fonctions Métier",
                 href: "/admin/fonctions-metier",
               },
