@@ -770,129 +770,234 @@ function OngletGeneral({ collaborateur }: { collaborateur: Collaborateur }) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Identité</h3>
-          <dl className="space-y-3">
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Nom</dt>
-              <dd className="mt-1 text-sm text-gray-900">{collaborateur.nom}</dd>
+        {/* Section Identité */}
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-200">
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <User className="h-5 w-5 text-primary" />
             </div>
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Prénom</dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {collaborateur.prenom}
-              </dd>
+            <h3 className="text-lg font-semibold text-gray-900">Identité</h3>
+          </div>
+          <dl className="space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 p-1.5 bg-gray-100 rounded-md">
+                <User className="h-4 w-4 text-gray-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                  Nom
+                </dt>
+                <dd className="text-sm font-medium text-gray-900">
+                  {collaborateur.nom}
+                </dd>
+              </div>
             </div>
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Email</dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {collaborateur.email}
-              </dd>
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 p-1.5 bg-gray-100 rounded-md">
+                <User className="h-4 w-4 text-gray-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                  Prénom
+                </dt>
+                <dd className="text-sm font-medium text-gray-900">
+                  {collaborateur.prenom}
+                </dd>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 p-1.5 bg-blue-50 rounded-md">
+                <Mail className="h-4 w-4 text-blue-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                  Email
+                </dt>
+                <dd className="text-sm font-medium text-gray-900 break-all">
+                  {collaborateur.email}
+                </dd>
+              </div>
             </div>
             {collaborateur.telephone && (
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Téléphone</dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {collaborateur.telephone}
-                </dd>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 p-1.5 bg-green-50 rounded-md">
+                  <Phone className="h-4 w-4 text-green-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    Téléphone
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    {collaborateur.telephone}
+                  </dd>
+                </div>
               </div>
             )}
           </dl>
         </div>
 
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Contrat</h3>
-          <dl className="space-y-3">
+        {/* Section Contrat */}
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-200">
+            <div className="p-2 bg-purple-50 rounded-lg">
+              <Briefcase className="h-5 w-5 text-purple-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Contrat</h3>
+          </div>
+          <dl className="space-y-4">
             {collaborateur.type_contrat && (
-              <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Type de contrat
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {collaborateur.type_contrat}
-                </dd>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 p-1.5 bg-purple-50 rounded-md">
+                  <FileText className="h-4 w-4 text-purple-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    Type de contrat
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-purple-50 text-purple-700 font-medium text-xs">
+                      {collaborateur.type_contrat}
+                    </span>
+                  </dd>
+                </div>
               </div>
             )}
             {collaborateur.date_embauche && (
-              <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Date d'embauche
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {format(new Date(collaborateur.date_embauche), "PPP", {
-                    locale: fr,
-                  })}
-                </dd>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 p-1.5 bg-blue-50 rounded-md">
+                  <CalendarIcon className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    Date d'embauche
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    {format(new Date(collaborateur.date_embauche), "PPP", {
+                      locale: fr,
+                    })}
+                  </dd>
+                </div>
               </div>
             )}
             {collaborateur.date_fin_contrat && (
-              <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Date de fin de contrat
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {format(new Date(collaborateur.date_fin_contrat), "PPP", {
-                    locale: fr,
-                  })}
-                </dd>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 p-1.5 bg-amber-50 rounded-md">
+                  <CalendarIcon className="h-4 w-4 text-amber-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    Date de fin de contrat
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    {format(new Date(collaborateur.date_fin_contrat), "PPP", {
+                      locale: fr,
+                    })}
+                  </dd>
+                </div>
               </div>
             )}
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Statut</dt>
-              <dd className="mt-1">
-                <span
-                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    collaborateur.statut === "actif"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {collaborateur.statut}
-                </span>
-              </dd>
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 p-1.5 bg-green-50 rounded-md">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                  Statut
+                </dt>
+                <dd className="mt-1">
+                  <span
+                    className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full ${
+                      collaborateur.statut === "actif"
+                        ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200"
+                        : collaborateur.statut === "inactif"
+                        ? "bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border border-gray-200"
+                        : "bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200"
+                    }`}
+                  >
+                    {collaborateur.statut}
+                  </span>
+                </dd>
+              </div>
             </div>
           </dl>
         </div>
 
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Affectation</h3>
-          <dl className="space-y-3">
+        {/* Section Affectation */}
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-200">
+            <div className="p-2 bg-indigo-50 rounded-lg">
+              <MapPin className="h-5 w-5 text-indigo-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Affectation</h3>
+          </div>
+          <dl className="space-y-4">
             {collaborateur.site && (
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Site</dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {collaborateur.site}
-                </dd>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 p-1.5 bg-indigo-50 rounded-md">
+                  <MapPin className="h-4 w-4 text-indigo-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    Site
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 font-medium text-xs">
+                      {collaborateur.site}
+                    </span>
+                  </dd>
+                </div>
               </div>
             )}
             {collaborateur.fonction_metier && (
-              <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Fonction métier
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {collaborateur.fonction_metier}
-                </dd>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 p-1.5 bg-blue-50 rounded-md">
+                  <Briefcase className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    Fonction métier
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    {collaborateur.fonction_metier}
+                  </dd>
+                </div>
               </div>
             )}
             {collaborateur.responsable && (
-              <div>
-                <dt className="text-sm font-medium text-gray-500">
-                  Responsable
-                </dt>
-                <dd className="mt-1 text-sm text-gray-900">
-                  {collaborateur.responsable.prenom}{" "}
-                  {collaborateur.responsable.nom}
-                </dd>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 p-1.5 bg-cyan-50 rounded-md">
+                  <User className="h-4 w-4 text-cyan-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                    Responsable
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    {collaborateur.responsable.prenom}{" "}
+                    {collaborateur.responsable.nom}
+                  </dd>
+                </div>
               </div>
             )}
           </dl>
         </div>
 
+        {/* Section Commentaire */}
         {collaborateur.commentaire && (
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Commentaire</h3>
-            <p className="text-sm text-gray-900">{collaborateur.commentaire}</p>
+          <div className="bg-gradient-to-br from-white to-amber-50/30 rounded-xl p-6 shadow-sm border border-amber-100">
+            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-amber-200">
+              <div className="p-2 bg-amber-50 rounded-lg">
+                <FileText className="h-5 w-5 text-amber-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Commentaire
+              </h3>
+            </div>
+            <div className="mt-2">
+              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                {collaborateur.commentaire}
+              </p>
+            </div>
           </div>
         )}
       </div>
