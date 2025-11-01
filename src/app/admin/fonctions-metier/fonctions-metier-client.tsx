@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Edit, Trash2, Save, X, CheckCircle, AlertTriangle } from "lucide-react";
+import { Plus, Save, X, CheckCircle, AlertTriangle } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase/client";
 
 interface FonctionMetier {
@@ -33,14 +33,15 @@ export default function FonctionsMetierClient({
   const [editValues, setEditValues] = useState<{
     libelle: string;
     description: string;
-    ordre_affichage: number;
   } | null>(null);
 
   const [formData, setFormData] = useState({
     libelle: "",
     description: "",
-    ordre_affichage: (fonctions.filter(f => f.is_active).length || 0) + 1,
   });
+
+  // Ref pour détecter les clics en dehors de la ligne en édition
+  const editRowRef = useRef<HTMLTableRowElement | null>(null);
 
   const handleCreate = async () => {
     if (!formData.libelle.trim()) {
@@ -59,7 +60,6 @@ export default function FonctionsMetierClient({
         .insert({
           libelle: formData.libelle.trim(),
           description: formData.description.trim() || null,
-          ordre_affichage: formData.ordre_affichage || 0,
           is_active: true,
         });
 
@@ -70,8 +70,8 @@ export default function FonctionsMetierClient({
       setFormData({
         libelle: "",
         description: "",
-        ordre_affichage: (fonctions.filter(f => f.is_active).length || 0) + 1,
       });
+      // Refresh immédiat
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de la création");
@@ -101,7 +101,6 @@ export default function FonctionsMetierClient({
         .update({
           libelle: editValues.libelle.trim(),
           description: editValues.description.trim() || null,
-          ordre_affichage: editValues.ordre_affichage || 0,
         })
         .eq("id", id);
 
@@ -158,7 +157,6 @@ export default function FonctionsMetierClient({
     setEditValues({
       libelle: fonction.libelle,
       description: fonction.description || "",
-      ordre_affichage: fonction.ordre_affichage,
     });
   };
 
@@ -166,6 +164,39 @@ export default function FonctionsMetierClient({
     setEditingId(null);
     setEditValues(null);
   };
+
+  // Auto-save : détecter les clics en dehors et la touche Entrée
+  useEffect(() => {
+    if (!editingId || !editValues) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (editRowRef.current && !editRowRef.current.contains(event.target as Node)) {
+        // Cliquer en dehors de la ligne = sauvegarder automatiquement
+        handleUpdate(editingId);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        handleUpdate(editingId);
+      } else if (event.key === "Escape") {
+        cancelEdit();
+      }
+    };
+
+    // Attendre un peu avant d'ajouter le listener pour éviter de sauvegarder immédiatement
+    const timeoutId = setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [editingId, editValues]);
 
   return (
     <>
@@ -210,9 +241,6 @@ export default function FonctionsMetierClient({
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Ordre
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Libellé
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -226,14 +254,15 @@ export default function FonctionsMetierClient({
             <tbody className="bg-white divide-y divide-gray-200">
               {fonctions.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
                     Aucune fonction métier enregistrée
                   </td>
                 </tr>
               ) : (
                 fonctions.map((fonction) => (
                   <tr 
-                    key={fonction.id} 
+                    key={fonction.id}
+                    ref={editingId === fonction.id ? editRowRef : null}
                     className={`hover:bg-gray-50 ${editingId === fonction.id ? 'bg-blue-50' : 'cursor-pointer'}`}
                     onClick={(e) => {
                       // Ne pas déclencher si on clique sur le statut ou si on est déjà en édition
@@ -245,23 +274,6 @@ export default function FonctionsMetierClient({
                       startEdit(fonction);
                     }}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {editingId === fonction.id && editValues ? (
-                        <input
-                          type="number"
-                          value={editValues.ordre_affichage}
-                          onChange={(e) =>
-                            setEditValues({
-                              ...editValues,
-                              ordre_affichage: parseInt(e.target.value) || 0,
-                            })
-                          }
-                          className="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-primary"
-                        />
-                      ) : (
-                        fonction.ordre_affichage
-                      )}
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {editingId === fonction.id && editValues ? (
                         <input
@@ -299,32 +311,9 @@ export default function FonctionsMetierClient({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {editingId === fonction.id ? (
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleUpdate(fonction.id);
-                            }}
-                            disabled={loading}
-                            className="text-green-600 hover:text-green-800 disabled:opacity-50 flex items-center gap-1 px-2 py-1 rounded"
-                            title="Enregistrer"
-                          >
-                            <Save className="h-4 w-4" />
-                            <span className="text-xs">Enregistrer</span>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              cancelEdit();
-                            }}
-                            disabled={loading}
-                            className="text-gray-600 hover:text-gray-800 disabled:opacity-50 flex items-center gap-1 px-2 py-1 rounded"
-                            title="Annuler"
-                          >
-                            <X className="h-4 w-4" />
-                            <span className="text-xs">Annuler</span>
-                          </button>
-                        </div>
+                        <span className="text-xs text-gray-500 italic">
+                          Cliquez en dehors ou appuyez sur Entrée pour enregistrer
+                        </span>
                       ) : (
                         <span
                           onClick={(e) => {
@@ -390,6 +379,7 @@ export default function FonctionsMetierClient({
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                   placeholder="Ex: Conducteur de travaux"
+                  autoFocus
                 />
               </div>
 
@@ -405,24 +395,6 @@ export default function FonctionsMetierClient({
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                   rows={3}
                   placeholder="Description optionnelle de la fonction métier"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ordre d'affichage
-                </label>
-                <input
-                  type="number"
-                  value={formData.ordre_affichage}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      ordre_affichage: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-                  min="0"
                 />
               </div>
 

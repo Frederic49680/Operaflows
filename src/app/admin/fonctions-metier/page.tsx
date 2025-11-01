@@ -29,11 +29,10 @@ export default async function FonctionsMetierPage() {
     redirect("/unauthorized");
   }
 
-  // Récupérer toutes les fonctions métier
+  // Récupérer toutes les fonctions métier (tri alphabétique)
   const { data: fonctions } = await supabase
     .from("tbl_fonctions_metier")
     .select("*")
-    .order("ordre_affichage", { ascending: true })
     .order("libelle", { ascending: true });
 
   return (
