@@ -47,6 +47,15 @@ export default function CreateCollaborateurClient({
     try {
       const supabase = createClientSupabase();
 
+      // Si site_id est renseigné, récupérer le libellé du site pour remplir le champ site (deprecated)
+      let siteLabel = null;
+      if (formData.site_id) {
+        const selectedSite = sites.find((s) => s.site_id === formData.site_id);
+        if (selectedSite) {
+          siteLabel = `${selectedSite.site_code} - ${selectedSite.site_label}`;
+        }
+      }
+
       // Préparer les données
       // Note: La table utilise date_embauche et date_fin_contrat, pas date_entree et date_sortie
       const collaborateurData: Record<string, unknown> = {
@@ -55,7 +64,7 @@ export default function CreateCollaborateurClient({
         email: formData.email.trim(),
         telephone: formData.telephone.trim() || null,
         fonction_metier: formData.fonction_metier.trim() || null,
-        site: formData.site.trim() || null, // Deprecated: gardé pour compatibilité
+        site: siteLabel || formData.site.trim() || null, // Remplir depuis site_id si disponible
         site_id: formData.site_id || null, // Nouveau: FK vers tbl_sites
         type_contrat: formData.type_contrat,
         responsable_id: formData.responsable_id || null, // Deprecated: gardé pour compatibilité
