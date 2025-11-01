@@ -37,6 +37,7 @@ export interface Collaborateur {
   // Relations
   responsable?: Collaborateur | null;
   user?: { id: string; email: string } | null;
+  site_detail?: { site_code: string; site_label: string } | null;
 }
 
 export interface Habilitation {

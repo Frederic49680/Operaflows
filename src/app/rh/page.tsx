@@ -21,30 +21,48 @@ export default async function RHPage() {
   // Tous les utilisateurs authentifiés peuvent accéder pour voir leur propre fiche
   // Mais seuls RH/Admin voient la liste complète
 
-  // Récupérer les collaborateurs
+  // Récupérer les collaborateurs avec le site joint
   let collaborateurs = [];
   if (hasRHAccess) {
     // RH/Admin voient tous les collaborateurs
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("collaborateurs")
       .select(`
         *,
         responsable:collaborateurs!collaborateurs_responsable_id_fkey(id, nom, prenom),
-        user:user_id(id, email)
+        user:user_id(id, email),
+        site_detail:tbl_sites!collaborateurs_site_id_fkey(site_code, site_label)
       `)
       .order("nom", { ascending: true });
+    
+    // Log de debug en développement
+    if (process.env.NODE_ENV === "development") {
+      console.log("🔍 DEBUG RH Page - Collaborateurs récupérés:", data?.length || 0);
+      if (error) {
+        console.error("❌ Erreur récupération collaborateurs:", error);
+        console.error("Code:", error.code);
+        console.error("Message:", error.message);
+      }
+    }
+    
     collaborateurs = data || [];
   } else {
     // Les autres voient seulement leur propre fiche
-    const { data: collabData } = await supabase
+    const { data: collabData, error } = await supabase
       .from("collaborateurs")
       .select(`
         *,
         responsable:collaborateurs!collaborateurs_responsable_id_fkey(id, nom, prenom),
-        user:user_id(id, email)
+        user:user_id(id, email),
+        site_detail:tbl_sites!collaborateurs_site_id_fkey(site_code, site_label)
       `)
       .eq("user_id", user.id)
       .maybeSingle();
+    
+    // Log de debug en développement
+    if (process.env.NODE_ENV === "development" && error) {
+      console.error("❌ Erreur récupération collaborateur:", error);
+    }
     
     if (collabData) {
       collaborateurs = [collabData];

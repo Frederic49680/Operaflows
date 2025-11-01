@@ -225,7 +225,9 @@ export default function RHPageClient({
                         {collab.fonction_metier || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {collab.site || "-"}
+                        {collab.site_detail 
+                          ? `${collab.site_detail.site_code} - ${collab.site_detail.site_label}`
+                          : collab.site || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {collab.type_contrat || "-"}
