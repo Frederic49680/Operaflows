@@ -160,10 +160,10 @@ export default function FonctionsMetierClient({
     });
   };
 
-  const cancelEdit = () => {
+  const cancelEdit = useCallback(() => {
     setEditingId(null);
     setEditValues(null);
-  };
+  }, []);
 
   // Auto-save : détecter les clics en dehors et la touche Entrée
   useEffect(() => {
