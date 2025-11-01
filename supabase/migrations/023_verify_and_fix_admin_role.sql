@@ -23,13 +23,14 @@ SELECT
     ur.site_id,
     CASE 
         WHEN ur.site_id IS NULL THEN 'GLOBAL'
-        ELSE COALESCE(s.site_code || ' - ' || s.site_label, 'Site inconnu')
+        WHEN s.site_id IS NOT NULL THEN s.site_code || ' - ' || s.site_label
+        ELSE 'Site: ' || ur.site_id
     END as site,
     ur.created_at as role_attributed_at
 FROM auth.users u
 INNER JOIN public.user_roles ur ON ur.user_id = u.id
 INNER JOIN public.roles r ON ur.role_id = r.id
-LEFT JOIN public.tbl_sites s ON ur.site_id::TEXT = s.site_id::TEXT
+LEFT JOIN public.tbl_sites s ON ur.site_id::UUID = s.site_id
 WHERE u.email = 'admin@operaflow.com'  -- ⚠️ MODIFIEZ CET EMAIL
 ORDER BY r.name, site;
 
