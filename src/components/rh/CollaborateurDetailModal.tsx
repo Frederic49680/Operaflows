@@ -61,6 +61,7 @@ export default function CollaborateurDetailModal({
       setData(null);
       setError(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, collaborateurId]);
 
   const fetchCollaborateurDetail = async () => {

@@ -62,6 +62,7 @@ interface CollaborateurDetailClientProps {
   sites: Array<{ site_id: string; site_code: string; site_label: string }>;
   responsables: Array<{ id: string; nom: string; prenom: string }>;
   availableUsers: Array<{ id: string; email: string }>;
+  isInModal?: boolean; // Indique si le composant est utilisé dans un modal
 }
 
 type Tab = "general" | "competences" | "dosimetrie" | "medical" | "absences";
@@ -105,9 +106,6 @@ export default function CollaborateurDetailClient({
     { id: "medical" as Tab, label: "Visites médicales", icon: Stethoscope },
     { id: "absences" as Tab, label: "Absences", icon: Calendar },
   ];
-
-  // Props optionnelles pour déterminer si on est dans un modal
-  const isInModal = !(typeof window !== "undefined" && window.location.pathname.includes("/rh/") && window.location.pathname.split("/").length === 3);
 
   return (
     <div className={isInModal ? "" : "min-h-screen bg-background p-8"}>
