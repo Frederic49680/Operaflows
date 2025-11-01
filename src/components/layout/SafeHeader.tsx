@@ -161,6 +161,24 @@ export default async function SafeHeader() {
               },
             ],
           },
+          {
+            label: "Formations",
+            iconName: "Users",
+            submenu: [
+              {
+                label: "Plan Prévisionnel",
+                href: "/formations/plan-previsionnel",
+              },
+              {
+                label: "Plan de Formation",
+                href: "/formations/plan-formation",
+              },
+              {
+                label: "Suivi & Pilotage",
+                href: "/formations/suivi",
+              },
+            ],
+          },
         ]
       : [];
     

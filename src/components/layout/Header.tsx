@@ -141,7 +141,7 @@ export default async function Header() {
       ]
     : [];
 
-  // Menu RH avec sous-menu pour les absences
+  // Menu RH avec sous-menu pour les absences et formations
   const rhItems = hasRHAccess
     ? [
         {
@@ -163,6 +163,24 @@ export default async function Header() {
             {
               label: "Suivi Absences",
               href: "/absences/suivi",
+            },
+          ],
+        },
+        {
+          label: "Formations",
+          iconName: "Users",
+          submenu: [
+            {
+              label: "Plan Prévisionnel",
+              href: "/formations/plan-previsionnel",
+            },
+            {
+              label: "Plan de Formation",
+              href: "/formations/plan-formation",
+            },
+            {
+              label: "Suivi & Pilotage",
+              href: "/formations/suivi",
             },
           ],
         },
