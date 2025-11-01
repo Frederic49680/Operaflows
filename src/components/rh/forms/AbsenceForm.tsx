@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { createClientSupabase } from "@/lib/supabase/client";
+import type { CatalogueAbsence } from "@/types/rh";
 
 interface AbsenceFormProps {
   collaborateurId: string;
+  catalogue?: CatalogueAbsence[];
   absence?: {
     id: string;
-    type: string;
+    catalogue_absence_id?: string | null;
     motif?: string | null;
     date_debut: string;
     date_fin: string;
@@ -19,18 +20,21 @@ interface AbsenceFormProps {
   } | null;
   onClose: () => void;
   onSuccess: () => void;
+  canEditStatut?: boolean; // Pour permettre aux admins de modifier le statut
 }
 
 export default function AbsenceForm({
   collaborateurId,
+  catalogue = [],
   absence,
   onClose,
   onSuccess,
+  canEditStatut = false,
 }: AbsenceFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    type: absence?.type || "conges_payes",
+    catalogue_absence_id: absence?.catalogue_absence_id || catalogue.find(c => c.code === "CP")?.id || "",
     motif: absence?.motif || "",
     date_debut: absence?.date_debut
       ? new Date(absence.date_debut).toISOString().split("T")[0]
@@ -51,28 +55,39 @@ export default function AbsenceForm({
     setLoading(true);
 
     try {
-      const supabase = createClientSupabase();
       const data = {
-        ...formData,
         collaborateur_id: collaborateurId,
+        catalogue_absence_id: formData.catalogue_absence_id || null,
         motif: formData.motif || null,
+        date_debut: formData.date_debut,
+        date_fin: formData.date_fin,
         heures_absences: formData.heures_absences || null,
+        statut: canEditStatut ? formData.statut : undefined, // Ne pas envoyer le statut si l'utilisateur ne peut pas le modifier
+        impact_planif: formData.impact_planif,
+        synchro_outlook: formData.synchro_outlook,
         commentaire: formData.commentaire || null,
       };
 
+      let response: Response;
       if (absence) {
-        const { error: updateError } = await supabase
-          .from("absences")
-          .update(data)
-          .eq("id", absence.id);
-
-        if (updateError) throw updateError;
+        // Mise à jour via API route
+        response = await fetch(`/api/rh/absences/${absence.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
       } else {
-        const { error: insertError } = await supabase
-          .from("absences")
-          .insert(data);
+        // Création via API route (qui gère la validation automatique)
+        response = await fetch("/api/rh/absences", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+      }
 
-        if (insertError) throw insertError;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Erreur lors de la sauvegarde");
       }
 
       onSuccess();
@@ -84,18 +99,11 @@ export default function AbsenceForm({
     }
   };
 
-  const typeLabels: Record<string, string> = {
-    conges_payes: "Congés payés",
-    rtt: "RTT",
-    repos_site: "Repos site",
-    maladie: "Maladie",
-    accident_travail: "Accident du travail",
-    absence_autorisee: "Absence autorisée",
-    formation: "Formation",
-    habilitation: "Habilitation",
-    deplacement_externe: "Déplacement externe",
-    autre: "Autre",
-  };
+  // Si pas de catalogue, utiliser des valeurs par défaut (fallback)
+  const defaultCatalogue: CatalogueAbsence[] = catalogue.length > 0 ? catalogue : [
+    { id: "", code: "CP", libelle: "Congés payés", categorie: "legale" },
+    { id: "", code: "RTT", libelle: "RTT", categorie: "legale" },
+  ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -112,13 +120,14 @@ export default function AbsenceForm({
           </label>
           <select
             required
-            value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+            value={formData.catalogue_absence_id || ""}
+            onChange={(e) => setFormData({ ...formData, catalogue_absence_id: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
           >
-            {Object.entries(typeLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
+            <option value="">-- Sélectionner un type --</option>
+            {defaultCatalogue.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.libelle} ({cat.code})
               </option>
             ))}
           </select>
@@ -182,26 +191,28 @@ export default function AbsenceForm({
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Statut *
-          </label>
-          <select
-            required
-            value={formData.statut}
-            onChange={(e) => setFormData({ ...formData, statut: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
-          >
-            <option value="en_attente_validation_n1">En attente validation N+1</option>
-            <option value="validee_n1">Validée N+1</option>
-            <option value="refusee_n1">Refusée N+1</option>
-            <option value="en_attente_validation_rh">En attente validation RH</option>
-            <option value="validee_rh">Validée RH</option>
-            <option value="refusee_rh">Refusée RH</option>
-            <option value="appliquee">Appliquée</option>
-            <option value="annulee">Annulée</option>
-          </select>
-        </div>
+        {canEditStatut && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Statut *
+            </label>
+            <select
+              required
+              value={formData.statut}
+              onChange={(e) => setFormData({ ...formData, statut: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white text-gray-900"
+            >
+              <option value="en_attente_validation_n1">En attente validation N+1</option>
+              <option value="validee_n1">Validée N+1</option>
+              <option value="refusee_n1">Refusée N+1</option>
+              <option value="en_attente_validation_rh">En attente validation RH</option>
+              <option value="validee_rh">Validée RH</option>
+              <option value="refusee_rh">Refusée RH</option>
+              <option value="appliquee">Appliquée</option>
+              <option value="annulee">Annulée</option>
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-6">

@@ -164,6 +164,13 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
   const responsables = responsablesResult.data || [];
   const availableUsers = usersResult.data || [];
 
+  // Récupérer le catalogue des absences
+  const { data: catalogue } = await clientToUse
+    .from("catalogue_absences")
+    .select("*")
+    .eq("is_active", true)
+    .order("code", { ascending: true });
+
   // Récupérer les données pour chaque onglet
   const [habilitations, dosimetries, visitesMedicales, absences, formations, competences] = await Promise.all([
     // Habilitations
@@ -228,6 +235,7 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
       sites={sites}
       responsables={responsables}
       availableUsers={availableUsers}
+      catalogue={catalogue || []}
     />
   );
 }

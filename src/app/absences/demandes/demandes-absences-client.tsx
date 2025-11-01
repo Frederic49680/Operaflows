@@ -289,6 +289,7 @@ export default function DemandesAbsencesClient({
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <AbsenceForm
               collaborateurId={selectedCollaborateurId}
+              catalogue={catalogue}
               absence={selectedAbsence}
               onClose={handleCloseModal}
               onSuccess={handleCloseModal}

@@ -69,12 +69,14 @@ interface CollaborateurDetailClientProps {
   sites: Array<{ site_id: string; site_code: string; site_label: string }>;
   responsables: Array<{ id: string; nom: string; prenom: string }>;
   availableUsers: Array<{ id: string; email: string }>;
+  catalogue?: Array<{ id: string; code: string; libelle: string; categorie: string }>;
   isInModal?: boolean; // Indique si le composant est utilisé dans un modal
 }
 
 type Tab = "general" | "competences" | "dosimetrie" | "medical" | "absences";
 
 export default function CollaborateurDetailClient({
+  catalogue = [],
   collaborateur,
   habilitations,
   dosimetries,
@@ -300,7 +302,9 @@ export default function CollaborateurDetailClient({
       >
         <AbsenceForm
           collaborateurId={collaborateur.id}
+          catalogue={catalogue}
           absence={selectedAbsence}
+          canEditStatut={hasRHAccess}
           onClose={() => {
             setModalAbsenceOpen(false);
             setSelectedAbsence(null);
