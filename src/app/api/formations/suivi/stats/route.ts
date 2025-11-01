@@ -64,10 +64,15 @@ export async function GET(request: Request) {
 
     // Répartition par catégorie
     const repartitionCategorie: Record<string, number> = {};
-    repartition?.forEach((r: { catalogue_formation?: { categorie?: string | null } | null }) => {
-      const cat = r.catalogue_formation?.categorie || "Autre";
-      repartitionCategorie[cat] = (repartitionCategorie[cat] || 0) + 1;
-    });
+    if (repartition) {
+      for (const r of repartition) {
+        const categorieFormation = r.catalogue_formation;
+        if (categorieFormation && !Array.isArray(categorieFormation)) {
+          const cat = categorieFormation.categorie || "Autre";
+          repartitionCategorie[cat] = (repartitionCategorie[cat] || 0) + 1;
+        }
+      }
+    }
 
     // Taux de conformité (formations à jour / total)
     const formationsAvecEcheance = formationsTerminees?.filter(f => f.date_echeance_validite) || [];
