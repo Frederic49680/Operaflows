@@ -163,12 +163,26 @@ export async function PATCH(
       .single();
 
     if (error) {
-      console.error("Erreur mise à jour collaborateur:", error);
+      console.error("❌ Erreur mise à jour collaborateur:", error);
+      console.error("Code:", error.code);
+      console.error("Message:", error.message);
+      console.error("Details:", error.details);
+      console.error("Hint:", error.hint);
       console.error("Données envoyées:", JSON.stringify(updateData, null, 2));
       return NextResponse.json(
-        { error: error.message, details: error.details, hint: error.hint },
+        { 
+          error: error.message, 
+          details: error.details, 
+          hint: error.hint,
+          code: error.code
+        },
         { status: 400 }
       );
+    }
+
+    // Log de succès en développement
+    if (process.env.NODE_ENV === "development") {
+      console.log("✅ Collaborateur mis à jour avec succès:", data);
     }
 
     return NextResponse.json(data);
