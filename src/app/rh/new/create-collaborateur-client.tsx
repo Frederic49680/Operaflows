@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Save, X } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase/client";
@@ -17,7 +16,6 @@ export default function CreateCollaborateurClient({
   availableUsers,
   sites,
 }: CreateCollaborateurClientProps) {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
