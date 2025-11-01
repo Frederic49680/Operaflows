@@ -2,8 +2,10 @@
 -- Cette migration force la recréation complète des politiques pour garantir qu'elles fonctionnent
 
 -- ============================================
--- 1. Vérifier/Créer la fonction is_rh_or_admin avec SECURITY DEFINER
+-- 1. Créer/Vérifier toutes les fonctions helper nécessaires
 -- ============================================
+
+-- Fonction 1: is_rh_or_admin
 CREATE OR REPLACE FUNCTION public.is_rh_or_admin(user_id UUID)
 RETURNS BOOLEAN AS $$
 DECLARE
@@ -24,6 +26,52 @@ BEGIN
             OR r.name LIKE '%Formation%'
             OR r.name LIKE '%Dosimétrie%'
         )
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Fonction 2: get_collaborateur_id_from_user
+CREATE OR REPLACE FUNCTION public.get_collaborateur_id_from_user(p_user_id UUID)
+RETURNS UUID AS $$
+DECLARE
+    v_collab_id UUID;
+BEGIN
+    -- SECURITY DEFINER permet de contourner RLS pour cette fonction
+    SELECT id INTO v_collab_id
+    FROM public.collaborateurs
+    WHERE user_id = p_user_id
+    LIMIT 1;
+    
+    RETURN v_collab_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Fonction 3: is_responsable_of
+CREATE OR REPLACE FUNCTION public.is_responsable_of(p_responsable_user_id UUID, p_collaborateur_id UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+    v_responsable_collab_id UUID;
+    v_responsable_id UUID;
+    v_responsable_activite_id UUID;
+BEGIN
+    -- Obtenir le collaborateur_id du responsable (SECURITY DEFINER contourne RLS)
+    v_responsable_collab_id := public.get_collaborateur_id_from_user(p_responsable_user_id);
+    
+    IF v_responsable_collab_id IS NULL THEN
+        RETURN FALSE;
+    END IF;
+    
+    -- Lire directement les colonnes responsable_id et responsable_activite_id du collaborateur
+    -- SECURITY DEFINER permet de contourner RLS pour cette requête
+    SELECT responsable_id, responsable_activite_id 
+    INTO v_responsable_id, v_responsable_activite_id
+    FROM public.collaborateurs
+    WHERE id = p_collaborateur_id;
+    
+    -- Vérifier si le responsable correspond
+    RETURN (
+        v_responsable_id = v_responsable_collab_id 
+        OR v_responsable_activite_id = v_responsable_collab_id
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

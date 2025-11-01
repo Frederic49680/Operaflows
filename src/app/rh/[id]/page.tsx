@@ -42,27 +42,58 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
   const clientToUse = supabaseAdmin || supabase;
 
   // Récupérer le collaborateur
-  // Utiliser maybeSingle() pour gérer le cas où le collaborateur n'existe pas ou n'est pas accessible
+  // D'abord sans jointures complexes pour éviter les problèmes RLS
   const { data: collaborateur, error: collabError } = await clientToUse
       .from("collaborateurs")
-      .select(`
-        *,
-        responsable:collaborateurs!collaborateurs_responsable_id_fkey(id, nom, prenom, email),
-        user:user_id(id, email)
-      `)
+      .select("*")
       .eq("id", id)
       .maybeSingle();
 
+  // Si le collaborateur existe, récupérer les données liées séparément si nécessaire
+  let responsable = null;
+  let userData = null;
+  
+  if (collaborateur && collaborateur.responsable_id) {
+    const { data: respData } = await clientToUse
+      .from("collaborateurs")
+      .select("id, nom, prenom, email")
+      .eq("id", collaborateur.responsable_id)
+      .maybeSingle();
+    responsable = respData;
+  }
+  
+  if (collaborateur && collaborateur.user_id) {
+    const { data: uData } = await clientToUse
+      .from("tbl_users")
+      .select("id, email")
+      .eq("id", collaborateur.user_id)
+      .maybeSingle();
+    userData = uData;
+  }
+  
+  // Enrichir le collaborateur avec les données jointes
+  const collaborateurEnrichi = collaborateur ? {
+    ...collaborateur,
+    responsable: responsable ? { id: responsable.id, nom: responsable.nom, prenom: responsable.prenom, email: responsable.email } : null,
+    user: userData ? { id: userData.id, email: userData.email } : null,
+  } : null;
+
   // Log de debug en développement
-  if (process.env.NODE_ENV === "development" && collabError) {
-    console.error("❌ Erreur récupération collaborateur:", collabError);
-    console.error("Code:", collabError.code);
-    console.error("Message:", collabError.message);
-    console.error("Details:", collabError.details);
-    console.error("Hint:", collabError.hint);
+  if (process.env.NODE_ENV === "development") {
+    if (collabError) {
+      console.error("❌ Erreur récupération collaborateur:", collabError);
+      console.error("Code:", collabError.code);
+      console.error("Message:", collabError.message);
+      console.error("Details:", collabError.details);
+      console.error("Hint:", collabError.hint);
+    }
+    console.log("🔍 DEBUG - Collaborateur récupéré:", collaborateurEnrichi ? "Oui" : "Non");
+    console.log("🔍 DEBUG - ID recherché:", id);
+    console.log("🔍 DEBUG - HasRHAccess:", hasRHAccess);
+    console.log("🔍 DEBUG - Utilise service role:", !!supabaseAdmin);
   }
 
-  if (!collaborateur) {
+  if (!collaborateurEnrichi) {
     // Si l'erreur est liée à RLS, rediriger vers unauthorized plutôt que notFound
     if (collabError?.code === "42501" || collabError?.message?.includes("policy")) {
       redirect("/unauthorized");
@@ -71,26 +102,18 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
   }
 
   // Vérifier que l'utilisateur peut voir ce collaborateur
-  if (!hasRHAccess && collaborateur.user_id !== user.id) {
+  if (!hasRHAccess && collaborateurEnrichi.user_id !== user.id) {
     // Si l'utilisateur n'est pas RH/Admin et que ce n'est pas son propre profil,
-    // vérifier s'il est responsable via une fonction helper pour éviter la récursion RLS
-    // On utilise responsable_id directement depuis les données déjà récupérées
-    if (collaborateur.responsable_id) {
-      // Vérifier via une requête simple qui utilise RLS (mais avec les nouvelles politiques simplifiées)
-      // Ou utiliser une fonction helper si disponible
-      const { data: responsable } = await supabase
-        .from("collaborateurs")
-        .select("user_id")
-        .eq("id", collaborateur.responsable_id)
-        .maybeSingle();
-      
-      if (responsable?.user_id !== user.id) {
+    // vérifier s'il est responsable
+    if (collaborateurEnrichi.responsable_id) {
+      const responsableUserId = responsable?.user_id || null;
+      if (responsableUserId !== user.id) {
         // Aussi vérifier responsable_activite_id si disponible
-        if (collaborateur.responsable_activite_id) {
-          const { data: respActivite } = await supabase
+        if (collaborateurEnrichi.responsable_activite_id) {
+          const { data: respActivite } = await clientToUse
             .from("collaborateurs")
             .select("user_id")
-            .eq("id", collaborateur.responsable_activite_id)
+            .eq("id", collaborateurEnrichi.responsable_activite_id)
             .maybeSingle();
           
           if (respActivite?.user_id !== user.id) {
@@ -100,15 +123,15 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
           redirect("/unauthorized");
         }
       }
-    } else if (!collaborateur.responsable_activite_id) {
+    } else if (!collaborateurEnrichi.responsable_activite_id) {
       // Aucun responsable trouvé, pas autorisé
       redirect("/unauthorized");
     } else {
       // Vérifier responsable_activite_id
-      const { data: respActivite } = await supabase
+      const { data: respActivite } = await clientToUse
         .from("collaborateurs")
         .select("user_id")
-        .eq("id", collaborateur.responsable_activite_id)
+        .eq("id", collaborateurEnrichi.responsable_activite_id)
         .maybeSingle();
       
       if (respActivite?.user_id !== user.id) {
@@ -170,7 +193,7 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
 
   return (
     <CollaborateurDetailClient
-      collaborateur={collaborateur}
+      collaborateur={collaborateurEnrichi}
       habilitations={habilitations.data || []}
       dosimetries={dosimetries.data || []}
       visitesMedicales={visitesMedicales.data || []}
