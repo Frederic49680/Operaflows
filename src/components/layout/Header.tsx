@@ -83,7 +83,6 @@ export default async function Header() {
       href: "/affaires",
       icon: Briefcase,
       visible: true,
-      comingSoon: true,
     },
     {
       label: "Planification",

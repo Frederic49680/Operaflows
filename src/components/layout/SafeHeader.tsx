@@ -118,7 +118,6 @@ export default async function SafeHeader() {
         href: "/affaires",
         iconName: "Briefcase",
         visible: true,
-        comingSoon: true,
       },
       {
         label: "Planification",

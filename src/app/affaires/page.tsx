@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/supabase";
+import AffairesClient from "./affaires-client";
 
 export default async function AffairesPage() {
   const supabase = await createServerClient();
 
-  // Vérifier la session
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -13,51 +15,55 @@ export default async function AffairesPage() {
     redirect("/login");
   }
 
-  return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">
-            Affaires
-          </h1>
-          <p className="text-lg text-secondary">
-            Gestion des affaires et projets
-          </p>
-        </div>
+  // Utiliser le service role key pour bypasser RLS
+  const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? createClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
+        }
+      )
+    : null;
 
-        <div className="card">
-          <div className="text-center py-12">
-            <div className="mb-4">
-              <svg
-                className="mx-auto h-16 w-16 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-semibold text-secondary mb-2">
-              Module en cours de développement
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Ce module sera disponible prochainement
-            </p>
-            <a
-              href="/dashboard"
-              className="btn-primary inline-block"
-            >
-              Retour au tableau de bord
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
+  const clientToUse = supabaseAdmin || supabase;
+
+  // Récupérer les affaires
+  const { data: affaires, error } = await clientToUse
+    .from("tbl_affaires")
+    .select(`
+      *,
+      charge_affaires:collaborateurs!tbl_affaires_charge_affaires_id_fkey(id, nom, prenom),
+      site:tbl_sites!tbl_affaires_site_id_fkey(site_id, site_code, site_label)
+    `)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Erreur récupération affaires:", error);
+  }
+
+  // Récupérer les sites pour les filtres
+  const { data: sites } = await clientToUse
+    .from("tbl_sites")
+    .select("site_id, site_code, site_label")
+    .eq("is_active", true)
+    .order("site_code", { ascending: true });
+
+  // Récupérer les collaborateurs pour le formulaire
+  const { data: collaborateurs } = await clientToUse
+    .from("collaborateurs")
+    .select("id, nom, prenom")
+    .eq("statut", "actif")
+    .order("nom", { ascending: true });
+
+  return (
+    <AffairesClient
+      initialAffaires={affaires || []}
+      sites={sites || []}
+      collaborateurs={collaborateurs || []}
+    />
   );
 }
-
