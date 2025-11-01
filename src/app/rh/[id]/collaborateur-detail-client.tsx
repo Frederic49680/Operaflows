@@ -36,6 +36,7 @@ import type {
   VisiteMedicale,
   Absence,
   Formation,
+  CatalogueAbsence,
 } from "@/types/rh";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -69,7 +70,7 @@ interface CollaborateurDetailClientProps {
   sites: Array<{ site_id: string; site_code: string; site_label: string }>;
   responsables: Array<{ id: string; nom: string; prenom: string }>;
   availableUsers: Array<{ id: string; email: string }>;
-  catalogue?: Array<{ id: string; code: string; libelle: string; categorie: string }>;
+  catalogue?: CatalogueAbsence[];
   isInModal?: boolean; // Indique si le composant est utilisé dans un modal
 }
 
