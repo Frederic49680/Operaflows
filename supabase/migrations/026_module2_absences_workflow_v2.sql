@@ -271,13 +271,77 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Trigger pour logger les validations
+-- Trigger pour logger les validations (UPDATE)
 DROP TRIGGER IF EXISTS trigger_log_validation_absence ON public.absences;
 CREATE TRIGGER trigger_log_validation_absence
   BEFORE UPDATE ON public.absences
   FOR EACH ROW
   WHEN (OLD.statut IS DISTINCT FROM NEW.statut)
   EXECUTE FUNCTION public.log_validation_absence();
+
+-- Trigger pour INSERT avec statuts déjà validés (cas admin qui crée directement validé)
+CREATE OR REPLACE FUNCTION public.handle_insert_validation_absence()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Si l'absence est créée avec un statut "validee_n1", passer automatiquement en "en_attente_validation_rh"
+  IF NEW.statut = 'validee_n1' AND NEW.valide_par_n1 IS NOT NULL THEN
+    NEW.statut := 'en_attente_validation_rh';
+    
+    -- Logger la validation N+1 dans l'historique
+    INSERT INTO public.historique_validations_absences (
+      absence_id,
+      niveau_validation,
+      action,
+      valide_par,
+      date_action,
+      ancien_statut,
+      nouveau_statut
+    ) VALUES (
+      NEW.id,
+      'n1',
+      'validee',
+      NEW.valide_par_n1,
+      COALESCE(NEW.date_validation_n1, NOW()),
+      'en_attente_validation_n1',
+      'en_attente_validation_rh'
+    );
+  END IF;
+  
+  -- Si l'absence est créée avec un statut "validee_rh", activer l'impact planification
+  IF NEW.statut IN ('validee_rh', 'appliquee') AND NEW.valide_par_rh IS NOT NULL THEN
+    IF NEW.impact_planif IS NULL THEN
+      NEW.impact_planif := true;
+    END IF;
+    
+    -- Logger la validation RH dans l'historique
+    INSERT INTO public.historique_validations_absences (
+      absence_id,
+      niveau_validation,
+      action,
+      valide_par,
+      date_action,
+      ancien_statut,
+      nouveau_statut
+    ) VALUES (
+      NEW.id,
+      'rh',
+      'validee',
+      NEW.valide_par_rh,
+      COALESCE(NEW.date_validation_rh, NOW()),
+      'en_attente_validation_rh',
+      NEW.statut
+    );
+  END IF;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS trigger_handle_insert_validation_absence ON public.absences;
+CREATE TRIGGER trigger_handle_insert_validation_absence
+  BEFORE INSERT ON public.absences
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_insert_validation_absence();
 
 -- ============================================
 -- 6. INSERTION : Données initiales du catalogue (types d'absences de base)
