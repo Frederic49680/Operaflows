@@ -43,7 +43,26 @@ export default async function CatalogueFormationsPage() {
   }) => ({
     ...item,
     competences: (item.competences || []).map((c) => c.competence).filter(Boolean),
-  }));
+  })) as Array<{
+    id: string;
+    nom: string;
+    code_interne?: string | null;
+    description?: string | null;
+    categorie?: string | null;
+    type_formation?: "obligatoire" | "facultative" | "reglementaire" | null;
+    duree_heures?: number | null;
+    duree_jours?: number | null;
+    periodicite_validite_mois?: number | null;
+    cout_unitaire?: number | null;
+    organisme_formateur?: string | null;
+    support_preuve?: string | null;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    created_by?: string | null;
+    updated_by?: string | null;
+    competences: Array<{ id: string; libelle: string; code?: string | null }>;
+  }>;
 
   // Récupérer les compétences disponibles pour les associer
   const { data: competences } = await supabase
