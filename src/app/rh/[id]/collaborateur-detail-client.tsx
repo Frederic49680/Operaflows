@@ -29,7 +29,6 @@ import HabilitationForm from "@/components/rh/forms/HabilitationForm";
 import AbsenceForm from "@/components/rh/forms/AbsenceForm";
 import DosimetrieForm from "@/components/rh/forms/DosimetrieForm";
 import VisiteMedicaleForm from "@/components/rh/forms/VisiteMedicaleForm";
-import FormationForm from "@/components/rh/forms/FormationForm";
 
 interface CollaborateurDetailClientProps {
   collaborateur: Collaborateur;
@@ -76,8 +75,6 @@ export default function CollaborateurDetailClient({
   const [selectedDosimetrie, setSelectedDosimetrie] = useState<Dosimetrie | null>(null);
   const [modalVisiteOpen, setModalVisiteOpen] = useState(false);
   const [selectedVisite, setSelectedVisite] = useState<VisiteMedicale | null>(null);
-  const [modalFormationOpen, setModalFormationOpen] = useState(false);
-  const [selectedFormation, setSelectedFormation] = useState<Formation | null>(null);
 
   const refreshData = () => {
     router.refresh();

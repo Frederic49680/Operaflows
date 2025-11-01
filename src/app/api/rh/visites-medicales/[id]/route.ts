@@ -5,7 +5,7 @@ import { isRHOrAdmin } from "@/lib/auth/rh-check";
 // GET - Détails d'une visite médicale
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServerClient();
@@ -17,13 +17,14 @@ export async function GET(
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
 
+    const { id } = await params;
     const { data, error } = await supabase
       .from("visites_medicales")
       .select(`
         *,
         collaborateur:collaborateurs!visites_medicales_collaborateur_id_fkey(id, nom, prenom, email)
       `)
-      .eq("id", params.id)
+      .eq("id", id)
       .single();
 
     if (error) {
@@ -62,7 +63,7 @@ export async function GET(
 // PATCH - Mettre à jour une visite médicale
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServerClient();
@@ -79,6 +80,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { ...visiteData } = body;
 
@@ -88,7 +90,7 @@ export async function PATCH(
         ...visiteData,
         updated_by: user.id,
       })
-      .eq("id", params.id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -113,7 +115,7 @@ export async function PATCH(
 // DELETE - Supprimer une visite médicale
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServerClient();
@@ -130,10 +132,11 @@ export async function DELETE(
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
+    const { id } = await params;
     const { error } = await supabase
       .from("visites_medicales")
       .delete()
-      .eq("id", params.id);
+      .eq("id", id);
 
     if (error) {
       console.error("Erreur suppression visite médicale:", error);
