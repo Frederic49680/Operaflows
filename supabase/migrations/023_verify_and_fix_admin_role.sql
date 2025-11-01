@@ -29,7 +29,7 @@ SELECT
 FROM auth.users u
 INNER JOIN public.user_roles ur ON ur.user_id = u.id
 INNER JOIN public.roles r ON ur.role_id = r.id
-LEFT JOIN public.tbl_sites s ON ur.site_id = s.site_id
+LEFT JOIN public.tbl_sites s ON ur.site_id::TEXT = s.site_id::TEXT
 WHERE u.email = 'admin@operaflow.com'  -- ⚠️ MODIFIEZ CET EMAIL
 ORDER BY r.name, site;
 
@@ -125,7 +125,8 @@ SELECT
     r.name as role_name,
     CASE 
         WHEN ur.site_id IS NULL THEN 'GLOBAL'
-        ELSE COALESCE(s.site_code || ' - ' || s.site_label, 'Site inconnu')
+        WHEN s.site_id IS NOT NULL THEN s.site_code || ' - ' || s.site_label
+        ELSE 'Site: ' || ur.site_id
     END as site,
     CASE 
         WHEN r.name = 'Administrateur' AND ur.site_id IS NULL THEN '✅ Rôle Administrateur (GLOBAL) confirmé'
@@ -135,7 +136,7 @@ SELECT
 FROM auth.users u
 INNER JOIN public.user_roles ur ON ur.user_id = u.id
 INNER JOIN public.roles r ON ur.role_id = r.id
-LEFT JOIN public.tbl_sites s ON ur.site_id = s.site_id
+LEFT JOIN public.tbl_sites s ON ur.site_id::UUID = s.site_id
 WHERE u.email = 'admin@operaflow.com'  -- ⚠️ MODIFIEZ CET EMAIL
 AND r.name = 'Administrateur'
 ORDER BY ur.site_id NULLS FIRST;
