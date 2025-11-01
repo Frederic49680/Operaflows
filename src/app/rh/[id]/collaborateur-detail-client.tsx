@@ -21,6 +21,13 @@ import {
   MapPin,
   Calendar as CalendarIcon,
   FileText,
+  Clock,
+  Activity,
+  Building2,
+  Shield,
+  GraduationCap,
+  XCircle,
+  CalendarX,
 } from "lucide-react";
 import type {
   Collaborateur,
@@ -1052,8 +1059,8 @@ function OngletCompetences({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Habilitations</h3>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-2xl font-bold text-gray-900">Habilitations</h3>
         {hasRHAccess && (
           <button onClick={onAddHabilitation} className="btn-primary text-sm flex items-center gap-2">
             <Plus className="h-4 w-4" />
@@ -1063,135 +1070,202 @@ function OngletCompetences({
       </div>
 
       {habilitations.length === 0 ? (
-        <p className="text-gray-500">Aucune habilitation enregistrée</p>
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-8 shadow-sm border border-gray-100 text-center">
+          <Shield className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-500">Aucune habilitation enregistrée</p>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Libellé
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Date obtention
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Date expiration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Statut
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Organisme
-                </th>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {habilitations.map((hab) => (
+            <div
+              key={hab.id}
+              className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-50 rounded-lg">
+                    <Shield className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">{hab.libelle}</h4>
+                    <p className="text-xs text-gray-500 mt-1">{hab.type}</p>
+                  </div>
+                </div>
                 {hasRHAccess && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                    Actions
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {habilitations.map((hab) => (
-                <tr key={hab.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {hab.type}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {hab.libelle}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {format(new Date(hab.date_obtention), "dd/MM/yyyy")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {hab.date_expiration
-                      ? format(new Date(hab.date_expiration), "dd/MM/yyyy")
-                      : "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        hab.statut === "valide"
-                          ? "bg-green-100 text-green-800"
-                          : hab.statut === "expire"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onEditHabilitation(hab)}
+                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                      title="Modifier"
                     >
-                      {hab.statut}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {hab.organisme || "-"}
-                  </td>
-                  {hasRHAccess && (
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => onEditHabilitation(hab)}
-                          className="text-primary hover:text-primary-dark"
-                          title="Modifier"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(hab.id)}
-                          className="text-red-600 hover:text-red-800"
-                          title="Supprimer"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(hab.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <dl className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 p-1.5 bg-blue-50 rounded-md">
+                    <CalendarIcon className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      Date d'obtention
+                    </dt>
+                    <dd className="text-sm font-medium text-gray-900">
+                      {format(new Date(hab.date_obtention), "PPP", { locale: fr })}
+                    </dd>
+                  </div>
+                </div>
+                {hab.date_expiration && (
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 p-1.5 bg-amber-50 rounded-md">
+                      <CalendarX className="h-4 w-4 text-amber-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Date d'expiration
+                      </dt>
+                      <dd className="text-sm font-medium text-gray-900">
+                        {format(new Date(hab.date_expiration), "PPP", { locale: fr })}
+                      </dd>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 p-1.5 bg-green-50 rounded-md">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      Statut
+                    </dt>
+                    <dd className="mt-1">
+                      <span
+                        className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full ${
+                          hab.statut === "valide"
+                            ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200"
+                            : hab.statut === "expire"
+                            ? "bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200"
+                            : "bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200"
+                        }`}
+                      >
+                        {hab.statut}
+                      </span>
+                    </dd>
+                  </div>
+                </div>
+                {hab.organisme && (
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 p-1.5 bg-indigo-50 rounded-md">
+                      <Building2 className="h-4 w-4 text-indigo-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Organisme
+                      </dt>
+                      <dd className="text-sm font-medium text-gray-900">{hab.organisme}</dd>
+                    </div>
+                  </div>
+                )}
+              </dl>
+            </div>
+          ))}
         </div>
       )}
 
-      <div className="mt-8">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Compétences</h3>
+      <div className="mt-10">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-bold text-gray-900">Compétences</h3>
           {hasRHAccess && (
-          <button className="btn-primary text-sm">Ajouter une compétence</button>
-        )}
+            <button className="btn-primary text-sm flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Ajouter une compétence
+            </button>
+          )}
         </div>
 
         {competences.length === 0 ? (
-          <p className="text-gray-500">Aucune compétence enregistrée</p>
+          <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-8 shadow-sm border border-gray-100 text-center">
+            <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+            <p className="text-gray-500">Aucune compétence enregistrée</p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {competences.map((comp) => (
-              <div key={comp.id} className="border rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium">{comp.competence?.libelle}</h4>
+              <div
+                key={comp.id}
+                className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-50 rounded-lg">
+                      <GraduationCap className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900">{comp.competence?.libelle || "Compétence"}</h4>
+                  </div>
                   <span
-                    className={`text-xs px-2 py-1 rounded ${
+                    className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full ${
                       comp.statut === "valide"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-yellow-100 text-yellow-800"
+                        ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200"
+                        : "bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200"
                     }`}
                   >
                     {comp.statut}
                   </span>
                 </div>
-                {comp.date_obtention && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    Obtention:{" "}
-                    {format(new Date(comp.date_obtention), "dd/MM/yyyy")}
-                  </p>
-                )}
-                {comp.date_expiration && (
-                  <p className="text-sm text-gray-500">
-                    Expiration:{" "}
-                    {format(new Date(comp.date_expiration), "dd/MM/yyyy")}
-                  </p>
-                )}
+                <dl className="space-y-3">
+                  {comp.niveau && (
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5 p-1.5 bg-purple-50 rounded-md">
+                        <Activity className="h-4 w-4 text-purple-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                          Niveau
+                        </dt>
+                        <dd className="text-sm font-medium text-gray-900">{comp.niveau}</dd>
+                      </div>
+                    </div>
+                  )}
+                  {comp.date_obtention && (
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5 p-1.5 bg-blue-50 rounded-md">
+                        <CalendarIcon className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                          Date d'obtention
+                        </dt>
+                        <dd className="text-sm font-medium text-gray-900">
+                          {format(new Date(comp.date_obtention), "PPP", { locale: fr })}
+                        </dd>
+                      </div>
+                    </div>
+                  )}
+                  {comp.date_expiration && (
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5 p-1.5 bg-amber-50 rounded-md">
+                        <CalendarX className="h-4 w-4 text-amber-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                          Date d'expiration
+                        </dt>
+                        <dd className="text-sm font-medium text-gray-900">
+                          {format(new Date(comp.date_expiration), "PPP", { locale: fr })}
+                        </dd>
+                      </div>
+                    </div>
+                  )}
+                </dl>
               </div>
             ))}
           </div>
@@ -1230,8 +1304,8 @@ function OngletDosimetrie({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Suivi dosimétrique</h3>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-2xl font-bold text-gray-900">Suivi dosimétrique</h3>
         {hasRHAccess && (
           <button onClick={onAddDosimetrie} className="btn-primary text-sm flex items-center gap-2">
             <Plus className="h-4 w-4" />
@@ -1241,83 +1315,117 @@ function OngletDosimetrie({
       </div>
 
       {dosimetries.length === 0 ? (
-        <p className="text-gray-500">Aucun relevé dosimétrique</p>
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-8 shadow-sm border border-gray-100 text-center">
+          <Radio className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-500">Aucun relevé dosimétrique</p>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  N° Dosimètre
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Période
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Dose trimestrielle (mSv)
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Dose annuelle (mSv)
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Limite (mSv)
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Fournisseur
-                </th>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {dosimetries.map((dos) => (
+            <div
+              key={dos.id}
+              className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-red-50 rounded-lg">
+                    <Radio className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Dosimètre {dos.numero_dosimetre}</h4>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {format(new Date(dos.periode_debut), "dd/MM/yyyy")} - {format(new Date(dos.periode_fin), "dd/MM/yyyy")}
+                    </p>
+                  </div>
+                </div>
                 {hasRHAccess && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                    Actions
-                  </th>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onEditDosimetrie(dos)}
+                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                      title="Modifier"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(dos.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 )}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {dosimetries.map((dos) => (
-                <tr key={dos.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {dos.numero_dosimetre}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {format(new Date(dos.periode_debut), "dd/MM/yyyy")} -{" "}
-                    {format(new Date(dos.periode_fin), "dd/MM/yyyy")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {dos.dose_trimestrielle_mSv.toFixed(3)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {dos.dose_annuelle_mSv.toFixed(3)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {dos.limite_reglementaire_mSv}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {dos.fournisseur || "-"}
-                  </td>
-                  {hasRHAccess && (
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => onEditDosimetrie(dos)}
-                          className="text-primary hover:text-primary-dark"
-                          title="Modifier"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(dos.id)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Supprimer"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              </div>
+              <dl className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 p-1.5 bg-blue-50 rounded-md">
+                    <Activity className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      Dose trimestrielle
+                    </dt>
+                    <dd className="text-sm font-medium text-gray-900">
+                      {dos.dose_trimestrielle_mSv.toFixed(3)} mSv
+                    </dd>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 p-1.5 bg-green-50 rounded-md">
+                    <Activity className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      Dose annuelle
+                    </dt>
+                    <dd className="text-sm font-medium text-gray-900">
+                      {dos.dose_annuelle_mSv.toFixed(3)} mSv
+                    </dd>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 p-1.5 bg-amber-50 rounded-md">
+                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      Limite réglementaire
+                    </dt>
+                    <dd className="text-sm font-medium text-gray-900">
+                      {dos.limite_reglementaire_mSv} mSv
+                    </dd>
+                  </div>
+                </div>
+                {dos.fournisseur && (
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 p-1.5 bg-indigo-50 rounded-md">
+                      <Building2 className="h-4 w-4 text-indigo-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Fournisseur
+                      </dt>
+                      <dd className="text-sm font-medium text-gray-900">{dos.fournisseur}</dd>
+                    </div>
+                  </div>
+                )}
+                {dos.laboratoire && (
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 p-1.5 bg-purple-50 rounded-md">
+                      <Building2 className="h-4 w-4 text-purple-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Laboratoire
+                      </dt>
+                      <dd className="text-sm font-medium text-gray-900">{dos.laboratoire}</dd>
+                    </div>
+                  </div>
+                )}
+              </dl>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -1351,10 +1459,18 @@ function OngletMedical({
     }
   };
 
+  const typeLabels: Record<string, string> = {
+    embauche: "Visite d'embauche",
+    periodique: "Visite périodique",
+    reprise: "Visite de reprise",
+    inaptitude: "Visite d'inaptitude",
+    autre: "Autre visite",
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Visites médicales</h3>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-2xl font-bold text-gray-900">Visites médicales</h3>
         {hasRHAccess && (
           <button onClick={onAddVisite} className="btn-primary text-sm flex items-center gap-2">
             <Plus className="h-4 w-4" />
@@ -1364,94 +1480,129 @@ function OngletMedical({
       </div>
 
       {visitesMedicales.length === 0 ? (
-        <p className="text-gray-500">Aucune visite médicale enregistrée</p>
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-8 shadow-sm border border-gray-100 text-center">
+          <Stethoscope className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+          <p className="text-gray-500">Aucune visite médicale enregistrée</p>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Date visite
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Prochaine visite
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Centre médical
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Statut
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Avis médical
-                </th>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {visitesMedicales.map((vm) => (
+            <div
+              key={vm.id}
+              className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-50 rounded-lg">
+                    <Stethoscope className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">{typeLabels[vm.type_visite] || vm.type_visite}</h4>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {format(new Date(vm.date_visite), "PPP", { locale: fr })}
+                    </p>
+                  </div>
+                </div>
                 {hasRHAccess && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                    Actions
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {visitesMedicales.map((vm) => (
-                <tr key={vm.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {vm.type_visite}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {format(new Date(vm.date_visite), "dd/MM/yyyy")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {vm.date_prochaine_visite
-                      ? format(new Date(vm.date_prochaine_visite), "dd/MM/yyyy")
-                      : "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {vm.centre_medical || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        vm.statut === "apte"
-                          ? "bg-green-100 text-green-800"
-                          : vm.statut === "inapte"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onEditVisite(vm)}
+                      className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                      title="Modifier"
                     >
-                      {vm.statut}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {vm.avis_medical || "-"}
-                  </td>
-                  {hasRHAccess && (
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => onEditVisite(vm)}
-                          className="text-primary hover:text-primary-dark"
-                          title="Modifier"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(vm.id)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Supprimer"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(vm.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              <dl className="space-y-3">
+                {vm.date_prochaine_visite && (
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 p-1.5 bg-blue-50 rounded-md">
+                      <CalendarIcon className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Prochaine visite
+                      </dt>
+                      <dd className="text-sm font-medium text-gray-900">
+                        {format(new Date(vm.date_prochaine_visite), "PPP", { locale: fr })}
+                      </dd>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 p-1.5 bg-purple-50 rounded-md">
+                    <CheckCircle className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      Statut
+                    </dt>
+                    <dd className="mt-1">
+                      <span
+                        className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full ${
+                          vm.statut === "apte"
+                            ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200"
+                            : vm.statut === "inapte"
+                            ? "bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200"
+                            : "bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200"
+                        }`}
+                      >
+                        {vm.statut}
+                      </span>
+                    </dd>
+                  </div>
+                </div>
+                {vm.centre_medical && (
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 p-1.5 bg-indigo-50 rounded-md">
+                      <Building2 className="h-4 w-4 text-indigo-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Centre médical
+                      </dt>
+                      <dd className="text-sm font-medium text-gray-900">{vm.centre_medical}</dd>
+                    </div>
+                  </div>
+                )}
+                {vm.medecin && (
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 p-1.5 bg-cyan-50 rounded-md">
+                      <User className="h-4 w-4 text-cyan-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Médecin
+                      </dt>
+                      <dd className="text-sm font-medium text-gray-900">{vm.medecin}</dd>
+                    </div>
+                  </div>
+                )}
+                {vm.avis_medical && (
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 p-1.5 bg-blue-50 rounded-md">
+                      <FileText className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Avis médical
+                      </dt>
+                      <dd className="text-sm font-medium text-gray-900">{vm.avis_medical}</dd>
+                    </div>
+                  </div>
+                )}
+              </dl>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -1522,173 +1673,234 @@ function OngletAbsences({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Absences</h3>
-        {(hasRHAccess || canValidate) && (
-          <button onClick={onAddAbsence} className="btn-primary text-sm flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Nouvelle absence
-          </button>
+    <div className="space-y-8">
+      {/* Section Absences */}
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-bold text-gray-900">Absences</h3>
+          {(hasRHAccess || canValidate) && (
+            <button onClick={onAddAbsence} className="btn-primary text-sm flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Nouvelle absence
+            </button>
+          )}
+        </div>
+
+        {absences.length === 0 ? (
+          <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-8 shadow-sm border border-gray-100 text-center">
+            <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+            <p className="text-gray-500">Aucune absence enregistrée</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {absences.map((abs) => (
+              <div
+                key={abs.id}
+                className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-orange-50 rounded-lg">
+                      <Calendar className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">{typeLabels[abs.type] || abs.type}</h4>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {format(new Date(abs.date_debut), "dd/MM/yyyy")} - {format(new Date(abs.date_fin), "dd/MM/yyyy")}
+                      </p>
+                    </div>
+                  </div>
+                  {(hasRHAccess || canValidate) && (
+                    <div className="flex items-center gap-2">
+                      {abs.statut === "en_attente" && canValidate && (
+                        <>
+                          <button
+                            onClick={() => handleValidate(abs.id, "validee")}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Valider"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleValidate(abs.id, "refusee")}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Refuser"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
+                      {hasRHAccess && (
+                        <>
+                          <button
+                            onClick={() => onEditAbsence(abs)}
+                            className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                            title="Modifier"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(abs.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Supprimer"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <dl className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 p-1.5 bg-blue-50 rounded-md">
+                      <Clock className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Durée
+                      </dt>
+                      <dd className="text-sm font-medium text-gray-900">
+                        {abs.duree_jours ? `${abs.duree_jours.toFixed(1)} jour${abs.duree_jours > 1 ? "s" : ""}` : "-"}
+                      </dd>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 p-1.5 bg-purple-50 rounded-md">
+                      <CheckCircle className="h-4 w-4 text-purple-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Statut
+                      </dt>
+                      <dd className="mt-1">
+                        <span
+                          className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full ${
+                            abs.statut === "validee"
+                              ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200"
+                              : abs.statut === "refusee"
+                              ? "bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200"
+                              : "bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200"
+                          }`}
+                        >
+                          {abs.statut === "validee" ? "Validée" : abs.statut === "refusee" ? "Refusée" : "En attente"}
+                        </span>
+                      </dd>
+                    </div>
+                  </div>
+                  {abs.valide_par_user && (
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5 p-1.5 bg-cyan-50 rounded-md">
+                        <User className="h-4 w-4 text-cyan-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                          Validé par
+                        </dt>
+                        <dd className="text-sm font-medium text-gray-900">{abs.valide_par_user.email}</dd>
+                      </div>
+                    </div>
+                  )}
+                  {abs.motif && (
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5 p-1.5 bg-blue-50 rounded-md">
+                        <FileText className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                          Motif
+                        </dt>
+                        <dd className="text-sm font-medium text-gray-900">{abs.motif}</dd>
+                      </div>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
-      {absences.length === 0 ? (
-        <p className="text-gray-500">Aucune absence enregistrée</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Période
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Durée
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Statut
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Validé par
-                </th>
-                {(hasRHAccess || canValidate) && (
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                    Actions
-                  </th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {absences.map((abs) => (
-                <tr key={abs.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {typeLabels[abs.type] || abs.type}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {format(new Date(abs.date_debut), "dd/MM/yyyy")} -{" "}
-                    {format(new Date(abs.date_fin), "dd/MM/yyyy")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {abs.duree_jours?.toFixed(1) || "-"} jour
-                    {abs.duree_jours && abs.duree_jours > 1 ? "s" : ""}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        abs.statut === "validee"
-                          ? "bg-green-100 text-green-800"
-                          : abs.statut === "refusee"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {abs.statut}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {abs.valide_par_user?.email || "-"}
-                  </td>
-                  {(hasRHAccess || canValidate) && (
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        {abs.statut === "en_attente" && canValidate && (
-                          <>
-                            <button
-                              onClick={() => handleValidate(abs.id, "validee")}
-                              className="text-green-600 hover:text-green-900"
-                              title="Valider"
-                            >
-                              Valider
-                            </button>
-                            <button
-                              onClick={() => handleValidate(abs.id, "refusee")}
-                              className="text-red-600 hover:text-red-900"
-                              title="Refuser"
-                            >
-                              Refuser
-                            </button>
-                          </>
-                        )}
-                        {hasRHAccess && (
-                          <>
-                            <button
-                              onClick={() => onEditAbsence(abs)}
-                              className="text-primary hover:text-primary-dark"
-                              title="Modifier"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(abs.id)}
-                              className="text-red-600 hover:text-red-800"
-                              title="Supprimer"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Section Formations */}
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-bold text-gray-900">Formations</h3>
         </div>
-      )}
-
-      <div className="mt-8">
-        <h3 className="text-lg font-semibold mb-4">Formations</h3>
         {formations.length === 0 ? (
-          <p className="text-gray-500">Aucune formation enregistrée</p>
+          <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-8 shadow-sm border border-gray-100 text-center">
+            <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+            <p className="text-gray-500">Aucune formation enregistrée</p>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Libellé
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Dates
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Statut
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {formations.map((form) => (
-                  <tr key={form.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {form.libelle}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {format(new Date(form.date_debut), "dd/MM/yyyy")}
-                      {form.date_fin &&
-                        ` - ${format(new Date(form.date_fin), "dd/MM/yyyy")}`}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          form.statut === "terminee"
-                            ? "bg-green-100 text-green-800"
-                            : form.statut === "en_cours"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {form.statut}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {formations.map((form) => (
+              <div
+                key={form.id}
+                className="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-indigo-50 rounded-lg">
+                      <GraduationCap className="h-5 w-5 text-indigo-600" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900">{form.libelle}</h4>
+                  </div>
+                  <span
+                    className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-full ${
+                      form.statut === "terminee"
+                        ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200"
+                        : form.statut === "en_cours"
+                        ? "bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border border-blue-200"
+                        : "bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border border-gray-200"
+                    }`}
+                  >
+                    {form.statut === "terminee" ? "Terminée" : form.statut === "en_cours" ? "En cours" : form.statut}
+                  </span>
+                </div>
+                <dl className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 p-1.5 bg-blue-50 rounded-md">
+                      <CalendarIcon className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        Dates
+                      </dt>
+                      <dd className="text-sm font-medium text-gray-900">
+                        {format(new Date(form.date_debut), "PPP", { locale: fr })}
+                        {form.date_fin && ` - ${format(new Date(form.date_fin), "PPP", { locale: fr })}`}
+                      </dd>
+                    </div>
+                  </div>
+                  {form.duree_heures && (
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5 p-1.5 bg-purple-50 rounded-md">
+                        <Clock className="h-4 w-4 text-purple-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                          Durée
+                        </dt>
+                        <dd className="text-sm font-medium text-gray-900">{form.duree_heures} heures</dd>
+                      </div>
+                    </div>
+                  )}
+                  {form.organisme_formateur && (
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5 p-1.5 bg-indigo-50 rounded-md">
+                        <Building2 className="h-4 w-4 text-indigo-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                          Organisme
+                        </dt>
+                        <dd className="text-sm font-medium text-gray-900">{form.organisme_formateur}</dd>
+                      </div>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            ))}
           </div>
         )}
       </div>
