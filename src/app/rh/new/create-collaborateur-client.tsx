@@ -126,12 +126,18 @@ export default function CreateCollaborateurClient({
             href="/rh"
             className="inline-flex items-center gap-2 text-primary hover:text-primary-dark mb-4"
           >
-          <ChevronLeft className="h-5 w-5" />
-          Retour à la liste
-        </Link>
+            <ChevronLeft className="h-4 w-4" />
+            Retour à la liste
+          </Link>
+          <h1 className="text-4xl font-bold text-primary mb-2">
+            Nouveau Collaborateur
+          </h1>
+          <p className="text-lg text-secondary">
+            Créer un nouveau profil collaborateur
+          </p>
+        </div>
 
         <div className="card">
-          <h1 className="text-3xl font-bold text-primary mb-6">Nouveau collaborateur</h1>
 
           {error && (
             <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">

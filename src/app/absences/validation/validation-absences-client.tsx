@@ -233,10 +233,10 @@ export default function ValidationAbsencesClient({
         <div>
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-primary">
                 Validation N+1
               </h2>
-              <p className="text-gray-600 text-sm mt-1">
+              <p className="text-secondary text-sm mt-1">
                 Demandes de votre équipe en attente de validation
               </p>
             </div>
@@ -269,10 +269,10 @@ export default function ValidationAbsencesClient({
         <div>
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-primary">
                 Validation RH
               </h2>
-              <p className="text-gray-600 text-sm mt-1">
+              <p className="text-secondary text-sm mt-1">
                 Demandes validées N+1 en attente de validation RH
               </p>
             </div>
