@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/supabase";
 import { isRHOrAdmin } from "@/lib/auth/rh-check";
 import CreateCollaborateurClient from "./create-collaborateur-client";
 
@@ -21,6 +23,23 @@ export default async function CreateCollaborateurPage() {
     redirect("/unauthorized");
   }
 
+  // Utiliser le service role key pour bypasser RLS si disponible
+  // Cela permet de récupérer tous les utilisateurs même si les politiques RLS sont restrictives
+  const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? createClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false,
+          },
+        }
+      )
+    : null;
+
+  const clientToUse = supabaseAdmin || supabase;
+
   // Récupérer les responsables, utilisateurs et sites disponibles pour le formulaire
   const [responsables, users, sitesResult] = await Promise.all([
     supabase
@@ -28,9 +47,9 @@ export default async function CreateCollaborateurPage() {
       .select("id, nom, prenom")
       .eq("statut", "actif")
       .order("nom", { ascending: true }),
-    supabase
+    clientToUse
       .from("tbl_users")
-      .select("id, email")
+      .select("id, email, statut, collaborateur_id")
       .eq("statut", "actif")
       .is("collaborateur_id", null)
       .order("email", { ascending: true }),
@@ -41,7 +60,7 @@ export default async function CreateCollaborateurPage() {
       .order("site_code", { ascending: true }),
   ]);
 
-  // Logs de debug pour les sites
+  // Logs de debug en développement
   if (process.env.NODE_ENV === "development") {
     console.log("🔍 DEBUG Create Collab - Sites récupérés:", sitesResult.data?.length || 0);
     if (sitesResult.error) {
@@ -50,6 +69,17 @@ export default async function CreateCollaborateurPage() {
       console.error("Message:", sitesResult.error.message);
       console.error("Details:", sitesResult.error.details);
       console.error("Hint:", sitesResult.error.hint);
+    }
+    
+    console.log("🔍 DEBUG Create Collab - Utilisateurs récupérés:", users.data?.length || 0);
+    if (users.error) {
+      console.error("❌ Erreur récupération utilisateurs:", users.error);
+      console.error("Code:", users.error.code);
+      console.error("Message:", users.error.message);
+      console.error("Details:", users.error.details);
+      console.error("Hint:", users.error.hint);
+    } else if (users.data) {
+      console.log("🔍 DEBUG Create Collab - Liste des utilisateurs:", users.data.map(u => ({ id: u.id, email: u.email, statut: u.statut, collaborateur_id: u.collaborateur_id })));
     }
   }
 

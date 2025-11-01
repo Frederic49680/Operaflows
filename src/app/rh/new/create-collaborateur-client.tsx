@@ -111,8 +111,8 @@ export default function CreateCollaborateurClient({
           .eq("id", formData.user_id);
       }
 
-      router.push(`/rh/${data.id}`);
-      router.refresh();
+      // Utiliser window.location pour forcer une navigation complète et éviter les problèmes de cache
+      window.location.href = `/rh/${data.id}`;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue");
     } finally {
