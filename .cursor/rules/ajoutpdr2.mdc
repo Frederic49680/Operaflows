@@ -1,3 +1,139 @@
----
+Mise à jour PRD — Module 2.2 “Sites & Responsables d’activité”
+🔹 Objectif
+
+Remplace la logique simplifiée de “site” et “responsable” actuellement intégrée dans la fiche collaborateur par un référentiel structuré, permettant :
+
+le multi-site,
+
+les validations hiérarchiques automatiques,
+
+et la cohérence inter-modules (Planif, KPI, RH, Affaires).
+
+🔹 Nouvelles tables à créer
+1️⃣ tbl_sites
+
+Référentiel unique de tous les sites d’activité.
+
+Champ	Type	Description
+site_id	uuid (PK)	Identifiant unique
+site_code	text	Code court (ex. BEL, DAM, SAV)
+site_label	text	Libellé complet
+parent_site_id	uuid (nullable)	Site parent (optionnel)
+is_active	bool	Masquage logique
+created_at	timestamptz	Audit
+2️⃣ tbl_site_responsables
+
+Association entre un site et son ou ses responsables d’activité.
+
+Champ	Type	Description
+site_id	uuid (FK → tbl_sites)	Site concerné
+collaborateur_id	uuid (FK → tbl_collaborateurs)	Responsable du site
+role_fonctionnel	text	"Responsable d’activité", "Adjoint", "Suppléant"
+date_debut	date	Début de la responsabilité
+date_fin	date (nullable)	Fin prévue
+is_active	bool	Statut en cours
+PK	(site_id, collaborateur_id, role_fonctionnel)	
+
+Règle :
+
+Un site peut avoir plusieurs responsables.
+
+Un collaborateur peut piloter plusieurs sites.
+
+3️⃣ tbl_collaborateur_sites
+
+Gestion des affectations multi-sites.
+
+Champ	Type	Description
+collaborateur_id	uuid (FK → tbl_collaborateurs)	
+site_id	uuid (FK → tbl_sites)	
+priorite	int	1 = principal, 2 = secondaire
+date_debut / date_fin	date	Période d’affectation
+PK	(collaborateur_id, site_id)	
+🔹 Champs à modifier / supprimer dans tbl_collaborateurs
+Action	Champ	Remplacement
+✅ Ajouter	site_id	FK vers tbl_sites (site principal)
+✅ Ajouter	responsable_activite_id	FK vers tbl_collaborateurs (hiérarchie directe)
+❌ Supprimer	Site (texte libre)	remplacé par site_id
+❌ Supprimer	Responsable (texte libre)	remplacé par responsable_activite_id
+🔹 Logique métier mise à jour
+
+Lorsqu’un collaborateur est créé :
+
+on lui attribue un site principal obligatoire ;
+
+on peut lui associer des sites secondaires via tbl_collaborateur_sites.
+
+Le responsable d’activité est déterminé automatiquement :
+
+à partir du site (tbl_site_responsables),
+
+ou manuellement s’il n’y en a pas encore.
+
+Lorsqu’une absence est saisie :
+
+le responsable du site concerné est notifié automatiquement (email + notif interne).
+
+si plusieurs responsables : seul celui marqué comme “Responsable d’activité” valide.
+
+Les plans Gantt et KPI sont automatiquement filtrés sur les sites du rôle connecté (scope_site dans tbl_user_roles).
+
+Les absences multi-sites sont ventilées selon le site actif à la date concernée.
+
+🔹 Interfaces concernées
+Page RH → Collaborateurs
+
+Colonne Site principal → liste déroulante (liée à tbl_sites)
+
+Colonne Responsable d’activité → calculée via lien tbl_site_responsables
+
+Icône ⚠️ si aucun responsable défini pour le site
+
+Bouton “Changer responsable” → modal affichant les responsables actifs du site
+
+Page RH → Référentiel Sites
+
+Liste des sites, filtres actifs/inactifs, responsable(s) en cours
+
+Actions :
+
+➕ Ajouter site
+
+👤 Gérer responsables
+
+🗑️ Désactiver site
+
+Page Absences
+
+Validation routée automatiquement au responsable d’activité du site du collaborateur
+
+Filtre “Site” ajouté dans les vues RH
+
+🔹 Effets inter-modules
+Module	Effet du changement
+Module 0 (Rôles)	Le champ scope_site des rôles s’appuie désormais sur tbl_sites
+Module 3 (Affaires)	Chaque affaire doit référencer un site_id (obligatoire)
+Module 4 (Planif)	Filtrage Gantt par site / responsable d’activité
+Module 5 (KPI)	Consolidation des indicateurs par site
+Module Signature	Les visas peuvent être filtrés par site et hiérarchie responsable
+🔹 Sécurité et validation
+
+Seuls les rôles Admin et Admin RH peuvent créer ou modifier les sites.
+
+Les Responsables d’activité peuvent consulter et valider les données RH de leur périmètre.
+
+Lorsqu’un site est désactivé :
+
+les collaborateurs rattachés passent en statut “à réaffecter”,
+
+les planifications associées sont bloquées.
+
+🔹 Résumé de l’impact
+
+✅ Supprime la redondance des champs “site” et “responsable” dans la fiche RH.
+✅ Normalise la hiérarchie RH / site / responsable.
+✅ Connecte les modules RH, Planif et KPI sur un référentiel unique.
+✅ Automatise la validation hiérarchique des absences et notifications.
+✅ Rend possible le multi-site propre et la supervision multi-périmètre.---
 alwaysApply: true
 ---

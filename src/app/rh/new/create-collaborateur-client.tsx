@@ -67,16 +67,26 @@ export default function CreateCollaborateurClient({
         commentaire: formData.commentaire.trim() || null,
       };
 
-      // Nettoyer les champs vides pour éviter les erreurs de validation
+      // Nettoyer les champs vides et s'assurer que seuls les champs valides sont envoyés
+      // Supprimer les champs undefined/vides (sauf si c'est une valeur par défaut nécessaire)
+      const cleanedData: Record<string, unknown> = {};
       Object.keys(collaborateurData).forEach((key) => {
-        if (collaborateurData[key] === "" || collaborateurData[key] === undefined) {
-          collaborateurData[key] = null;
+        const value = collaborateurData[key];
+        if (value !== "" && value !== undefined) {
+          cleanedData[key] = value;
+        } else if (key === 'statut' && !value) {
+          cleanedData[key] = 'actif'; // Valeur par défaut
         }
       });
 
+      // S'assurer que les champs obligatoires sont présents
+      if (!cleanedData.nom || !cleanedData.prenom || !cleanedData.email) {
+        throw new Error("Nom, prénom et email sont obligatoires");
+      }
+
       const { data, error: insertError } = await supabase
         .from("collaborateurs")
-        .insert(collaborateurData)
+        .insert(cleanedData)
         .select()
         .single();
 

@@ -75,17 +75,32 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    // Nettoyer les données : supprimer les champs undefined/vides et mapper les noms de colonnes si nécessaire
+    // Définir uniquement les colonnes qui existent dans la table collaborateurs selon le schéma
+    // Colonnes valides: id, user_id, nom, prenom, email, telephone, site, site_id, responsable_id, 
+    // responsable_activite_id, fonction_metier, type_contrat, date_embauche, date_fin_contrat,
+    // statut, competence_principale_id, competence_secondaire_ids, commentaire, created_at, updated_at, created_by, updated_by
+    const allowedFields = [
+      'id', 'user_id', 'nom', 'prenom', 'email', 'telephone', 
+      'site', 'site_id', 'responsable_id', 'responsable_activite_id', 
+      'fonction_metier', 'type_contrat', 'date_embauche', 'date_fin_contrat',
+      'statut', 'competence_principale_id', 'competence_secondaire_ids', 
+      'commentaire'
+    ];
+
+    // Construire l'objet avec uniquement les champs autorisés
     const collaborateurData: Record<string, unknown> = {
-      ...body,
       created_by: user.id,
       updated_by: user.id,
     };
 
-    // Nettoyer les champs vides
-    Object.keys(collaborateurData).forEach((key) => {
-      if (collaborateurData[key] === "" || collaborateurData[key] === undefined) {
-        delete collaborateurData[key];
+    // Filtrer et nettoyer les champs
+    allowedFields.forEach((key) => {
+      const value = body[key];
+      if (value !== undefined && value !== null && value !== "") {
+        collaborateurData[key] = value;
+      } else if (key === 'statut' && !value) {
+        // statut a une valeur par défaut mais on peut le définir explicitement
+        collaborateurData[key] = 'actif';
       }
     });
 
