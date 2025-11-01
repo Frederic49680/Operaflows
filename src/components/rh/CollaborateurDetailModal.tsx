@@ -19,6 +19,15 @@ interface CollaborateurDetailModalProps {
   onUpdate?: () => void; // Callback pour rafraîchir la liste après modification
 }
 
+// Référence pour déclencher le refresh depuis le composant enfant
+let refreshModalDataCallback: (() => void) | null = null;
+
+export const refreshCollaborateurDetail = () => {
+  if (refreshModalDataCallback) {
+    refreshModalDataCallback();
+  }
+};
+
 export default function CollaborateurDetailModal({
   isOpen,
   onClose,
@@ -63,6 +72,14 @@ export default function CollaborateurDetailModal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, collaborateurId]);
+
+  useEffect(() => {
+    // Enregistrer la fonction de refresh pour qu'elle puisse être appelée depuis l'enfant
+    refreshModalDataCallback = fetchCollaborateurDetail;
+    return () => {
+      refreshModalDataCallback = null;
+    };
+  }, [collaborateurId]);
 
   const fetchCollaborateurDetail = async () => {
     setLoading(true);
