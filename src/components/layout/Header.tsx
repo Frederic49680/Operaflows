@@ -168,7 +168,7 @@ export default async function Header() {
         },
         {
           label: "Formations",
-          iconName: "Users",
+          iconName: "GraduationCap",
           submenu: [
             {
               label: "Plan Prévisionnel",

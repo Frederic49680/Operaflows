@@ -22,6 +22,7 @@ import {
   Clock,
   FileText,
   Eye,
+  GraduationCap,
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import Logo from "./Logo";
@@ -56,6 +57,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Clock,
   FileText,
   Eye,
+  GraduationCap,
 };
 
 interface HeaderClientProps {
@@ -80,7 +82,7 @@ export default function HeaderClient({
 }: HeaderClientProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [rhMenuOpen, setRhMenuOpen] = useState(false);
+  const [rhMenuOpen, setRhMenuOpen] = useState<Record<number, boolean>>({});
   const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -155,67 +157,74 @@ export default function HeaderClient({
               );
             })}
 
-            {/* Menu RH */}
-            {rhItems.length > 0 && (
-              <div className="relative">
-                <button
-                  onClick={() => setRhMenuOpen(!rhMenuOpen)}
-                  className={cn(
-                    "group relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
-                    pathname.startsWith("/rh")
-                      ? "bg-gradient-to-r from-primary to-primary-dark text-white shadow-md shadow-primary/30"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-primary"
-                  )}
-                >
-                  {rhItems[0].iconName && (() => {
-                    const Icon = iconMap[rhItems[0].iconName] || Users;
-                    return (
-                      <Icon
-                        className={cn(
-                          "h-4 w-4 transition-transform duration-200",
-                          pathname.startsWith("/rh")
-                            ? "text-white"
-                            : "text-gray-500 group-hover:text-primary group-hover:scale-110"
-                        )}
-                      />
-                    );
-                  })()}
-                  <span className={cn(pathname.startsWith("/rh") && "font-semibold")}>
-                    {rhItems[0].label}
-                  </span>
-                  <ChevronDown
+            {/* Menus RH */}
+            {rhItems.map((rhItem, index) => {
+              const isFormations = rhItem.label === "Formations";
+              const isActive = isFormations 
+                ? pathname.startsWith("/formations")
+                : pathname.startsWith("/rh") || pathname.startsWith("/absences");
+              
+              return (
+                <div key={rhItem.label} className="relative">
+                  <button
+                    onClick={() => setRhMenuOpen(prev => ({ ...prev, [index]: !prev[index] }))}
                     className={cn(
-                      "h-4 w-4 transition-transform duration-200",
-                      rhMenuOpen && "rotate-180",
-                      pathname.startsWith("/rh") ? "text-white" : "text-gray-500"
+                      "group relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-gradient-to-r from-primary to-primary-dark text-white shadow-md shadow-primary/30"
+                        : "text-gray-700 hover:bg-gray-50 hover:text-primary"
                     )}
-                  />
-                </button>
-
-                {rhMenuOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
-                    {rhItems[0].submenu.map((subItem) => {
-                      const subActive = pathname === subItem.href || pathname.startsWith(subItem.href + "/");
+                  >
+                    {rhItem.iconName && (() => {
+                      const Icon = iconMap[rhItem.iconName] || Users;
                       return (
-                        <Link
-                          key={subItem.href}
-                          href={subItem.href}
-                          onClick={() => setRhMenuOpen(false)}
+                        <Icon
                           className={cn(
-                            "flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
-                            subActive
-                              ? "bg-primary/10 text-primary border-l-2 border-primary font-semibold"
-                              : "text-gray-700 hover:bg-gray-50 hover:text-primary"
+                            "h-4 w-4 transition-transform duration-200",
+                            isActive
+                              ? "text-white"
+                              : "text-gray-500 group-hover:text-primary group-hover:scale-110"
                           )}
-                        >
-                          {subItem.label}
-                        </Link>
+                        />
                       );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
+                    })()}
+                    <span className={cn(isActive && "font-semibold")}>
+                      {rhItem.label}
+                    </span>
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 transition-transform duration-200",
+                        rhMenuOpen[index] && "rotate-180",
+                        isActive ? "text-white" : "text-gray-500"
+                      )}
+                    />
+                  </button>
+
+                  {rhMenuOpen[index] && (
+                    <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                      {rhItem.submenu.map((subItem) => {
+                        const subActive = pathname === subItem.href || pathname.startsWith(subItem.href + "/");
+                        return (
+                          <Link
+                            key={subItem.href}
+                            href={subItem.href}
+                            onClick={() => setRhMenuOpen(prev => ({ ...prev, [index]: false }))}
+                            className={cn(
+                              "flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
+                              subActive
+                                ? "bg-primary/10 text-primary border-l-2 border-primary font-semibold"
+                                : "text-gray-700 hover:bg-gray-50 hover:text-primary"
+                            )}
+                          >
+                            {subItem.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
             {/* Menu Admin */}
             {isAdmin && adminItems.length > 0 && (
@@ -465,7 +474,7 @@ export default function HeaderClient({
       )}
 
       {/* Overlay pour fermer les menus en cliquant à l'extérieur */}
-      {(userMenuOpen || adminMenuOpen || rhMenuOpen) && (
+      {(userMenuOpen || adminMenuOpen || Object.values(rhMenuOpen).some(Boolean)) && (
         <div
           className="fixed inset-0 z-10"
           onClick={() => {

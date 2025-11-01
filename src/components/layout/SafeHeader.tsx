@@ -163,7 +163,7 @@ export default async function SafeHeader() {
           },
           {
             label: "Formations",
-            iconName: "Users",
+            iconName: "GraduationCap",
             submenu: [
               {
                 label: "Plan Prévisionnel",
