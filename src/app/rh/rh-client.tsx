@@ -304,7 +304,7 @@ export default function RHPageClient({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {collab.site_detail 
-                          ? `${collab.site_detail.site_code} - ${collab.site_detail.site_label}`
+                          ? collab.site_detail.site_label
                           : collab.site || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
