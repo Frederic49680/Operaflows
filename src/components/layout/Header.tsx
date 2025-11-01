@@ -149,10 +149,6 @@ export default async function Header() {
               href: "/rh",
             },
             {
-              label: "Référentiel Sites",
-              href: "/rh/sites",
-            },
-            {
               label: "Mes Demandes",
               href: "/absences/demandes",
             },

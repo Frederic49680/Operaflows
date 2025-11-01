@@ -148,14 +148,6 @@ export default async function SafeHeader() {
                 href: "/rh",
               },
               {
-                label: "Référentiel Sites",
-                href: "/rh/sites",
-              },
-              {
-                label: "Catalogue Absences",
-                href: "/admin/absences",
-              },
-              {
                 label: "Mes Demandes",
                 href: "/absences/demandes",
               },
