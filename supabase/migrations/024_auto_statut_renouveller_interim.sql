@@ -206,12 +206,8 @@ CREATE TRIGGER trigger_check_interim_contracts
 SELECT public.check_interim_contracts() as collaborateurs_mis_a_jour;
 
 -- ============================================
--- 6. Commentaire pour configuration cron Supabase (à faire manuellement dans Supabase Dashboard)
+-- 6. Cron job configuré automatiquement
 -- ============================================
--- Pour activer la vérification quotidienne automatique, créer un cron job dans Supabase :
--- SELECT cron.schedule(
---   'check-interim-contracts-daily',
---   '0 8 * * *',  -- Tous les jours à 8h du matin
---   $$SELECT public.check_interim_contracts()$$
--- );
+-- Le cron job est configuré dans la migration 025_setup_cron_interim_contracts.sql
+-- Exécutez cette migration pour activer la vérification quotidienne automatique
 

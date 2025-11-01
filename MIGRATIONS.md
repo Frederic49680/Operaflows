@@ -43,6 +43,7 @@ Ces migrations sont maintenant consolidées dans `000_all_fixes_consolidated.sql
 - **021_fix_collaborateurs_rls_recursion.sql** - Fix récursion RLS pour collaborateurs
 - **022_force_fix_collaborateurs_rls.sql** - Force fix RLS collaborateurs (recréation complète)
 - **024_auto_statut_renouveller_interim.sql** - Statut automatique "A renouveller" pour contrats intérim (≤15 jours)
+- **025_setup_cron_interim_contracts.sql** - Configuration cron job pour vérification quotidienne automatique
 
 ## Scripts utilitaires
 
@@ -67,6 +68,7 @@ Ces migrations sont maintenant consolidées dans `000_all_fixes_consolidated.sql
    - `021_fix_collaborateurs_rls_recursion.sql` - Fix récursion collaborateurs
    - `022_force_fix_collaborateurs_rls.sql` - Force fix RLS collaborateurs (si nécessaire)
    - `024_auto_statut_renouveller_interim.sql` - Statut auto "A renouveller" pour intérim
+   - `025_setup_cron_interim_contracts.sql` - Cron job vérification quotidienne (optionnel, nécessite pg_cron)
 
 3. **Scripts utilitaires** (si nécessaire) :
    - `008_restore_admin_role.sql` - Restaurer rôle admin
@@ -75,6 +77,7 @@ Ces migrations sont maintenant consolidées dans `000_all_fixes_consolidated.sql
 ### Instructions détaillées
 
 - Migration 024 : Voir `EXECUTE_MIGRATION_024.md`
+- Migration 025 : Voir `CONFIGURER_CRON_INTERIM_COMPLET.md`
 - Migration 015 : Voir `EXECUTE_MIGRATION_015.md`
 - Migration 016 : Voir `EXECUTE_MIGRATION_016.md`
 - Migration 017 : Voir `EXECUTE_MIGRATION_017.md`
