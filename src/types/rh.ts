@@ -16,7 +16,7 @@ export type StatutAbsence =
 // Anciens statuts (dépréciés, gardés pour compatibilité)
 export type StatutAbsenceLegacy = 'en_attente' | 'validee' | 'refusee' | 'annulee';
 export type TypeFormation = 'interne' | 'externe' | 'habilitation' | 'certification' | 'autre';
-export type StatutFormation = 'planifiee' | 'en_cours' | 'terminee' | 'abandonnee' | 'echec';
+export type StatutFormation = 'planifiee' | 'en_cours' | 'terminee' | 'abandonnee' | 'echec' | 'reportee' | 'annulee';
 export type TypeVisiteMedicale = 'embauche' | 'periodique' | 'reprise' | 'inaptitude' | 'autre';
 export type StatutVisiteMedicale = 'apte' | 'apte_avec_reserves' | 'inapte' | 'en_attente';
 export type StatutHabilitation = 'valide' | 'expire' | 'en_cours_renouvellement' | 'suspendu';
@@ -237,6 +237,18 @@ export interface Formation {
   sirh_export_date?: string | null;
   sirh_export_id?: string | null;
   commentaire?: string | null;
+  
+  // Nouveaux champs v2.0
+  catalogue_formation_id?: string | null;
+  plan_previsionnel_id?: string | null;
+  cout_reel?: number | null;
+  date_echeance_validite?: string | null;
+  priorite?: 'haute' | 'moyenne' | 'basse' | null;
+  validite_mois?: number | null;
+  
+  // Relations
+  catalogue_formation?: CatalogueFormation | null;
+  plan_previsionnel?: PlanPrevisionnelFormation | null;
   created_at: string;
   updated_at: string;
   created_by?: string | null;
@@ -244,6 +256,64 @@ export interface Formation {
   
   // Relations
   collaborateur?: Collaborateur | null;
+}
+
+// Nouveau : Catalogue des formations
+export interface CatalogueFormation {
+  id: string;
+  nom: string;
+  code_interne?: string | null;
+  description?: string | null;
+  categorie?: string | null;
+  type_formation?: 'obligatoire' | 'facultative' | 'reglementaire' | null;
+  duree_heures?: number | null;
+  duree_jours?: number | null;
+  periodicite_validite_mois?: number | null;
+  cout_unitaire?: number | null;
+  organisme_formateur?: string | null;
+  prestataire_id?: string | null;
+  support_preuve?: string | null;
+  template_attestation_url?: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  
+  // Relations
+  competences?: Array<{ id: string; libelle: string; }> | null;
+}
+
+// Nouveau : Plan prévisionnel des formations
+export interface PlanPrevisionnelFormation {
+  id: string;
+  collaborateur_id: string;
+  catalogue_formation_id?: string | null;
+  formation_libelle?: string | null;
+  periode_annee: number;
+  periode_mois?: number | null;
+  periode_trimestre?: number | null;
+  date_cible?: string | null;
+  statut_validation: 'en_attente' | 'valide' | 'refusé' | 'archive';
+  budget_estime?: number | null;
+  priorite?: 'haute' | 'moyenne' | 'basse' | null;
+  commentaire_rh?: string | null;
+  commentaire_demandeur?: string | null;
+  demandeur_id?: string | null;
+  date_demande: string;
+  valide_par?: string | null;
+  date_validation?: string | null;
+  motif_refus?: string | null;
+  convertie_en_formation_id?: string | null;
+  date_conversion?: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  
+  // Relations
+  collaborateur?: Collaborateur | null;
+  catalogue_formation?: CatalogueFormation | null;
 }
 
 export interface Competence {
