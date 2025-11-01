@@ -71,7 +71,7 @@ BEGIN
   ELSE
     RAISE WARNING 'Extension pg_cron non disponible. Le cron job ne peut pas être créé automatiquement.';
     RAISE WARNING 'Veuillez l''activer dans Supabase Dashboard puis exécuter manuellement :';
-    RAISE WARNING 'SELECT cron.schedule(''check-interim-contracts-daily'', ''0 8 * * *'', $$SELECT public.check_interim_contracts()$$);';
+    RAISE WARNING 'SELECT cron.schedule(''check-interim-contracts-daily'', ''0 8 * * *'', $cmd$SELECT public.check_interim_contracts()$cmd$);';
   END IF;
 EXCEPTION WHEN OTHERS THEN
   RAISE WARNING 'Erreur lors de la création du cron job: %', SQLERRM;
