@@ -38,7 +38,7 @@ BEGIN
   IF EXISTS (
     SELECT 1 FROM cron.job WHERE jobname = 'check-interim-contracts-daily'
   ) THEN
-    PERFORM cron.unschedule('check-interim-contracts-daily');
+    EXECUTE format('SELECT cron.unschedule(%L)', 'check-interim-contracts-daily');
     RAISE NOTICE 'Cron job existant supprimé';
   END IF;
 EXCEPTION WHEN OTHERS THEN
@@ -59,10 +59,11 @@ BEGIN
     SELECT 1 FROM pg_extension WHERE extname = 'pg_cron'
   ) THEN
     -- Créer le cron job
-    PERFORM cron.schedule(
-      'check-interim-contracts-daily',           -- Nom du job
-      '0 8 * * *',                               -- Tous les jours à 8h00
-      $$SELECT public.check_interim_contracts()$$ -- Fonction à exécuter
+    -- Note: cron.schedule() retourne un résultat, donc on doit utiliser SELECT dans un EXECUTE
+    EXECUTE format('SELECT cron.schedule(%L, %L, %L)',
+      'check-interim-contracts-daily',
+      '0 8 * * *',
+      'SELECT public.check_interim_contracts()'
     );
     
     RAISE NOTICE 'Cron job "check-interim-contracts-daily" créé avec succès';
