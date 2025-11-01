@@ -49,6 +49,10 @@ export default function AbsenceForm({
     commentaire: absence?.commentaire || "",
   });
 
+  // Vérifier si le type sélectionné est "Autre"
+  const selectedCatalogue = defaultCatalogue.find(cat => cat.id === formData.catalogue_absence_id);
+  const isAutreType = selectedCatalogue?.code === "AUTRE" || selectedCatalogue?.libelle === "Autre";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -155,18 +159,21 @@ export default function AbsenceForm({
           </select>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Motif
-          </label>
-          <input
-            type="text"
-            value={formData.motif}
-            onChange={(e) => setFormData({ ...formData, motif: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
-            placeholder="Raison de l'absence"
-          />
-        </div>
+        {isAutreType && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Motif *
+            </label>
+            <input
+              type="text"
+              required={isAutreType}
+              value={formData.motif}
+              onChange={(e) => setFormData({ ...formData, motif: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              placeholder="Raison de l'absence"
+            />
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
