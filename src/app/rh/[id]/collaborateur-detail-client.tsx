@@ -51,6 +51,9 @@ interface CollaborateurDetailClientProps {
     } | null;
   }>;
   hasRHAccess: boolean;
+  sites: Array<{ site_id: string; site_code: string; site_label: string }>;
+  responsables: Array<{ id: string; nom: string; prenom: string }>;
+  availableUsers: Array<{ id: string; email: string }>;
 }
 
 type Tab = "general" | "competences" | "dosimetrie" | "medical" | "absences";
@@ -64,6 +67,9 @@ export default function CollaborateurDetailClient({
   formations,
   competences,
   hasRHAccess,
+  sites,
+  responsables,
+  availableUsers,
 }: CollaborateurDetailClientProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("general");
@@ -75,6 +81,10 @@ export default function CollaborateurDetailClient({
   const [selectedDosimetrie, setSelectedDosimetrie] = useState<Dosimetrie | null>(null);
   const [modalVisiteOpen, setModalVisiteOpen] = useState(false);
   const [selectedVisite, setSelectedVisite] = useState<VisiteMedicale | null>(null);
+  const [modalEditOpen, setModalEditOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const refreshData = () => {
     router.refresh();
@@ -119,10 +129,7 @@ export default function CollaborateurDetailClient({
             </div>
             {hasRHAccess && (
               <button
-                onClick={() => {
-                  // TODO: Implémenter l'édition du collaborateur (modal ou page dédiée)
-                  alert("Fonctionnalité d'édition en cours de développement");
-                }}
+                onClick={() => setModalEditOpen(true)}
                 className="btn-primary flex items-center gap-2"
               >
                 <Edit className="h-5 w-5" />

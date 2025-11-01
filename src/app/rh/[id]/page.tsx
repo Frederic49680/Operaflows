@@ -141,6 +141,29 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
     }
   }
 
+  // Récupérer les données nécessaires pour le formulaire d'édition (sites, responsables, utilisateurs)
+  const [sitesResult, responsablesResult, usersResult] = await Promise.all([
+    clientToUse
+      .from("tbl_sites")
+      .select("site_id, site_code, site_label")
+      .eq("is_active", true)
+      .order("site_code", { ascending: true }),
+    clientToUse
+      .from("collaborateurs")
+      .select("id, nom, prenom")
+      .eq("statut", "actif")
+      .order("nom", { ascending: true }),
+    clientToUse
+      .from("tbl_users")
+      .select("id, email")
+      .eq("statut", "actif")
+      .order("email", { ascending: true }),
+  ]);
+
+  const sites = sitesResult.data || [];
+  const responsables = responsablesResult.data || [];
+  const availableUsers = usersResult.data || [];
+
   // Récupérer les données pour chaque onglet
   const [habilitations, dosimetries, visitesMedicales, absences, formations, competences] = await Promise.all([
     // Habilitations
@@ -202,6 +225,9 @@ export default async function CollaborateurDetailPage({ params }: PageProps) {
       formations={formations.data || []}
       competences={competences.data || []}
       hasRHAccess={hasRHAccess}
+      sites={sites}
+      responsables={responsables}
+      availableUsers={availableUsers}
     />
   );
 }
