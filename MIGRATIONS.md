@@ -34,15 +34,50 @@ Ces migrations sont maintenant consolidées dans `000_all_fixes_consolidated.sql
 - 009_fix_tbl_users_rls.sql
 - 010_fix_rls_recursion.sql
 
+## Module 2 - RH Collaborateurs
+
+- **011_module2_rh_complete.sql** - Schéma complet du Module 2 (collaborateurs, habilitations, dosimétrie, visites médicales, absences, formations, compétences)
+- **014_module2_sites_et_responsables.sql** - Module 2.2 : Sites et Responsables d'activité
+- **015_fix_tbl_sites_rls.sql** - Fix RLS pour tbl_sites
+- **016_fix_tbl_sites_ambiguous_user_id.sql** - Fix ambiguïté user_id dans triggers tbl_sites
+- **021_fix_collaborateurs_rls_recursion.sql** - Fix récursion RLS pour collaborateurs
+- **022_force_fix_collaborateurs_rls.sql** - Force fix RLS collaborateurs (recréation complète)
+- **024_auto_statut_renouveller_interim.sql** - Statut automatique "A renouveller" pour contrats intérim (≤15 jours)
+
 ## Scripts utilitaires
 
 - **008_restore_admin_role.sql** - Script pour restaurer le rôle Administrateur si perdu
+- **023_verify_and_fix_admin_role.sql** - Script pour vérifier et corriger le rôle Administrateur
 
 ## 📝 Application
 
-1. Allez sur [Supabase Dashboard](https://supabase.com/dashboard)
-2. SQL Editor
-3. Exécutez d'abord `001_module1_auth.sql`
-4. Ensuite `000_all_fixes_consolidated.sql`
-5. Si besoin, `002_create_admin_user.sql` ou `008_restore_admin_role.sql`
+### Ordre d'exécution recommandé
+
+1. **Module 1** :
+   - `001_module1_auth.sql` - Schéma initial
+   - `000_all_fixes_consolidated.sql` - Tous les fixes RLS (recommandé)
+   - `002_create_admin_user.sql` - Créer un admin
+   - `017_fix_is_admin_ambiguous_user_id.sql` - Fix ambiguïté user_id
+
+2. **Module 2** :
+   - `011_module2_rh_complete.sql` - Schéma Module 2
+   - `014_module2_sites_et_responsables.sql` - Sites et Responsables
+   - `015_fix_tbl_sites_rls.sql` - Fix RLS sites
+   - `016_fix_tbl_sites_ambiguous_user_id.sql` - Fix triggers sites
+   - `021_fix_collaborateurs_rls_recursion.sql` - Fix récursion collaborateurs
+   - `022_force_fix_collaborateurs_rls.sql` - Force fix RLS collaborateurs (si nécessaire)
+   - `024_auto_statut_renouveller_interim.sql` - Statut auto "A renouveller" pour intérim
+
+3. **Scripts utilitaires** (si nécessaire) :
+   - `008_restore_admin_role.sql` - Restaurer rôle admin
+   - `023_verify_and_fix_admin_role.sql` - Vérifier/corriger rôle admin
+
+### Instructions détaillées
+
+- Migration 024 : Voir `EXECUTE_MIGRATION_024.md`
+- Migration 015 : Voir `EXECUTE_MIGRATION_015.md`
+- Migration 016 : Voir `EXECUTE_MIGRATION_016.md`
+- Migration 017 : Voir `EXECUTE_MIGRATION_017.md`
+- Migration 021 : Voir `EXECUTE_MIGRATION_021.md`
+- Migration 022 : Voir `EXECUTE_MIGRATION_022.md`
 
