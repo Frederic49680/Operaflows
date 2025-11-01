@@ -550,6 +550,109 @@ export default function AffaireDetailClient({
           </div>
         )}
 
+        {/* Onglet Lots */}
+        {activeTab === "lots" && (
+          <div className="card">
+            <h2 className="text-xl font-semibold text-secondary mb-4">Découpage par lots / Jalons</h2>
+            {affaire.lots && affaire.lots.length > 0 ? (
+              <div className="space-y-4">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Numéro</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Libellé</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pourcentage</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Montant alloué</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dates prévues</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jalon Gantt</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {affaire.lots
+                        .sort((a, b) => (a.ordre_affichage || 0) - (b.ordre_affichage || 0))
+                        .map((lot) => (
+                          <tr key={lot.id}>
+                            <td className="px-4 py-3 text-sm font-medium">{lot.numero_lot}</td>
+                            <td className="px-4 py-3 text-sm">
+                              <div>{lot.libelle_lot}</div>
+                              {lot.description && (
+                                <div className="text-xs text-gray-500 mt-1">{lot.description}</div>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-right font-semibold">
+                              {lot.pourcentage_total.toFixed(2)}%
+                            </td>
+                            <td className="px-4 py-3 text-sm text-right font-semibold text-primary">
+                              {lot.montant_alloue ? `${lot.montant_alloue.toFixed(2)} €` : "-"}
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              {lot.date_debut_previsionnelle || lot.date_fin_previsionnelle ? (
+                                <div>
+                                  {lot.date_debut_previsionnelle && (
+                                    <div>
+                                      Début: {new Date(lot.date_debut_previsionnelle).toLocaleDateString("fr-FR")}
+                                    </div>
+                                  )}
+                                  {lot.date_fin_previsionnelle && (
+                                    <div>
+                                      Fin: {new Date(lot.date_fin_previsionnelle).toLocaleDateString("fr-FR")}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                "-"
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              {lot.est_jalon_gantt ? (
+                                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                  Oui
+                                </span>
+                              ) : (
+                                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">
+                                  Non
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      <tr className="bg-gray-50 font-semibold">
+                        <td colSpan={2} className="px-4 py-3 text-right">Total</td>
+                        <td className="px-4 py-3 text-right">
+                          {affaire.lots.reduce((sum, l) => sum + l.pourcentage_total, 0).toFixed(2)}%
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {affaire.lots.reduce((sum, l) => sum + (l.montant_alloue || 0), 0).toFixed(2)} €
+                        </td>
+                        <td colSpan={2}></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div className="p-4 bg-primary/10 rounded-lg">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-sm text-gray-600">Total des pourcentages</span>
+                      <div className="text-xl font-bold text-primary">
+                        {affaire.lots.reduce((sum, l) => sum + l.pourcentage_total, 0).toFixed(2)}%
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-600">Total montants alloués</span>
+                      <div className="text-xl font-bold text-primary">
+                        {affaire.lots.reduce((sum, l) => sum + (l.montant_alloue || 0), 0).toFixed(2)} €
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-500">Aucun lot défini pour cette affaire</p>
+            )}
+          </div>
+        )}
+
         {/* Onglet Pré-planification */}
         {activeTab === "preplanif" && (
           <div className="card">
