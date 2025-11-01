@@ -114,7 +114,7 @@ export async function PATCH(
     // Définir uniquement les colonnes qui existent dans la table collaborateurs
     const allowedFields = [
       'nom', 'prenom', 'email', 'telephone', 
-      'site', 'site_id', 'responsable_id', 'responsable_activite_id', 
+      'site', 'site_id', 'user_id', 'responsable_id', 'responsable_activite_id', 
       'fonction_metier', 'type_contrat', 'date_embauche', 'date_fin_contrat',
       'statut', 'competence_principale_id', 'competence_secondaire_ids', 
       'commentaire'
