@@ -22,20 +22,40 @@ Exécuter la migration `023_verify_and_fix_admin_role.sql` dans Supabase Dashboa
 ### Étape 2 : Modifier et Exécuter la Migration
 
 1. Ouvrez le fichier `supabase/migrations/023_verify_and_fix_admin_role.sql`
-2. **IMPORTANT** : Modifiez la ligne avec l'email de votre utilisateur administrateur :
-   ```sql
-   v_user_email := 'admin@operaflow.com';  -- Remplacez par votre email
-   ```
+2. **IMPORTANT** : Remplacez toutes les occurrences de `'admin@operaflow.com'` par votre email administrateur (il y en a plusieurs)
 3. Copiez le contenu du fichier dans l'éditeur SQL
 4. Cliquez sur **Run** (ou Ctrl+Enter)
 
 ### Étape 3 : Vérifier les Résultats
 
-Le script affichera :
-- ✅ L'ID de l'utilisateur trouvé
-- ✅ L'ID du rôle Administrateur
-- 📋 La liste des rôles actuels de l'utilisateur
-- ✅ Confirmation que le rôle Administrateur est bien attribué
+Le script affichera plusieurs tableaux de résultats :
+
+**Tableau 1 : Informations utilisateur**
+- L'email, l'ID et la date de création de l'utilisateur
+
+**Tableau 2 : Rôles actuels**
+- Tous les rôles actuellement attribués à l'utilisateur
+- Vous devriez voir si "Administrateur" est présent ou non
+
+**Tableau 3 : Rôle Administrateur disponible**
+- Confirme que le rôle Administrateur existe dans la base
+
+**Tableau 4 : Statut du rôle Admin**
+- Indique si l'utilisateur a déjà le rôle Administrateur ou non
+
+### Étape 4 : Corriger le Rôle (si nécessaire)
+
+Si le **Tableau 4** indique que l'utilisateur n'a pas le rôle Administrateur :
+
+1. Dans le fichier `023_verify_and_fix_admin_role.sql`, cherchez la section **ÉTAPE 5**
+2. **Décommentez** le bloc `DO $$ ... END $$;` (enlevez les `/*` et `*/`)
+3. Vérifiez que l'email dans cette section est correct
+4. Exécutez uniquement cette section (ou ré-exécutez tout le script)
+5. Le script attribuera automatiquement le rôle Administrateur
+
+### Étape 5 : Vérification Finale
+
+Après la correction, exécutez l'**ÉTAPE 6** pour confirmer que le rôle a bien été attribué.
 
 ### Vérification Manuelle (Optionnel)
 
