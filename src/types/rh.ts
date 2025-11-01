@@ -202,7 +202,7 @@ export interface CollaborateurCompetence {
 }
 
 export interface AlerteEcheance {
-  type_alerte: 'habilitation' | 'visite_medicale' | 'competence';
+  type_alerte: 'habilitation' | 'visite_medicale' | 'competence' | 'contrat_interim';
   id: string;
   collaborateur_id: string;
   nom: string;
