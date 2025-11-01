@@ -60,6 +60,8 @@ DROP POLICY IF EXISTS "RH/Admin can read all collaborateurs" ON public.collabora
 DROP POLICY IF EXISTS "RH/Admin can manage all collaborateurs" ON public.collaborateurs;
 DROP POLICY IF EXISTS "Responsables can read their team" ON public.collaborateurs;
 DROP POLICY IF EXISTS "Responsables can insert team members" ON public.collaborateurs;
+DROP POLICY IF EXISTS "Users can create own profile" ON public.collaborateurs;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.collaborateurs;
 
 -- ============================================
 -- 4. Recréer les politiques sans récursion
