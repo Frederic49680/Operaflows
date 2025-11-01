@@ -196,6 +196,10 @@ export default async function SafeHeader() {
                 label: "Fonctions Métier",
                 href: "/admin/fonctions-metier",
               },
+              {
+                label: "Catalogue Formations",
+                href: "/admin/formations/catalogue",
+              },
             ],
           },
         ]
