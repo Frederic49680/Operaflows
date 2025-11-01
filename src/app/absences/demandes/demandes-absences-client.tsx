@@ -27,7 +27,9 @@ export default function DemandesAbsencesClient({
   const [absences] = useState(initialAbsences);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedAbsence, setSelectedAbsence] = useState<Absence | null>(null);
-  const [selectedCollaborateurId, setSelectedCollaborateurId] = useState<string | null>(collaborateurId);
+  const [selectedCollaborateurId, setSelectedCollaborateurId] = useState<string | null>(
+    collaborateurId || (hasRHAccess && collaborateursDisponibles.length > 0 ? collaborateursDisponibles[0].id : null)
+  );
 
   const handleOpenModal = (absence?: Absence) => {
     if (absence) {
@@ -110,9 +112,11 @@ export default function DemandesAbsencesClient({
             </label>
             <select
               value={selectedCollaborateurId || ""}
-              onChange={(e) => setSelectedCollaborateurId(e.target.value || collaborateurId)}
+              onChange={(e) => setSelectedCollaborateurId(e.target.value || null)}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm min-w-[300px]"
+              required
             >
+              <option value="">-- Sélectionner un collaborateur --</option>
               {collaborateurId && (
                 <option value={collaborateurId}>
                   Moi-même - {collaborateurId ? "Mon compte" : "Pas de compte"}
@@ -130,7 +134,7 @@ export default function DemandesAbsencesClient({
         <button
           onClick={() => handleOpenModal()}
           className="btn-primary flex items-center gap-2"
-          disabled={!selectedCollaborateurId && !hasRHAccess}
+          disabled={!selectedCollaborateurId}
         >
           <Plus className="h-4 w-4" />
           Nouvelle demande
