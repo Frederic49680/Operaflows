@@ -67,8 +67,8 @@ export async function GET(request: Request) {
     if (repartition) {
       for (const r of repartition) {
         const categorieFormation = r.catalogue_formation;
-        if (categorieFormation && !Array.isArray(categorieFormation)) {
-          const cat = categorieFormation.categorie || "Autre";
+        if (categorieFormation && !Array.isArray(categorieFormation) && typeof categorieFormation === 'object') {
+          const cat = (categorieFormation as { categorie?: string | null }).categorie || "Autre";
           repartitionCategorie[cat] = (repartitionCategorie[cat] || 0) + 1;
         }
       }
