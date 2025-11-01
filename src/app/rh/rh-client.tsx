@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Search, Plus, AlertTriangle, Calendar, Users, X, CalendarIcon } from "lucide-react";
 import type { Collaborateur, AlerteEcheance } from "@/types/rh";
 import Modal from "@/components/rh/Modal";
+import CollaborateurDetailModal from "@/components/rh/CollaborateurDetailModal";
 
 interface RHPageClientProps {
   collaborateurs: Collaborateur[];
@@ -26,6 +27,8 @@ export default function RHPageClient({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [modalDetailOpen, setModalDetailOpen] = useState(false);
+  const [selectedCollaborateurId, setSelectedCollaborateurId] = useState<string | null>(null);
 
   const filteredCollaborateurs = collaborateurs.filter((collab) => {
     const searchLower = searchTerm.toLowerCase();
@@ -96,7 +99,15 @@ export default function RHPageClient({
   };
 
   const handleRowClick = (collabId: string) => {
-    router.push(`/rh/${collabId}`);
+    setSelectedCollaborateurId(collabId);
+    setModalDetailOpen(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setModalDetailOpen(false);
+    setSelectedCollaborateurId(null);
+    // Rafraîchir la liste après fermeture
+    router.refresh();
   };
 
   return (
@@ -426,6 +437,18 @@ export default function RHPageClient({
           </div>
         </div>
       </Modal>
+
+      {/* Modal Détail Collaborateur */}
+      {selectedCollaborateurId && (
+        <CollaborateurDetailModal
+          isOpen={modalDetailOpen}
+          onClose={handleCloseDetailModal}
+          collaborateurId={selectedCollaborateurId}
+          onUpdate={() => {
+            router.refresh();
+          }}
+        />
+      )}
     </div>
   );
 }

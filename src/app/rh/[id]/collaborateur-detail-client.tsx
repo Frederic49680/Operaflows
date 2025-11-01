@@ -106,35 +106,62 @@ export default function CollaborateurDetailClient({
     { id: "absences" as Tab, label: "Absences", icon: Calendar },
   ];
 
+  // Props optionnelles pour déterminer si on est dans un modal
+  const isInModal = !(typeof window !== "undefined" && window.location.pathname.includes("/rh/") && window.location.pathname.split("/").length === 3);
+
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* En-tête */}
-        <div className="mb-6">
-          <Link
-            href="/rh"
-            className="inline-flex items-center gap-2 text-primary hover:text-primary-dark mb-4"
-          >
-            <ChevronLeft className="h-5 w-5" />
-            Retour à la liste
-          </Link>
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-primary mb-2">
-                {collaborateur.prenom} {collaborateur.nom}
-              </h1>
+    <div className={isInModal ? "" : "min-h-screen bg-background p-8"}>
+      <div className={isInModal ? "" : "max-w-7xl mx-auto"}>
+        {/* En-tête - seulement si pas dans un modal */}
+        {!isInModal && (
+          <div className="mb-6">
+            <Link
+              href="/rh"
+              className="inline-flex items-center gap-2 text-primary hover:text-primary-dark mb-4"
+            >
+              <ChevronLeft className="h-5 w-5" />
+              Retour à la liste
+            </Link>
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-primary mb-2">
+                  {collaborateur.prenom} {collaborateur.nom}
+                </h1>
+              </div>
+              {hasRHAccess && (
+                <button
+                  onClick={() => setModalEditOpen(true)}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <Edit className="h-5 w-5" />
+                  Modifier
+                </button>
+              )}
             </div>
-            {hasRHAccess && (
-              <button
-                onClick={() => setModalEditOpen(true)}
-                className="btn-primary flex items-center gap-2"
-              >
-                <Edit className="h-5 w-5" />
-                Modifier
-              </button>
-            )}
           </div>
-        </div>
+        )}
+
+        {/* En-tête compact pour modal */}
+        {isInModal && (
+          <div className="mb-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-primary mb-2">
+                  {collaborateur.prenom} {collaborateur.nom}
+                </h1>
+              </div>
+              {hasRHAccess && (
+                <button
+                  onClick={() => setModalEditOpen(true)}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <Edit className="h-5 w-5" />
+                  Modifier
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Onglets */}
         <div className="border-b border-gray-200 mb-6">
@@ -160,7 +187,7 @@ export default function CollaborateurDetailClient({
         </div>
 
         {/* Contenu des onglets */}
-        <div className="card">
+        <div className={isInModal ? "bg-white rounded-lg p-6 shadow-sm" : "card"}>
           {activeTab === "general" && (
             <OngletGeneral collaborateur={collaborateur} />
           )}
