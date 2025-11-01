@@ -186,6 +186,7 @@ DECLARE
   v_ancien_statut VARCHAR(50);
   v_niveau_validation VARCHAR(10);
   v_action VARCHAR(20);
+  v_valide_par UUID;
 BEGIN
   v_ancien_statut := OLD.statut;
   
@@ -196,21 +197,18 @@ BEGIN
       v_niveau_validation := 'n1';
       IF NEW.statut = 'validee_n1' THEN
         v_action := 'validee';
+        -- Utiliser valide_par_n1 si défini, sinon auth.uid()
+        v_valide_par := COALESCE(NEW.valide_par_n1, auth.uid());
+        NEW.valide_par_n1 := v_valide_par;
+        NEW.date_validation_n1 := NOW();
+        NEW.valide_par := v_valide_par; -- Compatibilité avec ancien champ
+        NEW.date_validation := NOW();
+        
+        -- Passer en attente RH si validée N+1
+        NEW.statut := 'en_attente_validation_rh';
       ELSE
         v_action := 'refusee';
-      END IF;
-      
-      -- Mettre à jour les champs N+1
-      IF NEW.statut = 'validee_n1' THEN
-        NEW.valide_par_n1 := auth.uid();
-        NEW.date_validation_n1 := NOW();
-        NEW.valide_par := auth.uid(); -- Compatibilité avec ancien champ
-        NEW.date_validation := NOW();
-      END IF;
-      
-      -- Passer en attente RH si validée N+1
-      IF NEW.statut = 'validee_n1' THEN
-        NEW.statut := 'en_attente_validation_rh';
+        v_valide_par := COALESCE(NEW.valide_par_n1, auth.uid());
       END IF;
     
     -- Validation RH
@@ -218,48 +216,55 @@ BEGIN
       v_niveau_validation := 'rh';
       IF NEW.statut IN ('validee_rh', 'appliquee') THEN
         v_action := 'validee';
-      ELSE
-        v_action := 'refusee';
-      END IF;
-      
-      -- Mettre à jour les champs RH
-      IF NEW.statut IN ('validee_rh', 'appliquee') THEN
-        NEW.valide_par_rh := auth.uid();
+        -- Utiliser valide_par_rh si défini, sinon auth.uid()
+        v_valide_par := COALESCE(NEW.valide_par_rh, auth.uid());
+        NEW.valide_par_rh := v_valide_par;
         NEW.date_validation_rh := NOW();
-        NEW.valide_par := auth.uid(); -- Compatibilité avec ancien champ
+        NEW.valide_par := v_valide_par; -- Compatibilité avec ancien champ
         NEW.date_validation := NOW();
         
         -- Si validée RH, elle impacte automatiquement la planification
         IF NEW.impact_planif IS NULL THEN
           NEW.impact_planif := true;
         END IF;
+      ELSE
+        v_action := 'refusee';
+        v_valide_par := COALESCE(NEW.valide_par_rh, auth.uid());
       END IF;
+    
+    -- Création initiale
+    ELSIF NEW.statut = 'en_attente_validation_n1' AND OLD.statut IS NULL THEN
+      v_niveau_validation := 'n1';
+      v_action := 'creee';
+      v_valide_par := COALESCE(NEW.created_by, auth.uid());
     END IF;
     
-    -- Enregistrer dans l'historique
-    INSERT INTO public.historique_validations_absences (
-      absence_id,
-      niveau_validation,
-      action,
-      valide_par,
-      date_action,
-      commentaire,
-      ancien_statut,
-      nouveau_statut
-    ) VALUES (
-      NEW.id,
-      v_niveau_validation,
-      v_action,
-      auth.uid(),
-      NOW(),
-      CASE 
-        WHEN NEW.statut = 'refusee_n1' THEN NEW.motif_refus_n1
-        WHEN NEW.statut = 'refusee_rh' THEN NEW.motif_refus_rh
-        ELSE NULL
-      END,
-      v_ancien_statut,
-      NEW.statut
-    );
+    -- Enregistrer dans l'historique seulement si on a déterminé les valeurs
+    IF v_niveau_validation IS NOT NULL THEN
+      INSERT INTO public.historique_validations_absences (
+        absence_id,
+        niveau_validation,
+        action,
+        valide_par,
+        date_action,
+        commentaire,
+        ancien_statut,
+        nouveau_statut
+      ) VALUES (
+        NEW.id,
+        v_niveau_validation,
+        v_action,
+        v_valide_par,
+        NOW(),
+        CASE 
+          WHEN NEW.statut = 'refusee_n1' THEN NEW.motif_refus_n1
+          WHEN NEW.statut = 'refusee_rh' THEN NEW.motif_refus_rh
+          ELSE NULL
+        END,
+        v_ancien_statut,
+        NEW.statut
+      );
+    END IF;
   END IF;
   
   RETURN NEW;

@@ -120,23 +120,49 @@ export interface Absence {
   id: string;
   collaborateur_id: string;
   type: TypeAbsence;
+  catalogue_absence_id?: string | null; // Nouveau : référence au catalogue
   motif?: string | null;
   date_debut: string;
   date_fin: string;
   heures_absences?: number | null;
   duree_jours?: number | null;
+  jours_ouvres?: number | null; // Nouveau : calcul automatique
+  jours_ouvrables?: number | null; // Nouveau : calcul automatique
   statut: StatutAbsence;
+  
+  // Validation N+1
+  valide_par_n1?: string | null;
+  date_validation_n1?: string | null;
+  motif_refus_n1?: string | null;
+  
+  // Validation RH
+  valide_par_rh?: string | null;
+  date_validation_rh?: string | null;
+  motif_refus_rh?: string | null;
+  
+  // Champs de compatibilité (dépréciés)
   valide_par?: string | null;
   date_validation?: string | null;
   motif_refus?: string | null;
+  
+  // Forcer validation RH (cas exceptionnel)
+  force_validation_rh?: boolean;
+  
+  // Justificatifs
   justificatif_url?: string | null;
   justificatif_signe_id?: string | null;
+  
+  // Impact planification
   impact_planif: boolean;
+  
+  // Synchronisation externe
   synchro_outlook: boolean;
   outlook_event_id?: string | null;
   synchro_sirh: boolean;
   sirh_export_date?: string | null;
   sirh_export_id?: string | null;
+  
+  // Métadonnées
   commentaire?: string | null;
   created_at: string;
   updated_at: string;
@@ -146,6 +172,43 @@ export interface Absence {
   // Relations
   collaborateur?: Collaborateur | null;
   valide_par_user?: { id: string; email: string } | null;
+  catalogue_absence?: CatalogueAbsence | null;
+  historique_validations?: HistoriqueValidationAbsence[] | null;
+}
+
+// Nouveau : Catalogue des absences
+export interface CatalogueAbsence {
+  id: string;
+  code: string;
+  libelle: string;
+  description?: string | null;
+  categorie: 'exceptionnelle' | 'legale' | 'autorisee' | 'conges' | 'non_remuneree';
+  duree_max_jours?: number | null;
+  duree_min_jours?: number | null;
+  besoin_justificatif: boolean;
+  besoin_validation_n1: boolean;
+  besoin_validation_rh: boolean;
+  motif_complementaire?: string | null;
+  conditions_particulieres?: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+}
+
+// Nouveau : Historique des validations
+export interface HistoriqueValidationAbsence {
+  id: string;
+  absence_id: string;
+  niveau_validation: 'n1' | 'rh';
+  action: 'validee' | 'refusee' | 'modifiee' | 'creee';
+  valide_par: string;
+  date_action: string;
+  commentaire?: string | null;
+  ancien_statut?: string | null;
+  nouveau_statut?: string | null;
+  created_at: string;
 }
 
 export interface Formation {
