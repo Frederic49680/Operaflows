@@ -27,6 +27,9 @@ import { fr } from "date-fns/locale";
 import Modal from "@/components/rh/Modal";
 import HabilitationForm from "@/components/rh/forms/HabilitationForm";
 import AbsenceForm from "@/components/rh/forms/AbsenceForm";
+import DosimetrieForm from "@/components/rh/forms/DosimetrieForm";
+import VisiteMedicaleForm from "@/components/rh/forms/VisiteMedicaleForm";
+import FormationForm from "@/components/rh/forms/FormationForm";
 
 interface CollaborateurDetailClientProps {
   collaborateur: Collaborateur;
@@ -69,6 +72,12 @@ export default function CollaborateurDetailClient({
   const [selectedHabilitation, setSelectedHabilitation] = useState<Habilitation | null>(null);
   const [modalAbsenceOpen, setModalAbsenceOpen] = useState(false);
   const [selectedAbsence, setSelectedAbsence] = useState<Absence | null>(null);
+  const [modalDosimetrieOpen, setModalDosimetrieOpen] = useState(false);
+  const [selectedDosimetrie, setSelectedDosimetrie] = useState<Dosimetrie | null>(null);
+  const [modalVisiteOpen, setModalVisiteOpen] = useState(false);
+  const [selectedVisite, setSelectedVisite] = useState<VisiteMedicale | null>(null);
+  const [modalFormationOpen, setModalFormationOpen] = useState(false);
+  const [selectedFormation, setSelectedFormation] = useState<Formation | null>(null);
 
   const refreshData = () => {
     router.refresh();
@@ -195,12 +204,28 @@ export default function CollaborateurDetailClient({
             <OngletDosimetrie
               dosimetries={dosimetries}
               hasRHAccess={hasRHAccess}
+              onAddDosimetrie={() => {
+                setSelectedDosimetrie(null);
+                setModalDosimetrieOpen(true);
+              }}
+              onEditDosimetrie={(dos) => {
+                setSelectedDosimetrie(dos);
+                setModalDosimetrieOpen(true);
+              }}
             />
           )}
           {activeTab === "medical" && (
             <OngletMedical
               visitesMedicales={visitesMedicales}
               hasRHAccess={hasRHAccess}
+              onAddVisite={() => {
+                setSelectedVisite(null);
+                setModalVisiteOpen(true);
+              }}
+              onEditVisite={(vm) => {
+                setSelectedVisite(vm);
+                setModalVisiteOpen(true);
+              }}
             />
           )}
           {activeTab === "absences" && (
@@ -261,6 +286,52 @@ export default function CollaborateurDetailClient({
             setSelectedAbsence(null);
           }}
           onSuccess={refreshData}
+        />
+      </Modal>
+
+      {/* Modal Dosimétrie */}
+      <Modal
+        isOpen={modalDosimetrieOpen}
+        onClose={() => {
+          setModalDosimetrieOpen(false);
+          setSelectedDosimetrie(null);
+        }}
+        title={selectedDosimetrie ? "Modifier le relevé dosimétrique" : "Nouveau relevé dosimétrique"}
+        size="lg"
+      >
+        <DosimetrieForm
+          collaborateurId={collaborateur.id}
+          dosimetrie={selectedDosimetrie}
+          onClose={() => {
+            setModalDosimetrieOpen(false);
+            setSelectedDosimetrie(null);
+          }}
+          onSuccess={() => {
+            refreshData();
+          }}
+        />
+      </Modal>
+
+      {/* Modal Visite médicale */}
+      <Modal
+        isOpen={modalVisiteOpen}
+        onClose={() => {
+          setModalVisiteOpen(false);
+          setSelectedVisite(null);
+        }}
+        title={selectedVisite ? "Modifier la visite médicale" : "Nouvelle visite médicale"}
+        size="lg"
+      >
+        <VisiteMedicaleForm
+          collaborateurId={collaborateur.id}
+          visite={selectedVisite}
+          onClose={() => {
+            setModalVisiteOpen(false);
+            setSelectedVisite(null);
+          }}
+          onSuccess={() => {
+            refreshData();
+          }}
         />
       </Modal>
     </div>
@@ -598,16 +669,38 @@ function OngletCompetences({
 function OngletDosimetrie({
   dosimetries,
   hasRHAccess,
+  onAddDosimetrie,
+  onEditDosimetrie,
 }: {
   dosimetries: Dosimetrie[];
   hasRHAccess: boolean;
+  onAddDosimetrie: () => void;
+  onEditDosimetrie: (dos: Dosimetrie) => void;
 }) {
+  const handleDelete = async (id: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer ce relevé dosimétrique ?")) return;
+    
+    try {
+      const { createClientSupabase } = await import("@/lib/supabase/client");
+      const supabase = createClientSupabase();
+      const { error } = await supabase.from("dosimetrie").delete().eq("id", id);
+      
+      if (error) throw error;
+      window.location.reload();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erreur lors de la suppression");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Suivi dosimétrique</h3>
         {hasRHAccess && (
-          <button className="btn-primary text-sm">Ajouter un relevé</button>
+          <button onClick={onAddDosimetrie} className="btn-primary text-sm flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Ajouter un relevé
+          </button>
         )}
       </div>
 
@@ -636,11 +729,16 @@ function OngletDosimetrie({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Fournisseur
                 </th>
+                {hasRHAccess && (
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {dosimetries.map((dos) => (
-                <tr key={dos.id}>
+                <tr key={dos.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {dos.numero_dosimetre}
                   </td>
@@ -660,6 +758,26 @@ function OngletDosimetrie({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {dos.fournisseur || "-"}
                   </td>
+                  {hasRHAccess && (
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => onEditDosimetrie(dos)}
+                          className="text-primary hover:text-primary-dark"
+                          title="Modifier"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(dos.id)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -674,16 +792,38 @@ function OngletDosimetrie({
 function OngletMedical({
   visitesMedicales,
   hasRHAccess,
+  onAddVisite,
+  onEditVisite,
 }: {
   visitesMedicales: VisiteMedicale[];
   hasRHAccess: boolean;
+  onAddVisite: () => void;
+  onEditVisite: (vm: VisiteMedicale) => void;
 }) {
+  const handleDelete = async (id: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette visite médicale ?")) return;
+    
+    try {
+      const { createClientSupabase } = await import("@/lib/supabase/client");
+      const supabase = createClientSupabase();
+      const { error } = await supabase.from("visites_medicales").delete().eq("id", id);
+      
+      if (error) throw error;
+      window.location.reload();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erreur lors de la suppression");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Visites médicales</h3>
         {hasRHAccess && (
-          <button className="btn-primary text-sm">Ajouter une visite</button>
+          <button onClick={onAddVisite} className="btn-primary text-sm flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Ajouter une visite
+          </button>
         )}
       </div>
 
@@ -712,11 +852,16 @@ function OngletMedical({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Avis médical
                 </th>
+                {hasRHAccess && (
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {visitesMedicales.map((vm) => (
-                <tr key={vm.id}>
+                <tr key={vm.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {vm.type_visite}
                   </td>
@@ -747,6 +892,26 @@ function OngletMedical({
                   <td className="px-6 py-4 text-sm text-gray-900">
                     {vm.avis_medical || "-"}
                   </td>
+                  {hasRHAccess && (
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => onEditVisite(vm)}
+                          className="text-primary hover:text-primary-dark"
+                          title="Modifier"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(vm.id)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
