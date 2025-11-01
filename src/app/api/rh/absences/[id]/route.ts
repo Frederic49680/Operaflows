@@ -97,11 +97,36 @@ export async function PATCH(
 
     // Vérifier les droits selon l'opération
     if (statut && statut !== existingAbsence.statut) {
-      // Validation/refus nécessite des droits spécifiques
-      if (!hasRHAccess && !canValidate) {
+      // Validation/refus nécessite des droits spécifiques selon le niveau
+      const isValidationN1 = statut === "validee_n1" || statut === "refusee_n1";
+      const isValidationRH = statut === "validee_rh" || statut === "refusee_rh" || statut === "appliquee";
+      
+      if (isValidationN1 && !canValidate && !hasRHAccess) {
         return NextResponse.json(
-          { error: "Non autorisé à valider cette absence" },
+          { error: "Non autorisé à valider cette absence au niveau N+1" },
           { status: 403 }
+        );
+      }
+      
+      if (isValidationRH && !hasRHAccess) {
+        return NextResponse.json(
+          { error: "Non autorisé à valider cette absence au niveau RH" },
+          { status: 403 }
+        );
+      }
+      
+      // Vérifier que le statut actuel permet la transition
+      if (isValidationN1 && existingAbsence.statut !== "en_attente_validation_n1") {
+        return NextResponse.json(
+          { error: "Cette absence n'est pas en attente de validation N+1" },
+          { status: 400 }
+        );
+      }
+      
+      if (isValidationRH && existingAbsence.statut !== "en_attente_validation_rh") {
+        return NextResponse.json(
+          { error: "Cette absence n'est pas en attente de validation RH" },
+          { status: 400 }
         );
       }
     } else {
@@ -121,9 +146,23 @@ export async function PATCH(
 
     if (statut) {
       updatePayload.statut = statut;
-      if (statut === "validee" || statut === "refusee") {
-        updatePayload.valide_par = user.id;
-        updatePayload.date_validation = new Date().toISOString();
+      
+      // Mettre à jour les champs selon le niveau de validation
+      if (statut === "validee_n1" || statut === "refusee_n1") {
+        updatePayload.valide_par_n1 = user.id;
+        updatePayload.date_validation_n1 = new Date().toISOString();
+        updatePayload.valide_par = user.id; // Compatibilité
+        updatePayload.date_validation = new Date().toISOString(); // Compatibilité
+      } else if (statut === "validee_rh" || statut === "refusee_rh" || statut === "appliquee") {
+        updatePayload.valide_par_rh = user.id;
+        updatePayload.date_validation_rh = new Date().toISOString();
+        updatePayload.valide_par = user.id; // Compatibilité
+        updatePayload.date_validation = new Date().toISOString(); // Compatibilité
+        
+        // Si validée RH, activer l'impact planification
+        if (statut === "validee_rh" || statut === "appliquee") {
+          updatePayload.impact_planif = true;
+        }
       }
     }
 

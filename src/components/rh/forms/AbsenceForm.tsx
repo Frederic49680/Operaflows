@@ -198,7 +198,7 @@ export default function AbsenceForm({
             <option value="en_attente_validation_rh">En attente validation RH</option>
             <option value="validee_rh">Validée RH</option>
             <option value="refusee_rh">Refusée RH</option>
-            <option value="annulee">Annulée</option>
+            <option value="appliquee">Appliquée</option>
             <option value="annulee">Annulée</option>
           </select>
         </div>
