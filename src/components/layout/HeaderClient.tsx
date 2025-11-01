@@ -383,13 +383,13 @@ export default function HeaderClient({
               );
             })}
 
-            {rhItems.length > 0 && (
-              <div className="pt-3 border-t border-gray-200/80">
+            {rhItems.map((rhItem) => (
+              <div key={rhItem.label} className="pt-3 border-t border-gray-200/80">
                 <div className="px-4 py-2 text-xs font-semibold text-primary uppercase tracking-wider mb-1">
-                  RH
+                  {rhItem.label}
                 </div>
-                {rhItems[0].submenu.map((subItem) => {
-                  const Icon = Users;
+                {rhItem.submenu.map((subItem) => {
+                  const Icon = rhItem.iconName ? iconMap[rhItem.iconName] || Users : Users;
                   const subActive = pathname === subItem.href || pathname.startsWith(subItem.href + "/");
                   return (
                     <Link
@@ -406,15 +406,15 @@ export default function HeaderClient({
                       <Icon
                         className={cn(
                           "h-5 w-5",
-                          subActive ? "text-primary" : "text-gray-500"
+                          subActive ? "text-primary" : "text-gray-400"
                         )}
                       />
-                      {subItem.label}
+                      <span>{subItem.label}</span>
                     </Link>
                   );
                 })}
               </div>
-            )}
+            ))}
 
             {isAdmin && adminItems.length > 0 && (
               <div className="pt-3 border-t border-gray-200/80">
