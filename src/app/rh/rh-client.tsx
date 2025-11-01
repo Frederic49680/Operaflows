@@ -111,23 +111,23 @@ export default function RHPageClient({
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         {/* En-tête */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-primary mb-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-2">
                 RH Collaborateurs
               </h1>
-              <p className="text-lg text-secondary">
+              <p className="text-base sm:text-lg text-secondary">
                 Gestion des collaborateurs, absences, formations et conformité
               </p>
             </div>
             {hasRHAccess && (
-              <Link href="/rh/new" className="btn-primary flex items-center gap-2">
+              <Link href="/rh/new" className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto">
                 <Plus className="h-5 w-5" />
-                Nouveau collaborateur
+                <span className="whitespace-nowrap">Nouveau collaborateur</span>
               </Link>
             )}
           </div>
@@ -183,10 +183,10 @@ export default function RHPageClient({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Rechercher par nom, prénom, email, fonction ou site..."
+              placeholder="Rechercher par nom, prénom, email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              className="w-full pl-10 pr-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm sm:text-base"
             />
           </div>
         </div>
@@ -250,28 +250,28 @@ export default function RHPageClient({
         )}
 
         {/* Liste des collaborateurs */}
-        <div className="card">
-          <div className="overflow-x-auto">
+        <div className="card overflow-hidden">
+          <div className="overflow-x-auto -mx-6 sm:mx-0">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Collaborateur
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                     Fonction
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                     Site
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
                     Contrat
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Statut
                   </th>
                   {hasRHAccess && (
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
                       Responsable
                     </th>
                   )}
@@ -291,26 +291,33 @@ export default function RHPageClient({
                       className="hover:bg-gray-50 cursor-pointer transition-colors"
                       onClick={() => handleRowClick(collab.id)}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 sm:px-6 py-4">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
                             {collab.prenom} {collab.nom}
                           </div>
-                          <div className="text-sm text-gray-500">{collab.email}</div>
+                          <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[200px] sm:max-w-none">{collab.email}</div>
+                          <div className="text-xs text-gray-500 sm:hidden mt-1">
+                            {collab.fonction_metier && `${collab.fonction_metier} • `}
+                            {collab.site_detail 
+                              ? collab.site_detail.site_label
+                              : collab.site || ""}
+                            {collab.type_contrat && ` • ${collab.type_contrat}`}
+                          </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden sm:table-cell">
                         {collab.fonction_metier || "-"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden md:table-cell">
                         {collab.site_detail 
                           ? collab.site_detail.site_label
                           : collab.site || "-"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden lg:table-cell">
                         {collab.type_contrat || "-"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                         <span
                           onClick={(e) => handleStatutClick(e, collab)}
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full transition-all ${
@@ -331,7 +338,7 @@ export default function RHPageClient({
                         </span>
                       </td>
                       {hasRHAccess && (
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 hidden lg:table-cell">
                           {collab.responsable_activite
                             ? `${collab.responsable_activite.prenom} ${collab.responsable_activite.nom}`
                             : collab.responsable

@@ -121,20 +121,20 @@ export default function CreateCollaborateurClient({
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/rh"
-            className="inline-flex items-center gap-2 text-primary hover:text-primary-dark mb-4"
+            className="inline-flex items-center gap-2 text-primary hover:text-primary-dark mb-4 text-sm sm:text-base"
           >
             <ChevronLeft className="h-4 w-4" />
             Retour à la liste
           </Link>
-          <h1 className="text-4xl font-bold text-primary mb-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-2">
             Nouveau Collaborateur
           </h1>
-          <p className="text-lg text-secondary">
+          <p className="text-base sm:text-lg text-secondary">
             Créer un nouveau profil collaborateur
           </p>
         </div>

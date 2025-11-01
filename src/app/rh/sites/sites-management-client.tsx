@@ -126,30 +126,30 @@ export default function SitesManagementClient({
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Message de succès */}
         {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-            <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-            <p className="text-green-800 font-medium">{success}</p>
+          <div className="mb-4 sm:mb-6 bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+            <p className="text-sm sm:text-base text-green-800 font-medium">{success}</p>
           </div>
         )}
 
         {/* Message d'erreur */}
         {error && !modalOpen && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
-            <p className="text-red-800 font-medium">{error}</p>
+          <div className="mb-4 sm:mb-6 bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+            <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 flex-shrink-0" />
+            <p className="text-sm sm:text-base text-red-800 font-medium">{error}</p>
           </div>
         )}
 
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-4xl font-bold text-primary mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-2">
               Gestion des Sites
             </h1>
-            <p className="text-lg text-secondary">
+            <p className="text-base sm:text-lg text-secondary">
               Gérez les sites et leurs responsables d&apos;activité
             </p>
           </div>
@@ -158,31 +158,31 @@ export default function SitesManagementClient({
                 setSelectedSite(null);
                 setModalOpen(true);
               }}
-              className="btn-primary flex items-center gap-2"
+              className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto"
             >
             <Plus className="h-5 w-5" />
-            Ajouter un site
+            <span className="whitespace-nowrap">Ajouter un site</span>
           </button>
         </div>
 
-        <div className="card">
-          <div className="overflow-x-auto">
+        <div className="card overflow-hidden">
+          <div className="overflow-x-auto -mx-6 sm:mx-0">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Code
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Libellé
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">
                     Site parent
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Responsables
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Statut
                   </th>
                 </tr>
@@ -197,19 +197,26 @@ export default function SitesManagementClient({
                 ) : (
                   sites.map((site) => (
                     <tr key={site.site_id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {site.site_code}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {site.site_label}
+                      <td className="px-3 sm:px-6 py-4 text-sm text-gray-900">
+                        <div>
+                          <div className="font-medium">{site.site_label}</div>
+                          {site.parent_site_id && (
+                            <div className="text-xs text-gray-500 md:hidden mt-1">
+                              Parent: {sites.find(s => s.site_id === site.parent_site_id)?.site_label || "-"}
+                            </div>
+                          )}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
                         {site.parent_site_id 
                           ? sites.find(s => s.site_id === site.parent_site_id)?.site_label || "-"
                           : "-"}
                       </td>
                       <td 
-                        className="px-6 py-4 text-sm text-gray-900 cursor-pointer hover:bg-gray-100 transition-colors"
+                        className="px-3 sm:px-6 py-4 text-sm text-gray-900 cursor-pointer hover:bg-gray-100 transition-colors"
                         onClick={() => {
                           setSiteForResponsables(site);
                           setModalResponsablesOpen(true);
@@ -218,18 +225,18 @@ export default function SitesManagementClient({
                       >
                         {site.responsables_actifs.length === 0 ? (
                           <span className="flex items-center gap-1 text-amber-600">
-                            <AlertTriangle className="h-4 w-4" />
-                            Aucun responsable
+                            <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />
+                            <span className="text-xs sm:text-sm">Aucun responsable</span>
                           </span>
                         ) : (
                           <div className="space-y-1">
                             {site.responsables_actifs.map((resp, idx) => (
                               <div key={idx} className="flex items-center gap-2">
-                                <Users className="h-4 w-4 text-gray-400" />
-                                <span>
+                                <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                                <span className="text-xs sm:text-sm truncate">
                                   {resp.collaborateur?.prenom} {resp.collaborateur?.nom}
                                   {resp.role_fonctionnel !== "Responsable d'activité" && (
-                                    <span className="text-gray-500 ml-1">
+                                    <span className="text-gray-500 ml-1 hidden sm:inline">
                                       ({resp.role_fonctionnel})
                                     </span>
                                   )}
@@ -239,7 +246,7 @@ export default function SitesManagementClient({
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
