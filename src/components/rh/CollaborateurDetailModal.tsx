@@ -153,7 +153,7 @@ export default function CollaborateurDetailModal({
           )}
 
           {!loading && !error && data && (
-            <div className="p-6">
+            <div className="p-4">
               <CollaborateurDetailClient
                 collaborateur={data.collaborateur}
                 habilitations={data.habilitations}
@@ -166,6 +166,7 @@ export default function CollaborateurDetailModal({
                 sites={data.sites}
                 responsables={data.responsables}
                 availableUsers={data.availableUsers}
+                isInModal={true}
               />
             </div>
           )}
