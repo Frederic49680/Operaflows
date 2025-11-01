@@ -113,7 +113,7 @@ export default function CollaborateurDetailModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={handleClose}>
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-slate-600/40 backdrop-blur-sm" />
 
       {/* Modal - Très large pour le contenu */}
       <div
